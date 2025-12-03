@@ -164,6 +164,10 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
 
+        .class-card.today {
+             border-left: 5px solid var(--color-primary);
+        }
+
         .card-title {
             font-weight: bold;
             font-size: 1rem;
@@ -254,9 +258,9 @@
         </div>
         
         <div class="controls-group">
-            <span style="color: var(--text-subtle); font-size: 0.9rem;">Select Week:</span>
+            <span style="color: var(--text-subtle); font-size: 0.9rem;">Select View:</span>
             <select class="select-control" id="week-select">
-                <option>Loading Weeks...</option>
+                <option>Loading Views...</option>
             </select>
         </div>
     </div>
@@ -278,9 +282,24 @@
             const currentClock = document.getElementById('current-clock');
             const nextClassDisplay = document.getElementById('next-class-display');
 
-            let allWeeks = [];
+            let allWeeks = []; // List of week start dates (YYYY-MM-DD)
             let currentWeekStart = '';
-            let allWeekData = {};
+            let allWeekData = {}; // Map of week start date -> array of day objects
+
+            const DAY_OPTIONS = {
+                '__TODAY__': 'Today',
+                '__TOMORROW__': 'Tomorrow'
+            };
+
+            // Helper to get date string in the format "Mon, 01-Dec-2025"
+            // Note: This format includes the comma and is used for matching against JSON data
+            const getFormattedDateString = (dateObj) => {
+                const day = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+                const dateNum = String(dateObj.getDate()).padStart(2, '0');
+                const month = dateObj.toLocaleDateString('en-US', { month: 'short' });
+                const year = dateObj.getFullYear();
+                return `${day}, ${dateNum}-${month}-${year}`;
+            };
 
             // Helper to handle date strings like "Mon, 01-Dec-2025" and return a Date object
             const parseJsonDate = (dateStr) => {
@@ -351,7 +370,6 @@
                     const timeRemaining = nextClass.fullDate.getTime() - now.getTime();
                     
                     if (timeRemaining < -1000) { 
-                        // If class was less than a second ago, show no immediate class to avoid negative time
                         nextClassDisplay.innerHTML = `<span class="material-icons">alarm</span>No immediate class.`;
                         return;
                     }
@@ -380,8 +398,6 @@
 
 
             // --- Core HTML Parsing Logic (Integrated Importer) ---
-            // FIX: Updated this function to correctly parse the structure found in timetable.html,
-            // where the day is in the first cell of a class row, not a separate header row.
             function parseHtmlToWeekData(rawHtml) {
                 const sandbox = document.getElementById('parser-sandbox');
                 sandbox.innerHTML = rawHtml;
@@ -396,11 +412,9 @@
                     days: []
                 };
                 let currentDay = null;
-                let previousDate = null; // New variable to track date changes
                 
                 // 1. Determine Week Start Date
                 try {
-                    // Search in table headers for the week date
                     const headerCell = table.querySelector('th, td');
                     const headerText = headerCell ? headerCell.textContent.trim() : '';
                     const dateMatch = headerText.match(/\d{2}-\w{3}-\d{4}/);
@@ -409,7 +423,6 @@
                     if (dateMatch) {
                         referenceDate = parseDate(dateMatch[0]);
                     } else {
-                        // Fallback: search for a date in the first content cell
                         const firstDateCell = table.querySelector('tr td[colspan="7"], tr td:first-child');
                         const firstDateMatch = firstDateCell ? firstDateCell.textContent.match(/\w{3},\s*\d{2}-\w{3}-\d{4}/) : null;
                         if (firstDateMatch) {
@@ -438,64 +451,49 @@
                 // 2. Parse Day and Class Data
                 rows.forEach(row => {
                     const cells = row.querySelectorAll('td');
-                    const headers = row.querySelectorAll('th');
 
                     if (cells.length === 0) return; 
 
-                    // Skip the table header rows (Week 01-Dec-2025 and DATE/TIME/etc.)
-                    if (headers.length > 0) return; 
-                    
-                    // A standard class row in timetable.html has 6 cells
-                    if (cells.length >= 6) { 
-                        // The columns in timetable.html are: 0:DATE, 1:TIME, 2:CLASSROOM, 3:LOCATION, 4:SUBJECT/MODULE, 5:LECTURER
-                        const dateCell = cells[0] ? cells[0].textContent.trim() : ''; 
-                        const timeCell = cells[1] ? cells[1].textContent.trim() : '';
-                        const classroomCell = cells[2] ? cells[2].textContent.trim() : ''; // Used as 'location' in JSON
-                        const locationCell = cells[3] ? cells[3].textContent.trim() : ''; // Used as 'campus' in JSON
-                        const moduleCell = cells[4] ? cells[4].textContent.trim() : '';
-                        const lecturerCell = cells[5] ? cells[5].textContent.trim() : '';
-                        
-                        // FIX: Group classes by date (which is in the first cell)
-                        if (dateCell && dateCell !== previousDate) {
+                    // Check for day header row
+                    if (cells.length === 1 && cells[0].hasAttribute('colspan')) {
+                        const dateText = cells[0].textContent.trim();
+                        if (dateText) {
                             currentDay = {
-                                date: dateCell.trim(),
+                                date: dateText.replace(/Timetable for\s*/, '').trim(),
                                 classes: []
                             };
                             currentWeekData.days.push(currentDay);
-                            previousDate = dateCell.trim();
                         }
+                        return;
+                    }
+
+                    // Standard class row (Time, Module, Location, Lecturer)
+                    if (cells.length >= 4 && currentDay) {
+                        const timeCell = cells[0] ? cells[0].textContent.trim() : '';
+                        const moduleCell = cells[1] ? cells[1].textContent.trim() : '';
+                        const locationCell = cells[2] ? cells[2].textContent.trim() : '';
+                        const lecturerCell = cells[3] ? cells[3].textContent.trim() : '';
                         
-                        if (!currentDay) {
-                           return;
+                        const [moduleCode, ...moduleNameParts] = moduleCell.split(/\s*-\s*/).filter(p => p.trim());
+                        const moduleName = moduleNameParts.join(' - ').trim();
+                        const isOnline = locationCell.toUpperCase().includes('ONL') || locationCell.toUpperCase().includes('ONLINE');
+
+                        const locationMatch = locationCell.match(/(.+)\s*\|\s*(.+)/);
+                        let location = locationCell;
+                        let campus = 'APU CAMPUS';
+
+                        if (locationMatch && locationMatch.length === 3) {
+                            location = locationMatch[1].trim();
+                            campus = locationMatch[2].trim();
                         }
-
-                        // --- Module Name Parsing ---
-                        const moduleText = moduleCell.trim();
-                        let moduleCode = moduleText;
-                        let moduleName = moduleText; 
-                        let isOnlineInModule = false;
-                        
-                        // Handle the (Online) tag that sometimes appears in the module cell
-                        if (moduleText.includes('(Online)')) {
-                            moduleCode = moduleText.split('(')[0].trim();
-                            moduleName = moduleText.replace('(Online)', '').trim(); // Set module name to the text without (Online)
-                            isOnlineInModule = true;
-                        }
-
-                        // Determine isOnline flag based on both classroom code and module name tag.
-                        // The locationCell in timetable.html is always "APU CAMPUS", so we check classroomCell.
-                        const isOnline = classroomCell.toUpperCase().startsWith('ONL') || isOnlineInModule;
-
 
                         if (moduleCode && timeCell) {
                             currentDay.classes.push({
                                 moduleCode: moduleCode.trim(),
-                                // Note: moduleName will be the module code without (Online), as the full description 
-                                // is not available in timetable.html and must be manually enhanced in the JSON later.
-                                moduleName: moduleName.trim(), 
+                                moduleName: moduleName || moduleCode.trim(),
                                 time: timeCell.trim(),
-                                location: classroomCell.trim(), // Classroom
-                                campus: locationCell.trim(), // APU CAMPUS
+                                location: location,
+                                campus: campus,
                                 lecturer: lecturerCell.trim() || 'N/A',
                                 isOnline: isOnline
                             });
@@ -527,16 +525,10 @@
                     });
 
                     // 2. Fetch existing timetable data
-                    // FIX: Pointing to a potential API endpoint for robustness, but since we are running 
-                    // client-side in this context, we'll try 'timetable_data.json' first.
+                    const response = await fetch('timetable_data.json');
                     let existingData = { weeks: [] };
-                    try {
-                        const response = await fetch('timetable_data.json');
-                        if (response.ok) {
-                            existingData = await response.json();
-                        }
-                    } catch (fetchError) {
-                        console.warn("Could not fetch existing timetable_data.json. Starting with empty data.");
+                    if (response.ok) {
+                        existingData = await response.json();
                     }
 
 
@@ -613,7 +605,7 @@
                             allWeekData[w.weekStartDate] = w.days;
                         });
                         
-                        // --- FIX: Logic to find the current week ---
+                        // Logic to find the current week's start date
                         const now = new Date();
                         now.setHours(0, 0, 0, 0); 
         
@@ -623,15 +615,12 @@
                             const weekStartStr = allWeeks[i]; 
                             const [year, month, day] = weekStartStr.split('-').map(Number);
                             
-                            // Create date object for Monday (start of the week)
                             const weekStartDate = new Date(year, month - 1, day);
                             weekStartDate.setHours(0, 0, 0, 0); 
                             
-                            // Create date object for the next Monday (end of the current week range)
                             const weekEndDate = new Date(weekStartDate);
                             weekEndDate.setDate(weekStartDate.getDate() + 7); 
 
-                            // Check if today falls within this week (inclusive of start, exclusive of end)
                             if (now.getTime() >= weekStartDate.getTime() && now.getTime() < weekEndDate.getTime()) {
                                 foundCurrentWeekStart = weekStartStr;
                                 break; 
@@ -655,13 +644,21 @@
 
             function populateWeekOptions() {
                 weekSelect.innerHTML = '';
+
+                // Add Today/Tomorrow options first
+                Object.keys(DAY_OPTIONS).forEach(key => {
+                    const option = document.createElement('option');
+                    option.value = key;
+                    option.textContent = DAY_OPTIONS[key];
+                    weekSelect.appendChild(option);
+                });
+
+                // Add Week options
                 allWeeks.forEach(week => {
                     const option = document.createElement('option');
                     option.value = week;
                     
                     const dateParts = week.split('-');
-                    // Date parts is YYYY, MM, DD (from split of YYYY-MM-DD)
-                    // Note: Month in Date constructor is 0-indexed, but the split gives 1-indexed month.
                     const date = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]); 
                     const displayDate = date.toLocaleDateString('en-US', {
                         year: 'numeric',
@@ -672,23 +669,76 @@
                     option.textContent = `Week starting ${displayDate}`;
                     weekSelect.appendChild(option);
                 });
-                weekSelect.value = currentWeekStart;
+                
+                // Set default to Today if possible, otherwise to the current week
+                const todayOption = weekSelect.querySelector('option[value="__TODAY__"]');
+                if (todayOption) {
+                    weekSelect.value = '__TODAY__'; 
+                } else {
+                    weekSelect.value = currentWeekStart;
+                }
             }
 
-            async function loadTimetable(dateString) {
+            async function loadTimetable(selectedValue) {
                 timetableList.innerHTML = `<div style='text-align: center; padding: 50px;'><p style='color: var(--text-subtle);'>Loading timetable...</p></div>`;
                 
-                const weekStart = dateString;
-                if (!allWeekData[weekStart]) {
-                    timetableList.innerHTML = `<div style='color: red; padding: 20px;'>No data for selected week.</div>`;
+                let dataToRender = [];
+                let headerText = 'Timetable';
+
+                if (selectedValue === '__TODAY__' || selectedValue === '__TOMORROW__') {
+                    // Handle Today/Tomorrow view
+                    const isToday = selectedValue === '__TODAY__';
+                    const targetDate = new Date();
+                    if (!isToday) {
+                        targetDate.setDate(targetDate.getDate() + 1);
+                    }
+                    targetDate.setHours(0, 0, 0, 0);
+
+                    const formattedDateString = getFormattedDateString(targetDate);
+                    
+                    headerText = `${isToday ? 'Today' : 'Tomorrow'} (${formattedDateString})`;
+
+                    // Find the week that contains the target date
+                    let targetWeekData = null;
+                    for (const weekStart in allWeekData) {
+                        const weekStartDate = new Date(weekStart);
+                        weekStartDate.setHours(0, 0, 0, 0); 
+                        const weekEndDate = new Date(weekStartDate);
+                        weekEndDate.setDate(weekStartDate.getDate() + 7); 
+
+                        if (targetDate.getTime() >= weekStartDate.getTime() && targetDate.getTime() < weekEndDate.getTime()) {
+                            targetWeekData = allWeekData[weekStart];
+                            break;
+                        }
+                    }
+
+                    if (targetWeekData) {
+                        // The day.date format in JSON is "Mon, 01-Dec-2025"
+                        const dayData = targetWeekData.find(day => day.date.trim() === formattedDateString);
+                        if (dayData) {
+                            dataToRender.push({
+                                // Remove comma for simpler display in day separator
+                                date: dayData.date.replace(/,/, '').trim(),
+                                classes: dayData.classes
+                            });
+                        }
+                    } else {
+                         timetableList.innerHTML = `<div style='text-align: center; padding: 50px;'><p style='color: var(--text-subtle);'>No timetable found for this date.</p></div>`;
+                         return;
+                    }
+
+                } else if (allWeekData[selectedValue]) {
+                    // Handle Week view
+                    headerText = Array.from(weekSelect.options).find(opt => opt.value === selectedValue)?.textContent || selectedValue;
+                    dataToRender = allWeekData[selectedValue].map(day => ({
+                        // Remove comma for simpler display in day separator
+                        date: day.date.replace(/,/, '').trim(), 
+                        classes: day.classes
+                    }));
+                } else {
+                    timetableList.innerHTML = `<div style='color: red; padding: 20px;'>No data for selected view.</div>`;
                     return;
                 }
-                
-                const dataToRender = allWeekData[weekStart].map(day => ({
-                    date: day.date.replace(/,/, ''), 
-                    classes: day.classes
-                }));
-                const headerText = Array.from(weekSelect.options).find(opt => opt.value === weekStart)?.textContent || weekStart;
                 
                 renderTimetable(dataToRender, headerText);
             }
@@ -700,6 +750,18 @@
                 mainHeader.classList.add('day-header');
                 mainHeader.textContent = headerText;
                 timetableList.appendChild(mainHeader);
+
+                if (dataToRender.length === 0) {
+                     const noClasses = document.createElement('p');
+                     noClasses.style.padding = '10px 16px';
+                     noClasses.style.color = 'var(--text-subtle)';
+                     noClasses.textContent = 'No classes scheduled for this view.';
+                     timetableList.appendChild(noClasses);
+                     return;
+                }
+
+                // Get today's date string for comparison to highlight the card (without comma)
+                const todayDateStringWithoutComma = getFormattedDateString(new Date()).replace(/,/, '').trim();
 
                 dataToRender.forEach(dayGroup => {
                     
@@ -722,10 +784,15 @@
                         const classCard = document.createElement('div');
                         classCard.classList.add('class-card');
                         
+                        // Add highlight for today's classes
+                        if (dayGroup.date.trim() === todayDateStringWithoutComma) {
+                            classCard.classList.add('today');
+                        }
+                        
                         // Determine the icon and color based on modality
                         const modalityIcon = classItem.isOnline 
                             ? `<span class='material-icons online-icon'>videocam</span>`
-                            : `<span class='material-icons inperson-icon'>apartment</span>`; // Using 'apartment' for campus/physical location
+                            : `<span class='material-icons inperson-icon'>apartment</span>`; 
 
                         const title = document.createElement('div');
                         title.classList.add('card-title');
@@ -750,7 +817,6 @@
                         const locationDetail = document.createElement('div');
                         locationDetail.classList.add('card-detail-item');
                         
-                        // Use location_on icon for the pill, regardless of modality
                         locationDetail.innerHTML = `<span class='material-icons'>location_on</span><span class='pill'>${locationPillText}</span>`;
                         detailsContainer.appendChild(locationDetail);
                         
@@ -779,7 +845,10 @@
             (async () => {
                 await fetchAllWeeks();
                 populateWeekOptions();
-                await loadTimetable(currentWeekStart); 
+                
+                // Load the default view (which is now Today)
+                const initialSelection = weekSelect.value;
+                await loadTimetable(initialSelection); 
                 
                 // Start the independent clock and next class timer
                 updateClockAndNextClass(); 
