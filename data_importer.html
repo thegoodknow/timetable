@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timetable Data Importer</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --bg-card: #1E1E1E;
+            --text-light: #FFFFFF;
+            --color-primary: #007BFF;
+            --color-success: #28a745;
+            --border-color: #333333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: var(--bg-card);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: var(--color-primary);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 250px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: monospace;
+            box-sizing: border-box;
+            resize: vertical;
+        }
+
+        .file-upload-section, .button-group {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px dashed var(--border-color);
+            border-radius: 5px;
+            background-color: #2a2a2a;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: var(--color-success);
+            color: var(--text-light);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        #return-btn {
+            background-color: var(--color-primary);
+        }
+
+        #return-btn:hover {
+            background-color: #0069d9;
+        }
+
+        .instructions {
+            background-color: #004D99;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .output-title {
+            margin-top: 30px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        #status-message {
+            color: yellow;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Timetable Data Importer (HTML to JSON)</h1>
+        
+        <div class="instructions">
+            <p><strong>Steps to Update Timetable:</strong></p>
+            <ol>
+                <li><strong>UPLOAD:</strong> Click "Choose File" below and upload your existing **`timetable_data.json`**.</li>
+                <li><strong>PASTE:</strong> Paste the raw HTML of the **new week's** timetable into the text area.</li>
+                <li><strong>CONVERT:</strong> Click "Convert & Download." The tool will **merge** the new week into your existing data and prompt you to download the updated file.</li>
+                <li><strong>SAVE & UPLOAD:</strong> Save the downloaded file as **`timetable_data.json`** and **overwrite** the file in your GitHub repository.</li>
+                <li><strong>RETURN:</strong> Click "Go Back to Timetable" to view the changes.</li>
+            </ol>
+        </div>
+
+        <div class="file-upload-section">
+            <label for="existing-json-file"><strong>1. Upload Existing `timetable_data.json`:</strong></label>
+            <input type="file" id="existing-json-file" accept="application/json">
+            <div id="status-message">Awaiting JSON file upload...</div>
+        </div>
+
+        <label for="raw-html"><strong>2. Paste Raw HTML of the New Week:</strong></label>
+        <textarea id="raw-html" placeholder="Paste the raw HTML of your timetable table here..."></textarea>
+        
+        <div class="button-group">
+            <button onclick="convertHtmlToJson()">
+                <span class="material-icons" style="font-size: 18px; margin-right: 4px; vertical-align: bottom;">sync</span>
+                Convert & Download Updated JSON
+            </button>
+        </div>
+
+        <div id="download-prompt" style="display:none; text-align: center; margin-top: 30px;">
+            <p style="color: var(--color-success); font-size: 1.1rem; font-weight: bold;">
+                <span class="material-icons" style="vertical-align: middle;">check_circle</span> Conversion successful! Please download and replace your file.
+            </p>
+            <button id="return-btn" onclick="window.location.href='gemini.html'">
+                <span class="material-icons" style="font-size: 18px; margin-right: 4px; vertical-align: bottom;">arrow_back</span> Go Back to Timetable
+            </button>
+        </div>
+    </div>
+
+    <div id="parser-sandbox" style="display: none;"></div>
+
+    <script>
+        let existingData = null;
+
+        document.getElementById('existing-json-file').addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            const statusMessage = document.getElementById('status-message');
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        existingData = JSON.parse(e.target.result);
+                        statusMessage.textContent = 'Existing JSON loaded successfully.';
+                        statusMessage.style.color = var(--color-success);
+                    } catch (error) {
+                        statusMessage.textContent = 'Error parsing JSON file. Is it valid?';
+                        statusMessage.style.color = 'red';
+                        existingData = null;
+                    }
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        // Helper to convert a date string (e.g., "01-Dec-2025") to a Date object
+        function parseDate(dateStr) {
+            const [day, monthStr, year] = dateStr.split('-');
+            return new Date(`${monthStr} ${day}, ${year}`);
+        }
+
+        // --- Core HTML Parsing Logic ---
+        function parseHtmlToWeekData(rawHtml) {
+            const sandbox = document.getElementById('parser-sandbox');
+            sandbox.innerHTML = rawHtml;
+            const table = sandbox.querySelector('table');
+            if (!table) throw new Error("Could not find a <table> element.");
+
+            const rows = table.querySelectorAll('tr');
+            if (rows.length === 0) throw new Error("Table found, but no rows (<tr>) detected.");
+
+            let currentWeekData = {
+                weekStartDate: null,
+                days: []
+            };
+            let currentDay = null;
+            
+            // 1. Determine Week Start Date (Crucial for merging)
+            try {
+                const headerCell = table.querySelector('th, td');
+                const headerText = headerCell ? headerCell.textContent.trim() : '';
+
+                const dateMatch = headerText.match(/\d{2}-\w{3}-\d{4}/);
+                if (dateMatch) {
+                    const date = parseDate(dateMatch[0]);
+                    const dayOfWeek = date.getDay(); 
+                    const diff = date.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // Adjust to Monday
+                    const monday = new Date(date.setDate(diff));
+                    currentWeekData.weekStartDate = `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, '0')}-${String(monday.getDate()).padStart(2, '0')}`;
+                } else {
+                    // Fallback to try finding a date in the table cells
+                    const firstDateCell = table.querySelector('tr td[colspan="7"], tr td:first-child');
+                    const firstDateMatch = firstDateCell ? firstDateCell.textContent.match(/\w{3},\s*\d{2}-\w{3}-\d{4}/) : null;
+                    if (firstDateMatch) {
+                        const dateString = firstDateMatch[0]; // e.g., "Mon, 01-Dec-2025"
+                        const datePart = dateString.split(', ')[1];
+                        const date = parseDate(datePart);
+                        const dayOfWeek = date.getDay(); 
+                        const diff = date.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); 
+                        const monday = new Date(date.setDate(diff));
+                        currentWeekData.weekStartDate = `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, '0')}-${String(monday.getDate()).padStart(2, '0')}`;
+                    } else {
+                        throw new Error("Could not extract week start date from HTML.");
+                    }
+                }
+            } catch (e) {
+                console.error("Date extraction failed:", e);
+                // Cannot proceed without a weekStartDate
+                throw new Error(`Failed to determine week start date: ${e.message}`);
+            }
+
+
+            // 2. Parse Day and Class Data
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+
+                if (cells.length === 0) return; 
+
+                // Check for day header row (often a single cell spanning columns)
+                if (cells.length === 1 && cells[0].hasAttribute('colspan')) {
+                    const dateText = cells[0].textContent.trim();
+                    if (dateText) {
+                        currentDay = {
+                            // Extract date string like "Mon, 01-Dec-2025"
+                            date: dateText.replace(/Timetable for\s*/, '').trim(),
+                            classes: []
+                        };
+                        currentWeekData.days.push(currentDay);
+                    }
+                    return;
+                }
+
+                // Standard class row (assuming Time, Module, Location, Lecturer order)
+                if (cells.length >= 4 && currentDay) {
+                    const timeCell = cells[0] ? cells[0].textContent.trim() : '';
+                    const moduleCell = cells[1] ? cells[1].textContent.trim() : '';
+                    const locationCell = cells[2] ? cells[2].textContent.trim() : '';
+                    const lecturerCell = cells[3] ? cells[3].textContent.trim() : '';
+                    
+                    const [moduleCode, ...moduleNameParts] = moduleCell.split(/\s*-\s*/).filter(p => p.trim());
+                    const moduleName = moduleNameParts.join(' - ').trim();
+                    const isOnline = locationCell.toUpperCase().includes('ONL') || locationCell.toUpperCase().includes('ONLINE');
+
+                    const locationMatch = locationCell.match(/(.+)\s*\|\s*(.+)/);
+                    let location = locationCell;
+                    let campus = 'APU CAMPUS';
+
+                    if (locationMatch && locationMatch.length === 3) {
+                        location = locationMatch[1].trim();
+                        campus = locationMatch[2].trim();
+                    }
+
+                    if (moduleCode && timeCell) {
+                        currentDay.classes.push({
+                            moduleCode: moduleCode.trim(),
+                            moduleName: moduleName || moduleCode.trim(),
+                            time: timeCell.trim(),
+                            location: location,
+                            campus: campus,
+                            lecturer: lecturerCell.trim() || 'N/A',
+                            isOnline: isOnline
+                        });
+                    }
+                }
+            });
+
+            sandbox.innerHTML = '';
+            return currentWeekData;
+        }
+
+        // --- Merging and Download Logic ---
+        function convertHtmlToJson() {
+            const rawHtml = document.getElementById('raw-html').value;
+            const statusMessage = document.getElementById('status-message');
+
+            if (!existingData) {
+                statusMessage.textContent = 'ERROR: Please upload your existing timetable_data.json first.';
+                statusMessage.style.color = 'red';
+                return;
+            }
+            if (!rawHtml.trim()) {
+                statusMessage.textContent = 'ERROR: Please paste the raw HTML.';
+                statusMessage.style.color = 'red';
+                return;
+            }
+
+            try {
+                statusMessage.textContent = 'Parsing new HTML and merging data...';
+                statusMessage.style.color = 'yellow';
+                
+                const newWeekData = parseHtmlToWeekData(rawHtml);
+                const newWeekStartDate = newWeekData.weekStartDate;
+                
+                if (!newWeekStartDate) {
+                     throw new Error("New week start date could not be determined from HTML.");
+                }
+
+                let finalWeeks = existingData.weeks || [];
+                let weekIndex = finalWeeks.findIndex(w => w.weekStartDate === newWeekStartDate);
+
+                if (weekIndex !== -1) {
+                    // Week exists, REPLACE it
+                    finalWeeks[weekIndex] = newWeekData;
+                    statusMessage.textContent = `SUCCESS: Replaced existing data for week starting ${newWeekStartDate}.`;
+                } else {
+                    // Week is new, ADD it
+                    finalWeeks.push(newWeekData);
+                    // Optionally sort by date
+                    finalWeeks.sort((a, b) => new Date(a.weekStartDate) - new Date(b.weekStartDate));
+                    statusMessage.textContent = `SUCCESS: Added new data for week starting ${newWeekStartDate}.`;
+                }
+
+                // Construct final JSON object
+                const finalJson = { weeks: finalWeeks };
+                const finalJsonString = JSON.stringify(finalJson, null, 2);
+                
+                // Trigger download
+                const blob = new Blob([finalJsonString], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'timetable_data.json';
+                
+                // Simulate click to download the file
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                // Show prompt to return to gemini.html
+                document.getElementById('download-prompt').style.display = 'block';
+                statusMessage.style.color = var(--color-success);
+
+            } catch (e) {
+                statusMessage.textContent = `CONVERSION ERROR: ${e.message}`;
+                statusMessage.style.color = 'red';
+            }
+        }
+    </script>
+
+</body>
+</html>
