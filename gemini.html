@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APSpace Timetable</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        /* --- Theme Variables --- */
+        :root {
+            --bg-dark: #121212;
+            --bg-card: #1E1E1E;
+            --text-light: #FFFFFF;
+            --text-subtle: #B0B0B0;
+            --color-primary: #007BFF;
+            --color-blue-bg: #004D99; 
+            --color-pill-blue: #0056B3;
+            --border-color: #333333;
+            --header-height: 56px;
+        }
+
+        /* --- Base Styles --- */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        /* --- Header/Control Bar --- */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center; 
+            padding: 12px 16px; 
+            height: var(--header-height);
+            background-color: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .logo img {
+            height: 30px; 
+            width: auto;
+        }
+        
+        .controls-group {
+            display: flex;
+            gap: 12px;
+            /* CRITICAL: Ensure perfect vertical alignment */
+            align-items: center; 
+        }
+
+        /* --- View Mode Buttons and Select (pill-button & select-control) --- */
+        .pill-button, .select-control {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 8px 12px; 
+            font-size: 0.9rem;
+            cursor: pointer;
+            appearance: none;
+            outline: none;
+            /* CRITICAL: Enforce uniform height for better row alignment */
+            height: 36px; 
+            box-sizing: border-box;
+        }
+        
+        .pill-button {
+            display: flex;
+            align-items: center;
+        }
+        
+        .select-control {
+            background-color: var(--bg-card); 
+            margin: 0; 
+        }
+
+        .pill-button.active {
+            background-color: var(--color-primary); 
+            border-color: var(--color-primary);
+            color: var(--text-light);
+        }
+
+        /* --- Custom Timetable Card Styles --- */
+        .timetable-content {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .day-header {
+            background-color: var(--color-blue-bg);
+            color: var(--text-light);
+            font-weight: bold;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 1.1rem;
+        }
+
+        .class-card {
+            background-color: var(--bg-card);
+            border-radius: 8px;
+            padding: 12px 16px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-title {
+            font-weight: bold;
+            font-size: 1rem;
+            margin-bottom: 4px;
+        }
+
+        .card-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-subtle);
+            margin-bottom: 8px;
+        }
+
+        .card-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-subtle);
+        }
+
+        .card-detail-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .card-detail-item .material-icons {
+            font-size: 16px;
+            color: var(--color-primary);
+        }
+
+        .pill {
+            background-color: var(--color-pill-blue);
+            color: var(--text-light);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-left: 8px;
+            font-weight: 500;
+        }
+
+        .online-tag {
+             color: #FFC107; 
+        }
+
+        /* Temporary element for HTML parsing */
+        #parser-sandbox {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="logo">
+            <img src="image_ff1627.png" alt="APSpace Logo">
+        </div>
+        
+        <div class="controls-group">
+            <select class="select-control" id="week-or-day-select">
+                <option>Loading Weeks...</option>
+            </select>
+            <div class="pill-button" id="daily-view">Daily</div>
+            <div class="pill-button active" id="weekly-view">Weekly</div>
+        </div>
+    </div>
+
+    <div class="timetable-content" id="timetable-list">
+        <div style="text-align: center; padding: 50px;">
+            <p style="color: var(--text-subtle);">Loading timetable...</p>
+        </div>
+    </div>
+    
+    <div id="parser-sandbox"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const timetableList = document.getElementById('timetable-list');
+            const weekOrDaySelect = document.getElementById('week-or-day-select');
+            const dailyBtn = document.getElementById('daily-view');
+            const weeklyBtn = document.getElementById('weekly-view');
+
+            let currentViewMode = 'Weekly'; 
+            let cachedTimetableData = []; 
+            let currentWeekStart = '2025-12-01';
+            
+            // =========================================================================
+            // !!! SECURITY WARNING: NEVER PUT A REAL CONNECTION STRING IN CLIENT-SIDE JAVASCRIPT !!!
+            // This is purely for simulation and demonstrating where the string would exist 
+            // in a secure BACKEND environment (e.g., Node.js server).
+            // =========================================================================
+            const MONGODB_CONNECTION_STRING = "mongodb+srv://hewzhiheng_db_user:abcd54321hzh@cluster0.lrr9qm0.mongodb.net/?appName=Cluster0";
+            
+            // --- MOCK API RESPONSE DATA (Simulates what the MongoDB API returns) ---
+            const MOCK_API_RESPONSE_DATA = {
+                '2025-12-01': [
+                    { date: 'Mon 1 Dec', classes: [
+                        { moduleCode: 'AAQS038-4-1-MSC-L-9', moduleName: 'MATHS AND STATS', time: '15:15 - 16:45', location: 'D-07-11', campus: 'APU CAMPUS', lecturer: 'KHOR LIAN PENG', isOnline: false }
+                    ]},
+                    { date: 'Tue 2 Dec', classes: [
+                        { moduleCode: 'ABUS007-4-1-ARS-L-9', moduleName: 'ACADEMIC RESEARCH SKILLS', time: '08:30 - 10:30', location: 'S-08-01', campus: 'APU CAMPUS', lecturer: 'IMAN DANISH SHA', isOnline: false },
+                        { moduleCode: 'AAQS038-4-1-MSC-T-23', moduleName: 'MATHS AND STATS', time: '16:45 - 17:45', location: 'E-06-02', campus: 'APU CAMPUS', lecturer: 'KHOR LIAN PENG', isOnline: false }
+                    ]},
+                    { date: 'Wed 3 Dec', classes: [
+                        { moduleCode: 'AICT023-4-1-CA-T-21', moduleName: 'COMPUTER ARCHITECTURE', time: '15:45 - 17:45', location: 'D-08-14', campus: 'APU CAMPUS', lecturer: 'TS. MUHAMMAD AMIN', isOnline: false },
+                        { moduleCode: 'MPU2132-BMK1(FS)-L-8', moduleName: 'BAHASA MELAYU KOMUNIKASI', time: '18:45 - 20:45', location: 'ONLMCO3-11', campus: 'APU CAMPUS', lecturer: 'NURHANI HAZIRAH', isOnline: true }
+                    ]},
+                    { date: 'Thu 4 Dec', classes: [
+                        { moduleCode: 'AAQS038-4-1-MSC-L-8', moduleName: 'MATHS AND STATS', time: '11:45 - 13:15', location: 'B-05-04', campus: 'APU CAMPUS', lecturer: 'KHOR LIAN PENG', isOnline: false }
+                    ]},
+                    { date: 'Fri 5 Dec', classes: [
+                        { moduleCode: 'AICT023-4-1-CA-L-7', moduleName: 'COMPUTER ARCHITECTURE', time: '08:30 - 10:30', location: 'S-05-02', campus: 'APU CAMPUS', lecturer: 'TS. MUHAMMAD AMIN', isOnline: false }
+                    ]},
+                ],
+                '2025-12-08': [
+                    { date: 'Mon 8 Dec', classes: [
+                        { moduleCode: 'BUSS901-T-A', moduleName: 'BUSINESS COMMUNICATION', time: '09:00 - 11:00', location: 'B-03-01', campus: 'APU CAMPUS', lecturer: 'DR. JANE DOE', isOnline: false }
+                    ]},
+                    { date: 'Tue 9 Dec', classes: [
+                        { moduleCode: 'PROG101-L-B', moduleName: 'INTRODUCTION TO PROGRAMMING', time: '14:00 - 16:00', location: 'E-05-10', campus: 'APU CAMPUS', lecturer: 'MR. SMITH', isOnline: false }
+                    ]},
+                    { date: 'Wed 10 Dec', classes: [
+                        { moduleCode: 'WEBDEV-P-1', moduleName: 'WEB DEVELOPMENT PROJECT', time: '10:00 - 12:00', location: 'ONLMCO3-15', campus: 'APU CAMPUS', lecturer: 'MS. CHEN', isOnline: true }
+                    ]},
+                    { date: 'Thu 11 Dec', classes: [
+                        { moduleCode: 'MATH202-L-C', moduleName: 'ADVANCED CALCULUS', time: '13:00 - 15:00', location: 'D-08-01', campus: 'APU CAMPUS', lecturer: 'DR. KHOR LIAN PENG', isOnline: false }
+                    ]},
+                    { date: 'Fri 12 Dec', classes: [] }
+                ]
+            };
+            
+            // --- 1. MONGODB CONNECTION LAYER (Simulated) ---
+            /**
+             * This function simulates the logic that would run on your secure backend server 
+             * (e.g., Node.js/Express) to connect to MongoDB and fetch data.
+             * It uses the global MONGODB_CONNECTION_STRING internally.
+             * @param {string} weekStart - The week to query the database for.
+             * @returns {Promise<Array>} A promise that resolves with the timetable data for the week.
+             */
+            async function connectToMongoDB(weekStart) {
+                console.log(`[MongoDB Connector] Initializing connection using string: ${MONGODB_CONNECTION_STRING.substring(0, 30)}...`);
+                console.log(`[MongoDB Connector] Simulating successful connection and querying for week: ${weekStart}`);
+                
+                /* In a real server application (e.g., using Node.js and the 'mongodb' package), you would have:
+                
+                const { MongoClient } = require('mongodb');
+                const client = new MongoClient(MONGODB_CONNECTION_STRING, { useNewUrlParser: true, useUnifiedTopology: true });
+                
+                try {
+                    await client.connect();
+                    const db = client.db("APSpaceDB");
+                    const data = await db.collection('timetables').findOne({ weekStart });
+                    return data.schedule; // Assuming the schedule array is nested
+                } catch (error) {
+                    console.error("MongoDB Query Error:", error);
+                    throw new Error("Database query failed.");
+                } finally {
+                    await client.close();
+                }
+                */
+
+                // For this front-end simulation, we return the mock data directly.
+                const data = MOCK_API_RESPONSE_DATA[weekStart];
+                
+                if (!data) {
+                    throw new Error(`[MongoDB] No data found for query: ${weekStart}`);
+                }
+                
+                return data;
+            }
+
+
+            // --- 2. API ENDPOINT (Simulated) ---
+            /**
+             * This function simulates a client-side call to your secure web API.
+             * @param {string} weekStart - The week to request from the API.
+             * @returns {Promise<Array>} The timetable data.
+             */
+            async function fetchTimetableJson(weekStart) {
+                // Simulate network delay
+                await new Promise(resolve => setTimeout(resolve, 300));
+                
+                console.log(`[API Endpoint] Fetching data from hypothetical endpoint: /api/timetable?week=${weekStart}`);
+
+                try {
+                    // Step 1: Call the simulated MongoDB connection logic (which is SERVER-SIDE)
+                    const data = await connectToMongoDB(weekStart); 
+                    
+                    // Step 2: Set the current week start date for dynamic filtering
+                    currentWeekStart = weekStart; 
+                    return data;
+                } catch (error) {
+                    throw new Error(`API Fetch Failed: ${error.message}`);
+                }
+            }
+
+
+            // --- 3. UI and Rendering Logic ---
+
+            function getDisplayDate(date) {
+                return date.toLocaleDateString('en-US', {
+                    weekday: 'short',
+                    day: 'numeric',
+                    month: 'short'
+                }).replace(/,/g, '');
+            }
+            
+            function getWeekStartDisplay(dateString) {
+                const date = new Date(dateString);
+                return `Week starting ${getDisplayDate(date)}`;
+            }
+
+            function populateSelect() {
+                weekOrDaySelect.innerHTML = '';
+                
+                if (currentViewMode === 'Weekly') {
+                    Object.keys(MOCK_API_RESPONSE_DATA).forEach(weekStart => {
+                        const option = document.createElement('option');
+                        option.value = weekStart; 
+                        option.textContent = getWeekStartDisplay(weekStart);
+                        weekOrDaySelect.appendChild(option);
+                    });
+                    weekOrDaySelect.value = currentWeekStart;
+                    weekOrDaySelect.style.display = 'inline-flex';
+                } else if (currentViewMode === 'Daily') {
+                    if (cachedTimetableData.length > 0) {
+                        cachedTimetableData.forEach(dayGroup => {
+                            const option = document.createElement('option');
+                            option.value = dayGroup.date; 
+                            option.textContent = dayGroup.date;
+                            weekOrDaySelect.appendChild(option);
+                        });
+                        weekOrDaySelect.value = cachedTimetableData[0].date;
+                        weekOrDaySelect.style.display = 'inline-flex';
+                    }
+                }
+            }
+
+            function renderTimetable() {
+                timetableList.innerHTML = ''; 
+
+                const selectedValue = weekOrDaySelect.value;
+                let dataToRender = cachedTimetableData;
+
+                if (currentViewMode === 'Daily') {
+                    dataToRender = cachedTimetableData.filter(dayGroup => dayGroup.date === selectedValue);
+                }
+                
+                if (dataToRender.length === 0 || (currentViewMode === 'Daily' && dataToRender[0] && dataToRender[0].classes.length === 0)) {
+                     const emptyMessage = currentViewMode === 'Daily' 
+                                            ? `No classes found for ${selectedValue}.` 
+                                            : `No classes found for ${getWeekStartDisplay(currentWeekStart)}.`;
+                                            
+                     timetableList.innerHTML = `<div style="text-align: center; padding: 50px;"><p style="color: var(--text-subtle);">${emptyMessage}</p></div>`;
+                     return;
+                }
+                
+                if (currentViewMode === 'Weekly') {
+                     const weekHeader = document.createElement('div');
+                     weekHeader.classList.add('day-header');
+                     weekHeader.textContent = getWeekStartDisplay(currentWeekStart);
+                     timetableList.appendChild(weekHeader);
+                }
+
+
+                dataToRender.forEach(dayGroup => {
+                    const daySeparator = document.createElement('div');
+                    daySeparator.classList.add('day-header');
+                    daySeparator.textContent = dayGroup.date;
+                    
+                    if (currentViewMode === 'Weekly') {
+                        daySeparator.style.backgroundColor = 'var(--bg-dark)';
+                        daySeparator.style.borderBottom = '1px solid var(--border-color)';
+                    }
+                    
+                    timetableList.appendChild(daySeparator);
+
+
+                    dayGroup.classes.forEach(classItem => {
+                        const classCard = document.createElement('div');
+                        classCard.classList.add('class-card');
+
+                        const title = document.createElement('div');
+                        title.classList.add('card-title');
+                        title.textContent = classItem.moduleCode;
+                        
+                        if (classItem.isOnline) {
+                            const onlineSpan = document.createElement('span');
+                            onlineSpan.classList.add('online-tag');
+                            onlineSpan.textContent = ' (Online)';
+                            title.appendChild(onlineSpan);
+                        }
+                        
+                        const subtitle = document.createElement('div');
+                        subtitle.classList.add('card-subtitle');
+                        subtitle.textContent = classItem.moduleName || 'Module Description'; 
+
+                        const detailsContainer = document.createElement('div');
+                        detailsContainer.classList.add('card-details');
+
+                        const timeDetail = document.createElement('div');
+                        timeDetail.classList.add('card-detail-item');
+                        timeDetail.innerHTML = `<span class="material-icons">schedule</span>${classItem.time} (GMT+8)`;
+                        detailsContainer.appendChild(timeDetail);
+
+                        const locationPillText = `${classItem.location} | ${classItem.campus}`;
+                        const locationDetail = document.createElement('div');
+                        locationDetail.classList.add('card-detail-item');
+                        locationDetail.innerHTML = `<span class="material-icons">location_on</span><span class="pill">${locationPillText}</span>`;
+                        detailsContainer.appendChild(locationDetail);
+                        
+                        const lecturerDetail = document.createElement('div');
+                        lecturerDetail.classList.add('card-detail-item');
+                        lecturerDetail.innerHTML = `<span class="material-icons">person</span>${classItem.lecturer}`;
+                        detailsContainer.appendChild(lecturerDetail);
+
+
+                        classCard.appendChild(title);
+                        classCard.appendChild(subtitle);
+                        classCard.appendChild(detailsContainer);
+
+                        timetableList.appendChild(classCard);
+                    });
+                });
+            }
+            
+            // --- 4. Event Handlers ---
+            dailyBtn.addEventListener('click', () => {
+                if (currentViewMode === 'Daily') return;
+                currentViewMode = 'Daily';
+                dailyBtn.classList.add('active');
+                weeklyBtn.classList.remove('active');
+                
+                populateSelect(); 
+                renderTimetable();
+            });
+
+            weeklyBtn.addEventListener('click', () => {
+                if (currentViewMode === 'Weekly') return;
+                currentViewMode = 'Weekly';
+                weeklyBtn.classList.add('active');
+                dailyBtn.classList.remove('active');
+                
+                populateSelect(); 
+                renderTimetable();
+            });
+            
+            weekOrDaySelect.addEventListener('change', async (e) => {
+                 if (currentViewMode === 'Weekly') {
+                     const selectedWeekStart = e.target.value;
+                     await loadTimetable(selectedWeekStart);
+                 } else {
+                     renderTimetable();
+                 }
+            });
+            
+            // --- 5. Main Execution ---
+            async function loadTimetable(weekStart = '2025-12-01') {
+                try {
+                    timetableList.innerHTML = `<div style="text-align: center; padding: 50px;"><p style="color: var(--text-subtle);">Fetching timetable for ${getWeekStartDisplay(weekStart)}...</p></div>`;
+
+                    // Fetch data via the simulated API call
+                    cachedTimetableData = await fetchTimetableJson(weekStart);
+                    
+                    populateSelect();
+                    renderTimetable(); 
+                } catch (e) {
+                    console.error("Loading failed:", e);
+                     timetableList.innerHTML = `<div style="color: red; padding: 20px; background-color: #331212; border-radius: 8px;">
+                            <strong>Error:</strong> Failed to load timetable: ${e.message}
+                        </div>`;
+                }
+            }
+
+            loadTimetable();
+        });
+    </script>
+
+</body>
+</html>
