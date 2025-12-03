@@ -32,17 +32,17 @@
         /* --- Header/Control Bar --- */
         .header {
             display: flex;
-            flex-wrap: wrap; /* Allow wrapping on small screens */
+            flex-wrap: wrap; 
             justify-content: space-between;
             align-items: center; 
-            padding: 12px 16px; 
+            padding: 10px 16px; /* Slightly adjusted padding */
             min-height: var(--header-height);
             background-color: var(--bg-card);
             border-bottom: 1px solid var(--border-color);
             position: sticky;
             top: 0;
             z-index: 50;
-            gap: 10px;
+            gap: 10px 20px; /* Gap between main sections */
         }
 
         .logo-group {
@@ -60,20 +60,53 @@
             display: flex;
             gap: 12px;
             align-items: center; 
+            order: 3; /* Push to the end on wrap */
         }
 
+        /* --- NEW: Header Summary Bar --- */
+        .header-summary-bar {
+            display: flex;
+            align-items: center;
+            flex-grow: 1; /* Allows it to take up available space */
+            gap: 20px;
+            padding: 5px 0;
+            min-width: 300px;
+            order: 2; /* Position in the middle */
+        }
+        .summary-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.95rem;
+        }
+        .clock-display {
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+        .next-class-display {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .next-class-display .material-icons {
+            font-size: 1.1rem;
+            margin-right: 5px;
+            color: var(--text-subtle);
+        }
+        
         /* --- File Upload Area Styles --- */
         .file-upload-container {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             background-color: #28a745; /* Success Green */
             color: var(--text-light);
             border-radius: 6px;
             padding: 6px 10px;
             cursor: pointer;
             transition: background-color 0.2s;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
         .file-upload-container:hover {
             background-color: #218838;
@@ -87,8 +120,7 @@
             font-size: 0.9rem;
         }
 
-
-        /* --- Week Select (pill-button & select-control) --- */
+        /* --- Week Select (select-control) --- */
         .select-control {
             background-color: var(--bg-card);
             color: var(--text-light);
@@ -189,10 +221,17 @@
             </div>
             <label for="html-upload" class="file-upload-container">
                 <span class="material-icons" style="font-size: 18px;">cloud_upload</span> 
-                Upload HTML & Convert
+                Update JSON
                 <input type="file" id="html-upload" accept="text/html" />
             </label>
             <span id="upload-status">Ready.</span>
+        </div>
+        
+        <div class="header-summary-bar">
+            <span id="current-clock" class="summary-item clock-display">Loading Time...</span>
+            <span id="next-class-display" class="summary-item next-class-display">
+                <span class="material-icons">alarm</span>Finding Next Class...
+            </span>
         </div>
         
         <div class="controls-group">
@@ -217,6 +256,8 @@
             const weekSelect = document.getElementById('week-select');
             const htmlUploadInput = document.getElementById('html-upload');
             const uploadStatus = document.getElementById('upload-status');
+            const currentClock = document.getElementById('current-clock');
+            const nextClassDisplay = document.getElementById('next-class-display');
 
             let allWeeks = [];
             let currentWeekStart = '';
@@ -234,6 +275,91 @@
                 const [day, monthStr, year] = dateStr.split('-');
                 return new Date(`${monthStr} ${day}, ${year}`);
             }
+
+            // Helper function to parse time string "HH:MM - HH:MM" and returns start hour and minute
+            function parseStartTime(timeStr) {
+                const parts = timeStr.split(' - ')[0].split(':');
+                return { hour: parseInt(parts[0], 10), minute: parseInt(parts[1], 10) };
+            }
+
+            // --- Find the Next Class Across All Weeks ---
+            function findNextClass(data) {
+                if (Object.keys(data).length === 0) return null;
+                const now = new Date();
+                let nextClass = null;
+                let closestTime = Infinity;
+            
+                for (const weekStart in data) {
+                    if (!data.hasOwnProperty(weekStart)) continue;
+
+                    for (const dayGroup of data[weekStart]) {
+                        const jsonDate = parseJsonDate(dayGroup.date);
+                        
+                        // Only consider today or future days
+                        if (jsonDate.setHours(0,0,0,0) >= now.setHours(0,0,0,0)) {
+                            
+                            for (const classItem of dayGroup.classes) {
+                                const { hour, minute } = parseStartTime(classItem.time);
+                                
+                                const classStartTime = new Date(jsonDate);
+                                classStartTime.setHours(hour, minute, 0, 0);
+
+                                // Check if the class is in the future
+                                if (classStartTime.getTime() > now.getTime()) {
+                                    const diff = classStartTime.getTime() - now.getTime();
+                                    if (diff < closestTime) {
+                                        closestTime = diff;
+                                        nextClass = { ...classItem, fullDate: classStartTime };
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                return nextClass;
+            }
+
+            // --- Update Clock and Next Class Display (Runs every second) ---
+            function updateClockAndNextClass() {
+                const now = new Date();
+                const timeDisplay = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                
+                currentClock.textContent = timeDisplay;
+
+                const nextClass = findNextClass(allWeekData);
+                
+                if (nextClass) {
+                    const timeRemaining = nextClass.fullDate.getTime() - now.getTime();
+                    
+                    // If class started recently, force re-check next tick
+                    if (timeRemaining < -1000) { 
+                        // This prevents showing a class that passed a while ago
+                        nextClassDisplay.innerHTML = `<span class="material-icons">alarm</span>No immediate class.`;
+                        return;
+                    }
+                    
+                    const hours = Math.floor(timeRemaining / (1000 * 60 * 60));
+                    const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+                    
+                    const timeRemainingStr = hours > 0 
+                        ? `${hours}h ${minutes}m ${seconds}s` 
+                        : `${minutes}m ${seconds}s`;
+
+                    const datePart = nextClass.fullDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                    
+                    const nextClassHtml = `
+                        <span class="material-icons">alarm</span>
+                        <span style="color: var(--color-primary);">${timeRemainingStr}</span>
+                        | ${nextClass.moduleCode} - ${nextClass.moduleName} (${datePart})
+                    `;
+                    
+                    nextClassDisplay.innerHTML = nextClassHtml;
+                } else {
+                    nextClassDisplay.innerHTML = `<span class="material-icons">alarm</span>No upcoming classes found.`;
+                }
+            }
+
 
             // --- Core HTML Parsing Logic (Integrated Importer) ---
             function parseHtmlToWeekData(rawHtml) {
@@ -272,7 +398,7 @@
                     if (referenceDate) {
                         // Set week start date to Monday of that week
                         const dayOfWeek = referenceDate.getDay(); // 0 (Sun) to 6 (Sat)
-                        // Adjust to Monday: 1 for Monday, -5 for Sunday, etc.
+                        // Adjust to Monday: 1 for Monday, -6 for Sunday, etc.
                         const diff = referenceDate.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); 
                         const monday = new Date(referenceDate.setDate(diff));
                         currentWeekData.weekStartDate = `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, '0')}-${String(monday.getDate()).padStart(2, '0')}`;
@@ -364,10 +490,12 @@
 
                     // 2. Fetch existing timetable data
                     const response = await fetch('timetable_data.json');
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}. Could not fetch existing timetable_data.json.`);
+                    // Handle case where timetable_data.json doesn't exist yet
+                    let existingData = { weeks: [] };
+                    if (response.ok) {
+                        existingData = await response.json();
                     }
-                    const existingData = await response.json();
+
 
                     // 3. Parse the new HTML
                     const newWeekData = parseHtmlToWeekData(rawHtml);
@@ -445,6 +573,7 @@
                         });
                         currentWeekStart = allWeeks[allWeeks.length - 1] || allWeeks[0]; // Default to the latest week
                     } else {
+                        // Handle old single-week format for compatibility
                         allWeeks = [data.weekStartDate];
                         allWeekData = { [data.weekStartDate]: data.days };
                         currentWeekStart = data.weekStartDate;
@@ -576,6 +705,10 @@
                 await fetchAllWeeks();
                 populateWeekOptions();
                 await loadTimetable(currentWeekStart); 
+                
+                // Start the independent clock and next class timer
+                updateClockAndNextClass(); 
+                setInterval(updateClockAndNextClass, 1000);
             })();
         });
     </script>
