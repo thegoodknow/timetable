@@ -73,7 +73,7 @@
             outline: none;
             height: 36px; 
             box-sizing: border-box;
-            white-space: nowrap; /* Prevents button text wrapping */
+            white-space: nowrap;
         }
         
         .pill-button {
@@ -258,13 +258,12 @@
             <select class="select-control" id="week-select" style="display: none;">
                 <option>Loading Weeks...</option>
             </select>
-            
-            <select class="select-control" id="day-select" style="display: none;"></select>
         </div>
     </div>
     
     <div class="summary-container" id="summary-container">
-        <div class="summary-card"><p style="color: var(--text-subtle);">Loading...</p></div>
+        <div id="clock-card-wrapper" class="summary-card"><p style="color: var(--text-subtle);">Loading Clock...</p></div>
+        <div id="upcoming-card-wrapper" class="summary-card"><p style="color: var(--text-subtle);">Loading Upcoming Class...</p></div>
     </div>
     <hr style="border-color: var(--border-color); margin: 0;"/>
 
@@ -280,16 +279,18 @@
         document.addEventListener('DOMContentLoaded', () => {
             const timetableList = document.getElementById('timetable-list');
             const weekSelect = document.getElementById('week-select');
-            const daySelect = document.getElementById('day-select');
             const todayBtn = document.getElementById('today-view');
             const tomorrowBtn = document.getElementById('tomorrow-view');
             const weekBtn = document.getElementById('week-view');
+            const clockCardWrapper = document.getElementById('clock-card-wrapper');
+            const upcomingCardWrapper = document.getElementById('upcoming-card-wrapper');
 
-            let currentViewMode = 'Week'; // 'Today', 'Tomorrow', or 'Week'
-            let cachedTimetableData = []; // Days for the currently visible week
+            let currentViewMode = 'Week';
+            let cachedTimetableData = [];
             let allWeeks = [];
             let currentWeekStart = '';
-            let allWeekData = {}; // Full data structure: { '2025-12-01': [day1, day2...], ... }
+            let allWeekData = {};
+            let lastNextClassTime = null; // New variable to track the next class time
 
             // Helper function to parse time string "HH:MM - HH:MM" and returns start hour and minute
             function parseStartTime(timeStr) {
@@ -299,13 +300,12 @@
 
             // Helper to handle date strings like "Mon, 01-Dec-2025" and return a Date object
             const parseJsonDate = (dateStr) => {
-                // Takes "Mon, 01-Dec-2025" or "Mon 01 Dec 2025"
                 const datePart = dateStr.includes(',') ? dateStr.split(', ')[1] : dateStr;
                 const [dayNum, monthStr, yearStr] = datePart.split('-');
                 return new Date(`${monthStr} ${dayNum}, ${yearStr}`);
             };
 
-            // --- Find the Next Class Across All Weeks ---
+            // --- Find the Next Class Across All Weeks (Uses allWeekData and current time) ---
             function findNextClass(data) {
                 if (Object.keys(data).length === 0) return null;
                 const now = new Date();
@@ -316,15 +316,14 @@
                     if (!data.hasOwnProperty(weekStart)) continue;
 
                     for (const dayGroup of data[weekStart]) {
+                        // Ensure we use the date from the dayGroup for time calculations
                         const jsonDate = parseJsonDate(dayGroup.date);
                         
-                        // Only consider today or future days
                         if (jsonDate.setHours(0,0,0,0) >= now.setHours(0,0,0,0)) {
                             
                             for (const classItem of dayGroup.classes) {
                                 const { hour, minute } = parseStartTime(classItem.time);
                                 
-                                // Create a Date object representing the class start time
                                 const classStartTime = new Date(jsonDate);
                                 classStartTime.setHours(hour, minute, 0, 0);
 
@@ -343,35 +342,30 @@
             }
 
             // --- Update Clock and Next Class Display ---
+            // This function is called every second, independently of the view buttons.
             function updateClockAndUpcoming() {
                 const now = new Date();
                 const timeDisplay = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
                 const dateDisplay = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-                // --- CLOCK CARD ---
+                // 1. Always update Clock Card
                 const clockHtml = `
-                    <div class="summary-card" id="clock-card">
+                    <div class="summary-card">
                         <div class="clock">${timeDisplay}</div>
                         <div class="current-date">${dateDisplay}</div>
                         <p style="font-size: 0.8rem; color: var(--text-subtle);">All times are (GMT+8).</p>
                     </div>
                 `;
+                clockCardWrapper.innerHTML = clockHtml;
 
-                // --- UPCOMING CLASS CARD ---
                 const nextClass = findNextClass(allWeekData);
-                let upcomingHtml = '';
+                const currentNextClassTime = nextClass ? nextClass.fullDate.getTime() : null;
                 
-                if (nextClass) {
-                    const timeRemaining = nextClass.fullDate.getTime() - now.getTime();
-                    // Prevent showing negative time if clock interval missed a change
-                    if (timeRemaining < 0) {
-                        upcomingHtml = `<div class="summary-card" id="upcoming-card">
-                                            <div class="upcoming-title">
-                                                <span class="material-icons">alarm</span> Next Class (Just Ended)
-                                            </div>
-                                            <div class="no-class">Checking for the next class...</div>
-                                        </div>`;
-                    } else {
+                // --- Logic to prevent full re-render on every second if class hasn't changed ---
+                if (currentNextClassTime === lastNextClassTime) {
+                    // Only update the time remaining string (the countdown)
+                    if (nextClass) {
+                        const timeRemaining = nextClass.fullDate.getTime() - now.getTime();
                         const hours = Math.floor(timeRemaining / (1000 * 60 * 60));
                         const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
                         const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
@@ -379,31 +373,52 @@
                         const timeRemainingStr = hours > 0 
                             ? `${hours}h ${minutes}m ${seconds}s away` 
                             : `${minutes}m ${seconds}s away`;
-                            
-                        const nextClassDate = nextClass.fullDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-                        
-                        upcomingHtml = `
-                            <div class="summary-card" id="upcoming-card">
-                                <div class="upcoming-title">
-                                    <span class="material-icons">alarm</span>Next Class (${timeRemainingStr})
-                                </div>
-                                <div class="card-title">${nextClass.moduleCode} - ${nextClass.moduleName}</div>
-                                <div class="upcoming-detail">
-                                    <span class="material-icons">schedule</span>
-                                    ${nextClass.time} (${nextClassDate})
-                                </div>
-                                <div class="upcoming-detail">
-                                    <span class="material-icons">location_on</span>
-                                    <span class="pill">${nextClass.location} | ${nextClass.campus}</span>
-                                    ${nextClass.isOnline ? '<span class="online-tag">(Online)</span>' : ''}
-                                </div>
-                                <div class="upcoming-detail">
-                                    <span class="material-icons">person</span>
-                                    ${nextClass.lecturer}
-                                </div>
-                            </div>
-                        `;
+
+                        const titleElement = upcomingCardWrapper.querySelector('.upcoming-title');
+                        if (titleElement) {
+                            // Update only the countdown text
+                            titleElement.innerHTML = `<span class="material-icons">alarm</span>Next Class (${timeRemainingStr})`;
+                        }
                     }
+                    return; // Exit here if the class is the same
+                }
+
+                // 2. FULL RENDER if the next class has changed (new class started or passed)
+                let upcomingHtml = '';
+                
+                if (nextClass) {
+                    const timeRemaining = nextClass.fullDate.getTime() - now.getTime();
+                    const hours = Math.floor(timeRemaining / (1000 * 60 * 60));
+                    const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+                    
+                    const timeRemainingStr = hours > 0 
+                        ? `${hours}h ${minutes}m ${seconds}s away` 
+                        : `${minutes}m ${seconds}s away`;
+                        
+                    const nextClassDate = nextClass.fullDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                    
+                    upcomingHtml = `
+                        <div class="summary-card" id="upcoming-card">
+                            <div class="upcoming-title">
+                                <span class="material-icons">alarm</span>Next Class (${timeRemainingStr})
+                            </div>
+                            <div class="card-title">${nextClass.moduleCode} - ${nextClass.moduleName}</div>
+                            <div class="upcoming-detail">
+                                <span class="material-icons">schedule</span>
+                                ${nextClass.time} (${nextClassDate})
+                            </div>
+                            <div class="upcoming-detail">
+                                <span class="material-icons">location_on</span>
+                                <span class="pill">${nextClass.location} | ${nextClass.campus}</span>
+                                ${nextClass.isOnline ? '<span class="online-tag">(Online)</span>' : ''}
+                            </div>
+                            <div class="upcoming-detail">
+                                <span class="material-icons">person</span>
+                                ${nextClass.lecturer}
+                            </div>
+                        </div>
+                    `;
                 } else {
                     upcomingHtml = `
                         <div class="summary-card" id="upcoming-card">
@@ -415,12 +430,12 @@
                     `;
                 }
 
-                document.getElementById('summary-container').innerHTML = clockHtml + upcomingHtml;
+                upcomingCardWrapper.innerHTML = upcomingHtml;
+                lastNextClassTime = currentNextClassTime;
             }
 
-            // --- 4. Core Timetable Functions ---
+            // --- Core Timetable Functions ---
 
-            // Fetch timetable data from JSON file directly (Static GitHub Pages)
             async function fetchAllWeeks() {
                 try {
                     const response = await fetch('timetable_data.json'); 
@@ -432,6 +447,9 @@
                     const data = await response.json();
                     
                     if (Array.isArray(data.weeks)) {
+                        // Sort weeks by date to ensure correct display order
+                        data.weeks.sort((a, b) => new Date(a.weekStartDate) - new Date(b.weekStartDate));
+                        
                         allWeeks = data.weeks.map(w => w.weekStartDate);
                         allWeekData = {};
                         data.weeks.forEach(w => {
@@ -439,6 +457,7 @@
                         });
                         currentWeekStart = allWeeks[0];
                     } else {
+                        // Fallback for single week data
                         allWeeks = [data.weekStartDate];
                         allWeekData = { [data.weekStartDate]: data.days };
                         currentWeekStart = data.weekStartDate;
@@ -471,18 +490,18 @@
             // Gets the day object for a specific day offset (0 = Today, 1 = Tomorrow)
             function getDayData(offset) {
                 const now = new Date();
-                const targetDate = new Date(now.setDate(now.getDate() + offset));
+                const targetDate = new Date(now);
+                targetDate.setDate(now.getDate() + offset);
+                
                 const targetDateString = targetDate.toLocaleDateString('en-US', {
                     weekday: 'short',
                     day: '2-digit',
                     month: 'short',
                     year: 'numeric'
-                }).replace(/,/g, ''); // e.g., "Mon 04 Dec 2025"
+                }).replace(/,/g, ''); 
                 
-                // Find the matching day in allWeekData
                 for (const weekStart in allWeekData) {
                     const dayData = allWeekData[weekStart].find(day => {
-                        // Normalize the JSON date string for comparison
                         const jsonDate = parseJsonDate(day.date);
                         const jsonDateString = jsonDate.toLocaleDateString('en-US', {
                             weekday: 'short',
@@ -493,7 +512,6 @@
                         return jsonDateString === targetDateString;
                     });
                     if (dayData) {
-                         // Clean up the date format
                         dayData.date = targetDateString.replace(/,/g, ''); 
                         return dayData;
                     }
@@ -502,6 +520,7 @@
             }
 
             async function loadTimetable(mode, dateString = null) {
+                // This function ONLY updates the main timetable list. It does NOT touch the summary cards.
                 timetableList.innerHTML = `<div style='text-align: center; padding: 50px;'><p style='color: var(--text-subtle);'>Fetching timetable...</p></div>`;
                 let dataToRender = [];
                 let headerText = '';
@@ -513,41 +532,37 @@
                         return;
                     }
                     dataToRender = allWeekData[weekStart].map(day => ({
-                        date: day.date.replace(/,/, ''), // Clean up for display
+                        date: day.date.replace(/,/, ''), 
                         classes: day.classes
                     }));
                     headerText = Array.from(weekSelect.options).find(opt => opt.value === weekStart)?.textContent || weekStart;
                 } else {
-                    // 'Today' or 'Tomorrow'
                     const offset = mode === 'Today' ? 0 : 1;
                     const dayData = getDayData(offset);
                     dataToRender = [dayData];
-                    headerText = dayData.date;
+                    headerText = (mode === 'Today' ? 'Today: ' : 'Tomorrow: ') + dayData.date;
                 }
                 
-                cachedTimetableData = dataToRender; // Cache for Week view navigation
+                cachedTimetableData = dataToRender;
                 renderTimetable(mode, headerText);
             }
 
             function renderTimetable(mode, headerText) {
                 timetableList.innerHTML = '';
                 
-                const dayHeader = document.createElement('div');
-                dayHeader.classList.add('day-header');
-                dayHeader.textContent = headerText;
-                timetableList.appendChild(dayHeader);
+                const mainHeader = document.createElement('div');
+                mainHeader.classList.add('day-header');
+                mainHeader.textContent = headerText;
+                timetableList.appendChild(mainHeader);
 
                 cachedTimetableData.forEach(dayGroup => {
-                    // Only show day header if in Week mode or if the day has classes
-                    if (mode === 'Week' || dayGroup.classes.length > 0) {
+                    
+                    if (mode === 'Week') {
                         const daySeparator = document.createElement('div');
                         daySeparator.classList.add('day-header');
                         daySeparator.textContent = dayGroup.date;
-                        
-                        if (mode === 'Week') {
-                            daySeparator.style.backgroundColor = 'var(--bg-dark)';
-                            daySeparator.style.borderBottom = '1px solid var(--border-color)';
-                        }
+                        daySeparator.style.backgroundColor = 'var(--bg-dark)';
+                        daySeparator.style.borderBottom = '1px solid var(--border-color)';
                         timetableList.appendChild(daySeparator);
                     }
 
@@ -611,14 +626,11 @@
             // --- Event Handlers ---
             
             function setView(mode) {
-                // Deactivate all buttons
                 todayBtn.classList.remove('active');
                 tomorrowBtn.classList.remove('active');
                 weekBtn.classList.remove('active');
 
-                // Hide all dropdowns
                 weekSelect.style.display = 'none';
-                
                 currentViewMode = mode;
 
                 if (mode === 'Today') {
@@ -648,11 +660,11 @@
                 await fetchAllWeeks();
                 populateWeekOptions();
                 
-                // Start clock and upcoming class tracker, updating every second
-                updateClockAndUpcoming();
+                // The clock and upcoming class logic is independent of the view mode
+                updateClockAndUpcoming(); 
                 setInterval(updateClockAndUpcoming, 1000);
 
-                // Set initial view to 'Week'
+                // Set the initial view (which only renders the main list)
                 setView('Week'); 
             })();
         });
