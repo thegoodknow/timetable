@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>APSpace Timetable</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         /* --- Theme Variables --- */
         :root {
@@ -167,7 +168,23 @@
             font-weight: bold;
             font-size: 1rem;
             margin-bottom: 4px;
+            display: flex; 
+            align-items: center;
         }
+        
+        .card-title .material-icons {
+            margin-right: 6px;
+            font-size: 1.2rem;
+        }
+
+        /* Specific Icon Colors for Modality */
+        .card-title .online-icon {
+            color: #FFC107; 
+        }
+        .card-title .inperson-icon {
+            color: var(--color-primary); 
+        }
+
 
         .card-subtitle {
             font-size: 0.85rem;
@@ -180,6 +197,8 @@
             justify-content: space-between;
             font-size: 0.85rem;
             color: var(--text-subtle);
+            flex-wrap: wrap; 
+            gap: 8px 0;
         }
 
         .card-detail-item {
@@ -217,7 +236,7 @@
     <div class="header">
         <div class="logo-group">
             <div class="logo">
-                <img src="apspace-white.svg" alt="APSpace Logo">
+                <img src="image_ff7b9f.png" alt="APSpace Logo">
             </div>
             <label for="html-upload" class="file-upload-container">
                 <span class="material-icons" style="font-size: 18px;">cloud_upload</span> 
@@ -331,7 +350,6 @@
                 if (nextClass) {
                     const timeRemaining = nextClass.fullDate.getTime() - now.getTime();
                     
-                    // If class started recently, force re-check next tick
                     if (timeRemaining < -1000) { 
                         nextClassDisplay.innerHTML = `<span class="material-icons">alarm</span>No immediate class.`;
                         return;
@@ -676,17 +694,15 @@
                     dayGroup.classes.forEach(classItem => {
                         const classCard = document.createElement('div');
                         classCard.classList.add('class-card');
+                        
+                        // Determine the icon and color based on modality
+                        const modalityIcon = classItem.isOnline 
+                            ? `<span class='material-icons online-icon'>videocam</span>`
+                            : `<span class='material-icons inperson-icon'>apartment</span>`; // Using 'apartment' for campus/physical location
 
                         const title = document.createElement('div');
                         title.classList.add('card-title');
-                        title.textContent = classItem.moduleCode;
-                        
-                        if (classItem.isOnline) {
-                            const onlineSpan = document.createElement('span');
-                            onlineSpan.classList.add('online-tag');
-                            onlineSpan.textContent = ' (Online)';
-                            title.appendChild(onlineSpan);
-                        }
+                        title.innerHTML = `${modalityIcon} ${classItem.moduleCode}`;
                         
                         const subtitle = document.createElement('div');
                         subtitle.classList.add('card-subtitle');
@@ -700,9 +716,14 @@
                         timeDetail.innerHTML = `<span class='material-icons'>schedule</span>${classItem.time} (GMT+8)`;
                         detailsContainer.appendChild(timeDetail);
 
-                        const locationPillText = `${classItem.location} | ${classItem.campus}`;
+                        const locationPillText = classItem.isOnline 
+                            ? 'Online Session' 
+                            : `${classItem.location} | ${classItem.campus}`;
+                            
                         const locationDetail = document.createElement('div');
                         locationDetail.classList.add('card-detail-item');
+                        
+                        // Use location_on icon for the pill, regardless of modality
                         locationDetail.innerHTML = `<span class='material-icons'>location_on</span><span class='pill'>${locationPillText}</span>`;
                         detailsContainer.appendChild(locationDetail);
                         
@@ -742,4 +763,3 @@
 
 </body>
 </html>
-
