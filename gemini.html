@@ -51,7 +51,6 @@
         .controls-group {
             display: flex;
             gap: 12px;
-            /* CRITICAL: Ensure perfect vertical alignment */
             align-items: center; 
         }
 
@@ -66,7 +65,6 @@
             cursor: pointer;
             appearance: none;
             outline: none;
-            /* CRITICAL: Enforce uniform height for better row alignment */
             height: 36px; 
             box-sizing: border-box;
         }
@@ -85,6 +83,66 @@
             background-color: var(--color-primary); 
             border-color: var(--color-primary);
             color: var(--text-light);
+        }
+
+        /* --- Summary Cards (New Section) --- */
+        .summary-container {
+            padding: 16px;
+            display: grid;
+            gap: 16px;
+            grid-template-columns: 1fr; /* Default to single column */
+        }
+        @media (min-width: 768px) {
+            .summary-container {
+                grid-template-columns: 1fr 2fr; /* Two columns on desktop */
+            }
+        }
+        .summary-card {
+            background-color: var(--bg-card);
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .clock {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--color-primary);
+            margin-bottom: 4px;
+        }
+        .current-date {
+            font-size: 1rem;
+            color: var(--text-subtle);
+            margin-bottom: 10px;
+        }
+        .upcoming-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-light);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+        .upcoming-title .material-icons {
+            margin-right: 5px;
+            font-size: 1.2rem;
+            color: var(--text-light);
+        }
+        .upcoming-detail {
+            font-size: 0.95rem;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .upcoming-detail .material-icons {
+            font-size: 18px;
+            color: var(--color-primary);
+        }
+        .no-class {
+            color: var(--text-subtle);
+            font-style: italic;
         }
 
         /* --- Custom Timetable Card Styles --- */
@@ -168,7 +226,7 @@
 
     <div class="header">
         <div class="logo">
-            <img src="apspace-white.svg" alt="APSpace Logo">
+            <img src="image_ff7b9f.png" alt="APSpace Logo">
         </div>
         
         <div class="controls-group">
@@ -179,6 +237,11 @@
             <div class="pill-button active" id="weekly-view">Weekly</div>
         </div>
     </div>
+    
+    <div class="summary-container" id="summary-container">
+        <div class="summary-card"><p style="color: var(--text-subtle);">Loading...</p></div>
+    </div>
+    <hr style="border-color: var(--border-color); margin: 0;"/>
 
     <div class="timetable-content" id="timetable-list">
         <div style="text-align: center; padding: 50px;">
@@ -201,10 +264,129 @@
             let currentWeekStart = '';
             let allWeekData = {};
 
-            // --- Fetch timetable data from JSON file directly (Static GitHub Pages) ---
+            // Helper function to parse time string "HH:MM - HH:MM" and returns start hour and minute
+            function parseStartTime(timeStr) {
+                const parts = timeStr.split(' - ')[0].split(':');
+                return { hour: parseInt(parts[0], 10), minute: parseInt(parts[1], 10) };
+            }
+
+            // --- Find the Next Class Across All Weeks ---
+            function findNextClass(data) {
+                if (Object.keys(data).length === 0) return null;
+                const now = new Date();
+                let nextClass = null;
+                let closestTime = Infinity;
+            
+                // Helper to reconstruct date from JSON format (e.g., "Mon, 01-Dec-2025")
+                const parseJsonDate = (dateStr) => {
+                    const datePart = dateStr.split(', ')[1] || dateStr;
+                    const [dayNum, monthStr, yearStr] = datePart.split('-');
+                    // Note: Month names must be capitalized for robust Date constructor parsing
+                    return new Date(`${monthStr} ${dayNum}, ${yearStr}`);
+                };
+
+                // Iterate through all week data
+                for (const weekStart in data) {
+                    if (!data.hasOwnProperty(weekStart)) continue;
+
+                    for (const dayGroup of data[weekStart]) {
+                        const jsonDate = parseJsonDate(dayGroup.date);
+                        
+                        // Only consider today or future days
+                        if (jsonDate.setHours(0,0,0,0) >= now.setHours(0,0,0,0)) {
+                            
+                            for (const classItem of dayGroup.classes) {
+                                const { hour, minute } = parseStartTime(classItem.time);
+                                
+                                // Create a Date object representing the class start time
+                                const classStartTime = new Date(jsonDate);
+                                classStartTime.setHours(hour, minute, 0, 0);
+
+                                if (classStartTime.getTime() > now.getTime()) {
+                                    const diff = classStartTime.getTime() - now.getTime();
+                                    if (diff < closestTime) {
+                                        closestTime = diff;
+                                        nextClass = { ...classItem, fullDate: classStartTime };
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                return nextClass;
+            }
+
+            // --- Update Clock and Next Class Display ---
+            function updateClockAndUpcoming() {
+                const now = new Date();
+                const timeDisplay = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                const dateDisplay = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+                // --- CLOCK CARD ---
+                const clockHtml = `
+                    <div class="summary-card" id="clock-card">
+                        <div class="clock">${timeDisplay}</div>
+                        <div class="current-date">${dateDisplay}</div>
+                        <p style="font-size: 0.8rem; color: var(--text-subtle);">All times are (GMT+8).</p>
+                    </div>
+                `;
+
+                // --- UPCOMING CLASS CARD ---
+                const nextClass = findNextClass(allWeekData);
+                let upcomingHtml = '';
+                
+                if (nextClass) {
+                    const timeRemaining = nextClass.fullDate.getTime() - now.getTime();
+                    const hours = Math.floor(timeRemaining / (1000 * 60 * 60));
+                    const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+                    
+                    const timeRemainingStr = hours > 0 
+                        ? `${hours}h ${minutes}m ${seconds}s away` 
+                        : `${minutes}m ${seconds}s away`;
+                        
+                    const nextClassDate = nextClass.fullDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                    
+                    upcomingHtml = `
+                        <div class="summary-card" id="upcoming-card">
+                            <div class="upcoming-title">
+                                <span class="material-icons">alarm</span>Next Class (${timeRemainingStr})
+                            </div>
+                            <div class="card-title">${nextClass.moduleCode} - ${nextClass.moduleName}</div>
+                            <div class="upcoming-detail">
+                                <span class="material-icons">schedule</span>
+                                ${nextClass.time} (${nextClassDate})
+                            </div>
+                            <div class="upcoming-detail">
+                                <span class="material-icons">location_on</span>
+                                <span class="pill">${nextClass.location} | ${nextClass.campus}</span>
+                                ${nextClass.isOnline ? '<span class="online-tag">(Online)</span>' : ''}
+                            </div>
+                            <div class="upcoming-detail">
+                                <span class="material-icons">person</span>
+                                ${nextClass.lecturer}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    upcomingHtml = `
+                        <div class="summary-card" id="upcoming-card">
+                            <div class="upcoming-title">
+                                <span class="material-icons">alarm</span>Next Class
+                            </div>
+                            <div class="no-class">No classes scheduled in the loaded weeks.</div>
+                        </div>
+                    `;
+                }
+
+                document.getElementById('summary-container').innerHTML = clockHtml + upcomingHtml;
+            }
+
+            // --- 4. Core Timetable Functions ---
+
+            // Fetch timetable data from JSON file directly (Static GitHub Pages)
             async function fetchAllWeeks() {
                 try {
-                    // *** MODIFIED: Fetching the JSON file directly from the relative path ***
                     const response = await fetch('timetable_data.json'); 
                     
                     if (!response.ok) {
@@ -213,7 +395,7 @@
                     
                     const data = await response.json();
                     
-                    // Support for multiple weeks: expects array of weeks or single week
+                    // Populate week data structure
                     if (Array.isArray(data.weeks)) {
                         allWeeks = data.weeks.map(w => w.weekStartDate);
                         allWeekData = {};
@@ -222,7 +404,7 @@
                         });
                         currentWeekStart = allWeeks[0];
                     } else {
-                        // Fallback for single week
+                        // Fallback for single week data if 'weeks' array is missing
                         allWeeks = [data.weekStartDate];
                         allWeekData = { [data.weekStartDate]: data.days };
                         currentWeekStart = data.weekStartDate;
@@ -238,9 +420,9 @@
                     const option = document.createElement('option');
                     option.value = week;
                     
-                    // Formatting the week start date for display (e.g., Week starting 2025-12-01)
                     const dateParts = week.split('-');
-                    const date = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+                    // Month is 0-indexed in JS Date
+                    const date = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]); 
                     const displayDate = date.toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'short',
@@ -272,12 +454,9 @@
                 const selectedValue = weekOrDaySelect.value;
                 let dataToRender = cachedTimetableData;
                 
-                // Get the currently selected week's display name for headers
                 const currentWeekDisplay = Array.from(weekOrDaySelect.options).find(opt => opt.value === currentWeekStart)?.textContent || currentWeekStart;
 
-
                 if (currentViewMode === 'Daily') {
-                    // Filter to only show the selected day
                     dataToRender = cachedTimetableData.filter(dayGroup => dayGroup.date === selectedValue);
                 }
                 
@@ -360,7 +539,6 @@
                 dailyBtn.classList.add('active');
                 weeklyBtn.classList.remove('active');
                 
-                // Switch select options to days of the current week
                 weekOrDaySelect.innerHTML = '';
                 cachedTimetableData.forEach(dayGroup => {
                     const option = document.createElement('option');
@@ -378,7 +556,6 @@
                 weeklyBtn.classList.add('active');
                 dailyBtn.classList.remove('active');
                 
-                // Switch select options back to weeks
                 populateWeekOptions(); 
                 renderTimetable();
             });
@@ -388,16 +565,19 @@
                      currentWeekStart = e.target.value;
                      await loadTimetable(currentWeekStart);
                 } else {
-                     // In Daily mode, just re-render the view for the selected day
                      renderTimetable();
                 }
             });
 
-            // Initial load
+            // --- Initial Execution ---
             (async () => {
                 await fetchAllWeeks();
                 populateWeekOptions();
                 await loadTimetable(currentWeekStart);
+                
+                // Start clock and upcoming class tracker, updating every second
+                updateClockAndUpcoming();
+                setInterval(updateClockAndUpcoming, 1000);
             })();
         });
     </script>
