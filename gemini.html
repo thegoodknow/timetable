@@ -201,11 +201,18 @@
             let currentWeekStart = '';
             let allWeekData = {};
 
-            // --- Fetch timetable data from JSON file via API ---
+            // --- Fetch timetable data from JSON file directly (Static GitHub Pages) ---
             async function fetchAllWeeks() {
                 try {
-                    const response = await fetch('http://localhost:5000/api/timetable');
+                    // *** MODIFIED: Fetching the JSON file directly from the relative path ***
+                    const response = await fetch('timetable_data.json'); 
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
                     const data = await response.json();
+                    
                     // Support for multiple weeks: expects array of weeks or single week
                     if (Array.isArray(data.weeks)) {
                         allWeeks = data.weeks.map(w => w.weekStartDate);
@@ -230,7 +237,17 @@
                 allWeeks.forEach(week => {
                     const option = document.createElement('option');
                     option.value = week;
-                    option.textContent = `Week starting ${week}`;
+                    
+                    // Formatting the week start date for display (e.g., Week starting 2025-12-01)
+                    const dateParts = week.split('-');
+                    const date = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+                    const displayDate = date.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    });
+                    
+                    option.textContent = `Week starting ${displayDate}`;
                     weekOrDaySelect.appendChild(option);
                 });
                 weekOrDaySelect.value = currentWeekStart;
@@ -243,7 +260,8 @@
                     return;
                 }
                 cachedTimetableData = allWeekData[weekStart].map(day => ({
-                    date: day.date.replace(/,/, ''),
+                    // Clean up the date format from "Mon, 01-Dec-2025" to "Mon 01 Dec 2025" or similar clean string
+                    date: day.date.replace(/,/, ''), 
                     classes: day.classes
                 }));
                 renderTimetable();
@@ -253,69 +271,126 @@
                 timetableList.innerHTML = '';
                 const selectedValue = weekOrDaySelect.value;
                 let dataToRender = cachedTimetableData;
+                
+                // Get the currently selected week's display name for headers
+                const currentWeekDisplay = Array.from(weekOrDaySelect.options).find(opt => opt.value === currentWeekStart)?.textContent || currentWeekStart;
+
+
                 if (currentViewMode === 'Daily') {
+                    // Filter to only show the selected day
                     dataToRender = cachedTimetableData.filter(dayGroup => dayGroup.date === selectedValue);
                 }
+                
                 if (dataToRender.length === 0 || (currentViewMode === 'Daily' && dataToRender[0] && dataToRender[0].classes.length === 0)) {
                     timetableList.innerHTML = `<div style='text-align: center; padding: 50px;'><p style='color: var(--text-subtle);'>No classes found.</p></div>`;
                     return;
                 }
+                
                 if (currentViewMode === 'Weekly') {
                     const weekHeader = document.createElement('div');
                     weekHeader.classList.add('day-header');
-                    weekHeader.textContent = `Week starting ${weekOrDaySelect.value}`;
+                    weekHeader.textContent = currentWeekDisplay;
                     timetableList.appendChild(weekHeader);
                 }
+                
                 dataToRender.forEach(dayGroup => {
                     const daySeparator = document.createElement('div');
                     daySeparator.classList.add('day-header');
                     daySeparator.textContent = dayGroup.date;
+                    
                     if (currentViewMode === 'Weekly') {
                         daySeparator.style.backgroundColor = 'var(--bg-dark)';
                         daySeparator.style.borderBottom = '1px solid var(--border-color)';
                     }
                     timetableList.appendChild(daySeparator);
+                    
                     dayGroup.classes.forEach(classItem => {
                         const classCard = document.createElement('div');
                         classCard.classList.add('class-card');
+
                         const title = document.createElement('div');
                         title.classList.add('card-title');
                         title.textContent = classItem.moduleCode;
+                        
                         if (classItem.isOnline) {
                             const onlineSpan = document.createElement('span');
                             onlineSpan.classList.add('online-tag');
                             onlineSpan.textContent = ' (Online)';
                             title.appendChild(onlineSpan);
                         }
+                        
                         const subtitle = document.createElement('div');
                         subtitle.classList.add('card-subtitle');
                         subtitle.textContent = classItem.moduleName || 'Module Description';
+                        
                         const detailsContainer = document.createElement('div');
                         detailsContainer.classList.add('card-details');
+
                         const timeDetail = document.createElement('div');
                         timeDetail.classList.add('card-detail-item');
                         timeDetail.innerHTML = `<span class='material-icons'>schedule</span>${classItem.time} (GMT+8)`;
                         detailsContainer.appendChild(timeDetail);
+
                         const locationPillText = `${classItem.location} | ${classItem.campus}`;
                         const locationDetail = document.createElement('div');
                         locationDetail.classList.add('card-detail-item');
                         locationDetail.innerHTML = `<span class='material-icons'>location_on</span><span class='pill'>${locationPillText}</span>`;
                         detailsContainer.appendChild(locationDetail);
+                        
                         const lecturerDetail = document.createElement('div');
                         lecturerDetail.classList.add('card-detail-item');
                         lecturerDetail.innerHTML = `<span class='material-icons'>person</span>${classItem.lecturer}`;
                         detailsContainer.appendChild(lecturerDetail);
+
+
                         classCard.appendChild(title);
                         classCard.appendChild(subtitle);
                         classCard.appendChild(detailsContainer);
+
                         timetableList.appendChild(classCard);
                     });
                 });
             }
 
+            // --- Event Handlers ---
+            
+            dailyBtn.addEventListener('click', () => {
+                if (currentViewMode === 'Daily') return;
+                currentViewMode = 'Daily';
+                dailyBtn.classList.add('active');
+                weeklyBtn.classList.remove('active');
+                
+                // Switch select options to days of the current week
+                weekOrDaySelect.innerHTML = '';
+                cachedTimetableData.forEach(dayGroup => {
+                    const option = document.createElement('option');
+                    option.value = dayGroup.date; 
+                    option.textContent = dayGroup.date;
+                    weekOrDaySelect.appendChild(option);
+                });
+                weekOrDaySelect.value = cachedTimetableData[0].date;
+                renderTimetable();
+            });
+
+            weeklyBtn.addEventListener('click', () => {
+                if (currentViewMode === 'Weekly') return;
+                currentViewMode = 'Weekly';
+                weeklyBtn.classList.add('active');
+                dailyBtn.classList.remove('active');
+                
+                // Switch select options back to weeks
+                populateWeekOptions(); 
+                renderTimetable();
+            });
+            
             weekOrDaySelect.addEventListener('change', async (e) => {
-                currentWeekStart = e.target.value;
-                await loadTimetable(currentWeekStart);
+                if (currentViewMode === 'Weekly') {
+                     currentWeekStart = e.target.value;
+                     await loadTimetable(currentWeekStart);
+                } else {
+                     // In Daily mode, just re-render the view for the selected day
+                     renderTimetable();
+                }
             });
 
             // Initial load
