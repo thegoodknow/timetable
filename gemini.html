@@ -35,14 +35,14 @@
             flex-wrap: wrap; 
             justify-content: space-between;
             align-items: center; 
-            padding: 10px 16px; /* Slightly adjusted padding */
+            padding: 10px 16px; 
             min-height: var(--header-height);
             background-color: var(--bg-card);
             border-bottom: 1px solid var(--border-color);
             position: sticky;
             top: 0;
             z-index: 50;
-            gap: 10px 20px; /* Gap between main sections */
+            gap: 10px 20px; 
         }
 
         .logo-group {
@@ -60,18 +60,18 @@
             display: flex;
             gap: 12px;
             align-items: center; 
-            order: 3; /* Push to the end on wrap */
+            order: 3; 
         }
 
-        /* --- NEW: Header Summary Bar --- */
+        /* --- Header Summary Bar --- */
         .header-summary-bar {
             display: flex;
             align-items: center;
-            flex-grow: 1; /* Allows it to take up available space */
+            flex-grow: 1; 
             gap: 20px;
             padding: 5px 0;
             min-width: 300px;
-            order: 2; /* Position in the middle */
+            order: 2; 
         }
         .summary-item {
             display: flex;
@@ -100,7 +100,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            background-color: #28a745; /* Success Green */
+            background-color: #28a745; 
             color: var(--text-light);
             border-radius: 6px;
             padding: 6px 10px;
@@ -333,7 +333,6 @@
                     
                     // If class started recently, force re-check next tick
                     if (timeRemaining < -1000) { 
-                        // This prevents showing a class that passed a while ago
                         nextClassDisplay.innerHTML = `<span class="material-icons">alarm</span>No immediate class.`;
                         return;
                     }
@@ -490,7 +489,6 @@
 
                     // 2. Fetch existing timetable data
                     const response = await fetch('timetable_data.json');
-                    // Handle case where timetable_data.json doesn't exist yet
                     let existingData = { weeks: [] };
                     if (response.ok) {
                         existingData = await response.json();
@@ -526,7 +524,6 @@
                     a.href = url;
                     a.download = 'timetable_data.json';
                     
-                    // Simulate click to download the file
                     a.click();
                     URL.revokeObjectURL(url);
 
@@ -545,7 +542,6 @@
                     uploadStatus.textContent = `❌ ERROR: ${e.message}`;
                     console.error('Update Error:', e);
                 } finally {
-                    // Clear the file input to allow uploading the same file again if needed
                     event.target.value = '';
                 }
             });
@@ -563,7 +559,7 @@
                     
                     const data = await response.json();
                     
-                    if (Array.isArray(data.weeks)) {
+                    if (Array.isArray(data.weeks) && data.weeks.length > 0) {
                         data.weeks.sort((a, b) => new Date(a.weekStartDate) - new Date(b.weekStartDate));
                         
                         allWeeks = data.weeks.map(w => w.weekStartDate);
@@ -571,12 +567,41 @@
                         data.weeks.forEach(w => {
                             allWeekData[w.weekStartDate] = w.days;
                         });
-                        currentWeekStart = allWeeks[allWeeks.length - 1] || allWeeks[0]; // Default to the latest week
-                    } else {
+                        
+                        // --- FIX: Logic to find the current week ---
+                        const now = new Date();
+                        now.setHours(0, 0, 0, 0); 
+        
+                        let foundCurrentWeekStart = allWeeks[allWeeks.length - 1] || allWeeks[0]; 
+
+                        for (let i = 0; i < allWeeks.length; i++) {
+                            const weekStartStr = allWeeks[i]; 
+                            const [year, month, day] = weekStartStr.split('-').map(Number);
+                            
+                            // Create date object for Monday (start of the week)
+                            const weekStartDate = new Date(year, month - 1, day);
+                            weekStartDate.setHours(0, 0, 0, 0); 
+                            
+                            // Create date object for the next Monday (end of the current week range)
+                            const weekEndDate = new Date(weekStartDate);
+                            weekEndDate.setDate(weekStartDate.getDate() + 7); 
+
+                            // Check if today falls within this week (inclusive of start, exclusive of end)
+                            if (now.getTime() >= weekStartDate.getTime() && now.getTime() < weekEndDate.getTime()) {
+                                foundCurrentWeekStart = weekStartStr;
+                                break; 
+                            }
+                        }
+                        
+                        currentWeekStart = foundCurrentWeekStart;
+
+                    } else if (data.weekStartDate) {
                         // Handle old single-week format for compatibility
                         allWeeks = [data.weekStartDate];
                         allWeekData = { [data.weekStartDate]: data.days };
                         currentWeekStart = data.weekStartDate;
+                    } else {
+                         throw new Error("Timetable data is empty or invalid.");
                     }
                 } catch (error) {
                     timetableList.innerHTML = `<div style='color: red; padding: 20px;'>Error loading timetable data. Make sure 'timetable_data.json' is correctly formatted.<br>Detail: ${error.message}</div>`;
@@ -590,6 +615,8 @@
                     option.value = week;
                     
                     const dateParts = week.split('-');
+                    // Date parts is YYYY, MM, DD (from split of YYYY-MM-DD)
+                    // Note: Month in Date constructor is 0-indexed, but the split gives 1-indexed month.
                     const date = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]); 
                     const displayDate = date.toLocaleDateString('en-US', {
                         year: 'numeric',
@@ -715,4 +742,3 @@
 
 </body>
 </html>
-
