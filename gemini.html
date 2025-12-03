@@ -290,7 +290,7 @@
             let allWeeks = [];
             let currentWeekStart = '';
             let allWeekData = {};
-            let lastNextClassTime = null; // New variable to track the next class time
+            let lastNextClassTime = null; // Tracks the start time of the current "next class" to prevent unnecessary re-renders
 
             // Helper function to parse time string "HH:MM - HH:MM" and returns start hour and minute
             function parseStartTime(timeStr) {
@@ -319,6 +319,7 @@
                         // Ensure we use the date from the dayGroup for time calculations
                         const jsonDate = parseJsonDate(dayGroup.date);
                         
+                        // Only consider today or future days
                         if (jsonDate.setHours(0,0,0,0) >= now.setHours(0,0,0,0)) {
                             
                             for (const classItem of dayGroup.classes) {
@@ -327,6 +328,7 @@
                                 const classStartTime = new Date(jsonDate);
                                 classStartTime.setHours(hour, minute, 0, 0);
 
+                                // Check if the class is in the future
                                 if (classStartTime.getTime() > now.getTime()) {
                                     const diff = classStartTime.getTime() - now.getTime();
                                     if (diff < closestTime) {
@@ -342,7 +344,7 @@
             }
 
             // --- Update Clock and Next Class Display ---
-            // This function is called every second, independently of the view buttons.
+            // This function runs every second and is completely independent of the view buttons.
             function updateClockAndUpcoming() {
                 const now = new Date();
                 const timeDisplay = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -361,11 +363,17 @@
                 const nextClass = findNextClass(allWeekData);
                 const currentNextClassTime = nextClass ? nextClass.fullDate.getTime() : null;
                 
-                // --- Logic to prevent full re-render on every second if class hasn't changed ---
-                if (currentNextClassTime === lastNextClassTime) {
-                    // Only update the time remaining string (the countdown)
+                // --- Optimization: Only update countdown if the next class hasn't changed ---
+                if (currentNextClassTime === lastNextClassTime && upcomingCardWrapper.querySelector('.upcoming-title')) {
                     if (nextClass) {
                         const timeRemaining = nextClass.fullDate.getTime() - now.getTime();
+                        
+                        // Handle case where time just passed
+                        if (timeRemaining < 0) {
+                            lastNextClassTime = null; // Force a full re-render on the next tick
+                            return;
+                        }
+                        
                         const hours = Math.floor(timeRemaining / (1000 * 60 * 60));
                         const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
                         const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
@@ -380,10 +388,10 @@
                             titleElement.innerHTML = `<span class="material-icons">alarm</span>Next Class (${timeRemainingStr})`;
                         }
                     }
-                    return; // Exit here if the class is the same
+                    return; // Exit here if the class is the same and we only updated the timer
                 }
 
-                // 2. FULL RENDER if the next class has changed (new class started or passed)
+                // 2. FULL RENDER if the next class has changed or if it's the initial load
                 let upcomingHtml = '';
                 
                 if (nextClass) {
@@ -434,7 +442,7 @@
                 lastNextClassTime = currentNextClassTime;
             }
 
-            // --- Core Timetable Functions ---
+            // --- Core Timetable Functions (ONLY affects the main list) ---
 
             async function fetchAllWeeks() {
                 try {
@@ -447,7 +455,6 @@
                     const data = await response.json();
                     
                     if (Array.isArray(data.weeks)) {
-                        // Sort weeks by date to ensure correct display order
                         data.weeks.sort((a, b) => new Date(a.weekStartDate) - new Date(b.weekStartDate));
                         
                         allWeeks = data.weeks.map(w => w.weekStartDate);
@@ -520,7 +527,7 @@
             }
 
             async function loadTimetable(mode, dateString = null) {
-                // This function ONLY updates the main timetable list. It does NOT touch the summary cards.
+                // This function is ONLY responsible for rendering the main list below the summary cards.
                 timetableList.innerHTML = `<div style='text-align: center; padding: 50px;'><p style='color: var(--text-subtle);'>Fetching timetable...</p></div>`;
                 let dataToRender = [];
                 let headerText = '';
@@ -626,6 +633,7 @@
             // --- Event Handlers ---
             
             function setView(mode) {
+                // Update active state of buttons
                 todayBtn.classList.remove('active');
                 tomorrowBtn.classList.remove('active');
                 weekBtn.classList.remove('active');
@@ -644,6 +652,7 @@
                     weekSelect.style.display = 'inline-flex';
                     loadTimetable('Week', currentWeekStart);
                 }
+                // *** IMPORTANT: NO call to updateClockAndUpcoming() here! ***
             }
 
             todayBtn.addEventListener('click', () => setView('Today'));
@@ -660,11 +669,11 @@
                 await fetchAllWeeks();
                 populateWeekOptions();
                 
-                // The clock and upcoming class logic is independent of the view mode
+                // 1. Initialize the clock and upcoming class, and start the independent 1-second timer.
                 updateClockAndUpcoming(); 
                 setInterval(updateClockAndUpcoming, 1000);
 
-                // Set the initial view (which only renders the main list)
+                // 2. Set the initial view (which only renders the main list).
                 setView('Week'); 
             })();
         });
