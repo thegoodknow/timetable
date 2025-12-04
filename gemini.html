@@ -7,6 +7,7 @@
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
+/* ... (CSS Styles are unchanged) ... */
         /* --- Theme Variables --- */
         :root {
             --bg-dark: #121212;
@@ -419,6 +420,7 @@
             const addClassForm = document.getElementById('addClassForm');
             const moduleNameInput = document.getElementById('moduleNameInput');
             const moduleCodeInput = document.getElementById('moduleCode');
+            const lecturerInput = document.getElementById('lecturer'); // Get the lecturer input
             const moduleNamesDatalist = document.getElementById('moduleNames');
             const submissionMessage = document.getElementById('submissionMessage');
 
@@ -436,13 +438,28 @@
                 '__TOMORROW__': 'Tomorrow'
             };
 
-            // --- Module Name to Code Mapping for Auto-Fill ---
+            // --- Module Name to Code/Lecturer Mapping for Auto-Fill ---
             const MODULE_MAP = {
-                "Academic Research Skills": "ABUS007-4-1-ARS-L",
-                "Mathematics and Statistics for Computing": "AAQS038-4-1-MSC-L",
-                "Introduction to Programming": "PROG101-L",
-                "Web Development Project": "WEBDEV-P",
-                "Advanced Data Science": "ADATA505-S",
+                "Academic Research Skills": {
+                    moduleCode: "ABUS007-4-1-ARS-L",
+                    lecturer: "DR. JANE DOE"
+                },
+                "Mathematics and Statistics for Computing": {
+                    moduleCode: "AAQS038-4-1-MSC-L",
+                    lecturer: "PROF. ALBERT"
+                },
+                "Introduction to Programming": {
+                    moduleCode: "PROG101-L",
+                    lecturer: "MR. CHONG"
+                },
+                "Web Development Project": {
+                    moduleCode: "WEBDEV-P",
+                    lecturer: "MS. ANNA LIM"
+                },
+                "Advanced Data Science": {
+                    moduleCode: "ADATA505-S",
+                    lecturer: "DR. VISHNU"
+                }
                 // Add your module mappings here
             };
 
@@ -493,8 +510,15 @@
 
             // --- Auto-Fill Logic ---
             window.handleModuleChange = function(moduleName) {
-                const code = MODULE_MAP[moduleName.trim()];
-                moduleCodeInput.value = code || '';
+                const moduleInfo = MODULE_MAP[moduleName.trim()];
+                
+                if (moduleInfo) {
+                    moduleCodeInput.value = moduleInfo.moduleCode || '';
+                    lecturerInput.value = moduleInfo.lecturer || ''; // **NEW: Auto-fill Lecturer**
+                } else {
+                    moduleCodeInput.value = '';
+                    lecturerInput.value = '';
+                }
             }
 
             // --- Submission Logic ---
@@ -505,6 +529,7 @@
                 const moduleCode = moduleCodeInput.value.trim();
                 const classDate = document.getElementById('classDate').value; // YYYY-MM-DD format
                 const locationValue = document.getElementById('location').value.trim();
+                const lecturerValue = lecturerInput.value.trim(); // Get lecturer value from input
 
                 // Determine if online
                 const isOnline = locationValue.toUpperCase().includes('ONL') || locationValue.toUpperCase().includes('ONLINE');
@@ -515,7 +540,7 @@
                     moduleName: moduleName,
                     moduleCode: moduleCode,
                     location: locationValue,
-                    lecturer: document.getElementById('lecturer').value.trim(),
+                    lecturer: lecturerValue, // Use the lecturer input value
                     campus: 'APU CAMPUS', // Default or hardcoded
                     isOnline: isOnline
                 };
@@ -580,7 +605,11 @@
                     for (const dayGroup of data[weekStart]) {
                         const jsonDate = parseJsonDate(dayGroup.date);
                         
-                        if (jsonDate.setHours(0,0,0,0) >= now.setHours(0,0,0,0)) {
+                        // Compare only date part
+                        const jsonDateDay = new Date(jsonDate.getFullYear(), jsonDate.getMonth(), jsonDate.getDate());
+                        const nowDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+                        if (jsonDateDay.getTime() >= nowDay.getTime()) {
                             
                             for (const classItem of dayGroup.classes) {
                                 const { hour, minute } = parseStartTime(classItem.time);
@@ -613,8 +642,11 @@
                 if (nextClass) {
                     const timeRemaining = nextClass.fullDate.getTime() - now.getTime();
                     
-                    if (timeRemaining < -1000) { 
-                        nextClassDisplay.innerHTML = `<span class="material-icons">alarm</span>No immediate class.`;
+                    // Bugfix: Next class is in the past (e.g., system time changed)
+                    if (timeRemaining < 0) { 
+                        nextClassDisplay.innerHTML = `<span class="material-icons">alarm</span>Finding Next Class...`;
+                        // Re-run the function to find the next valid future class
+                        // We will rely on the next interval tick to refresh
                         return;
                     }
                     
@@ -686,7 +718,11 @@
                         currentWeekStart = foundCurrentWeekStart;
 
                     } else {
-                         throw new Error("Timetable data is empty or invalid (missing 'weeks' array).");
+                         // **Bugfix:** If data.weeks is empty, initialize allWeekData to prevent errors
+                         allWeeks = [];
+                         allWeekData = {};
+                         currentWeekStart = '';
+                         // No error for an empty but valid response, just log/handle no data.
                     }
                 } catch (error) {
                     timetableList.innerHTML = `<div style='color: red; padding: 20px;'>
@@ -694,6 +730,8 @@
                         <p>Please ensure your Flask API is running and connected to MongoDB.</p>
                         <p>Detail: ${error.message}</p>
                     </div>`;
+                    allWeeks = [];
+                    allWeekData = {};
                 }
             }
 
@@ -713,6 +751,7 @@
                     option.value = week;
                     
                     const dateParts = week.split('-');
+                    // Note: new Date(year, monthIndex, day)
                     const date = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]); 
                     const displayDate = date.toLocaleDateString('en-US', {
                         year: 'numeric',
@@ -731,8 +770,15 @@
                     const todayOption = weekSelect.querySelector('option[value="__TODAY__"]');
                     if (todayOption) {
                         weekSelect.value = '__TODAY__'; 
-                    } else {
+                    } else if (currentWeekStart) {
+                        // Fallback to the determined current week start
                         weekSelect.value = currentWeekStart;
+                    } else if (allWeeks.length > 0) {
+                        // Fallback to the first week if no current week found
+                        weekSelect.value = allWeeks[0];
+                    } else {
+                        // Handle case where no data is loaded at all
+                        weekSelect.innerHTML = '<option>No Timetables Found</option>';
                     }
                 }
             }
@@ -756,8 +802,11 @@
                     headerText = `${isToday ? 'Today' : 'Tomorrow'} (${formattedDateString})`;
 
                     let targetWeekData = null;
+                    // Bugfix: Find the correct week by comparing dates
                     for (const weekStart in allWeekData) {
-                        const weekStartDate = new Date(weekStart);
+                        // The format in allWeekData keys is 'YYYY-MM-DD'
+                        const [year, month, day] = weekStart.split('-').map(Number);
+                        const weekStartDate = new Date(year, month - 1, day);
                         weekStartDate.setHours(0, 0, 0, 0); 
                         const weekEndDate = new Date(weekStartDate);
                         weekEndDate.setDate(weekStartDate.getDate() + 7); 
@@ -769,6 +818,7 @@
                     }
 
                     if (targetWeekData) {
+                        // The format in dayGroup.date is "Mon, 01-Dec-2025"
                         const dayData = targetWeekData.find(day => day.date.trim() === formattedDateString);
                         if (dayData) {
                             // Sort classes by time
@@ -910,7 +960,8 @@
                 await loadTimetable(initialSelection); 
                 
                 updateClockAndNextClass(); 
-                setInterval(updateClockAndNextClass, 1000);
+                // Increase the interval to 1 second for real-time clock and next class countdown
+                setInterval(updateClockAndNextClass, 1000); 
             })();
         });
     </script>
