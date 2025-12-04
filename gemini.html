@@ -286,7 +286,8 @@
     <div class="header">
         <div class="logo-group">
             <div class="logo">
-                <img id="logo-icon" src="apspace-white.svg" alt="APSpace Logo">
+                <img id="logo-icon" src="logo.svg" alt="APSpace Logo">
+                <span class="logo-text">APSpace Timetable</span>
             </div>
             </div>
         
@@ -474,7 +475,7 @@
                 
                 let htmlToDisplay = '';
 
-                // 1. Handle CURRENT Class
+                // 1. Handle CURRENT Class (Full details are always shown)
                 if (currentClass) {
                     currentClassUniqueId = currentClass.uniqueId; // Update global state
                     const timeRemaining = currentClass.endTime.getTime() - now.getTime();
@@ -507,10 +508,21 @@
 
                     const datePart = nextClass.fullDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
                     
+                    // --- Customizing Next Class Display ---
+                    let classDetails = '';
+                    
+                    if (nextClass.isOnline) {
+                         // Show Online tag and location (which is usually the link/teams name)
+                        classDetails = `<span style="color: var(--color-current); font-weight: 500;">Online</span> | ${nextClass.moduleCode} - ${nextClass.location}`;
+                    } else {
+                        // Default to just class code and location (classroom)
+                        classDetails = `${nextClass.moduleCode} - ${nextClass.location}`;
+                    }
+
                     htmlToDisplay = `
                         <span class="material-icons">alarm</span>
                         <span style="color: var(--color-primary);">${timeRemainingStr}</span>
-                        | ${nextClass.moduleCode} - ${nextClass.moduleName} (${datePart})
+                        | ${classDetails} (${datePart})
                     `;
                 } 
                 // 3. Handle No Classes
@@ -718,10 +730,11 @@
                         const modalityIcon = cls.isOnline 
                             ? `<span class="material-icons online-icon">laptop_chromebook</span>` 
                             : `<span class="material-icons inperson-icon">room</span>`;
+                        // Only show online tag if needed
                         const modalityTag = cls.isOnline 
                             ? `<span class="pill online-tag">Online</span>` 
-                            : `<span class="pill">In-Person</span>`;
-
+                            : ``; // Removed In-Person tag
+                        
                         // Construct the unique ID for current class comparison
                         const uniqueId = `${currentWeekStart}-${day.date}-${cls.time}`;
 
