@@ -217,7 +217,7 @@
             <div class="logo">
                 <img src="apspace-white.svg" alt="APSpace Logo">
             </div>
-            </div>
+        </div>
         
         <div class="header-summary-bar">
             <span id="current-clock" class="summary-item clock-display">Loading Time...</span>
@@ -249,9 +249,12 @@
             const currentClock = document.getElementById('current-clock');
             const nextClassDisplay = document.getElementById('next-class-display');
 
-            let allWeeks = []; // List of week start dates (YYYY-MM-DD)
+            // Set the API endpoint for fetching data
+            const API_ENDPOINT = 'http://localhost:5000/api/timetable'; // Must match your Flask server
+
+            let allWeeks = []; 
             let currentWeekStart = '';
-            let allWeekData = {}; // Map of week start date -> array of day objects
+            let allWeekData = {}; 
 
             const DAY_OPTIONS = {
                 '__TODAY__': 'Today',
@@ -361,15 +364,17 @@
 
             async function fetchAllWeeks() {
                 try {
-                    const response = await fetch('timetable_data.json'); 
+                    // Fetch data from the Flask API
+                    const response = await fetch(API_ENDPOINT); 
                     
                     if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}. Check if timetable_data.json exists.`);
+                        throw new Error(`HTTP error! status: ${response.status}. Ensure the Flask API is running at ${API_ENDPOINT}`);
                     }
                     
                     const data = await response.json();
                     
                     if (Array.isArray(data.weeks) && data.weeks.length > 0) {
+                        // The server is responsible for sorting, but we ensure it here too.
                         data.weeks.sort((a, b) => new Date(a.weekStartDate) - new Date(b.weekStartDate));
                         
                         allWeeks = data.weeks.map(w => w.weekStartDate);
@@ -402,16 +407,15 @@
                         
                         currentWeekStart = foundCurrentWeekStart;
 
-                    } else if (data.weekStartDate) {
-                        // Handle old single-week format for compatibility
-                        allWeeks = [data.weekStartDate];
-                        allWeekData = { [data.weekStartDate]: data.days };
-                        currentWeekStart = data.weekStartDate;
                     } else {
-                         throw new Error("Timetable data is empty or invalid.");
+                         throw new Error("Timetable data is empty or invalid (missing 'weeks' array).");
                     }
                 } catch (error) {
-                    timetableList.innerHTML = `<div style='color: red; padding: 20px;'>Error loading timetable data. Make sure 'timetable_data.json' is correctly formatted and accessible.<br>Detail: ${error.message}</div>`;
+                    timetableList.innerHTML = `<div style='color: red; padding: 20px;'>
+                        <p><strong>Error loading timetable data.</strong></p>
+                        <p>Please ensure your Flask API is running and connected to MongoDB.</p>
+                        <p>Detail: ${error.message}</p>
+                    </div>`;
                 }
             }
 
@@ -584,7 +588,7 @@
                         detailsContainer.appendChild(timeDetail);
 
                         const locationPillText = classItem.isOnline 
-                            ? 'Microsoft Teams' 
+                            ? 'Online Session' 
                             : `${classItem.location} | ${classItem.campus}`;
                             
                         const locationDetail = document.createElement('div');
