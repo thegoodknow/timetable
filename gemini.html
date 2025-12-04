@@ -18,6 +18,7 @@
             --color-pill-blue: #0056B3;
             --border-color: #333333;
             --header-height: 56px;
+            --color-success: #28a745;
         }
 
         /* --- Base Styles --- */
@@ -96,7 +97,7 @@
             color: var(--text-subtle);
         }
 
-        /* --- Week Select (select-control) --- */
+        /* --- Select Control --- */
         .select-control {
             background-color: var(--bg-card);
             color: var(--text-light);
@@ -112,7 +113,7 @@
             white-space: nowrap;
         }
         
-        /* --- Custom Timetable Card Styles --- */
+        /* --- Timetable Card Styles --- */
         .timetable-content {
             padding: 16px;
             display: flex;
@@ -164,7 +165,6 @@
             color: var(--color-primary); 
         }
 
-
         .card-subtitle {
             font-size: 0.85rem;
             color: var(--text-subtle);
@@ -200,14 +200,131 @@
             margin-left: 8px;
             font-weight: 500;
         }
-
-        .online-tag {
-             color: #FFC107; 
+        
+        /* --- Add Class Button Style --- */
+        #addClassButton {
+            background-color: var(--color-success);
+            color: var(--text-light);
+            border: none;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: background-color 0.2s;
+        }
+        #addClassButton:hover {
+            background-color: #1e8436;
         }
 
-        #parser-sandbox {
+        /* --- Modal Styles --- */
+        .modal {
+            display: none; 
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.7);
+        }
+
+        .modal-content {
+            background-color: var(--bg-card);
+            margin: 10% auto; 
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            width: 90%; 
+            max-width: 500px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+        }
+
+        .close-button {
+            color: var(--text-subtle);
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: var(--text-light);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: var(--text-subtle);
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            box-sizing: border-box;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background-color: var(--color-primary);
+            color: var(--text-light);
+        }
+        .btn-primary:hover {
+            background-color: #0069d9;
+        }
+
+        .btn-secondary {
+            background-color: var(--text-subtle);
+            color: var(--bg-dark);
+        }
+        .btn-secondary:hover {
+            background-color: #909090;
+        }
+
+        #submissionMessage {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
             display: none;
         }
+        #submissionMessage.success {
+            background-color: #1f3d24;
+            color: var(--color-success);
+        }
+        #submissionMessage.error {
+            background-color: #4a1f1f;
+            color: #dc3545;
+        }
+
     </style>
 </head>
 <body>
@@ -217,6 +334,10 @@
             <div class="logo">
                 <img src="apspace-white.svg" alt="APSpace Logo">
             </div>
+            <button id="addClassButton">
+                <span class="material-icons" style="font-size: 18px;">add_circle</span>
+                Add Class
+            </button>
         </div>
         
         <div class="header-summary-bar">
@@ -240,7 +361,52 @@
         </div>
     </div>
     
-    <div id="parser-sandbox"></div>
+    <div id="addClassModal" class="modal">
+      <div class="modal-content">
+        <span class="close-button" onclick="closeModal()">&times;</span>
+        <h2>Add Custom Class</h2>
+        <form id="addClassForm">
+
+            <div class="form-group">
+                <label for="classDate">Date:</label>
+                <input type="date" id="classDate" required>
+            </div>
+
+            <div class="form-group">
+                <label for="classTime">Time (e.g., 09:00 - 11:00):</label>
+                <input type="text" id="classTime" pattern="[0-9]{2}:[0-9]{2} - [0-9]{2}:[0-9]{2}" placeholder="HH:MM - HH:MM" required>
+            </div>
+
+            <div class="form-group">
+                <label for="moduleNameInput">Module Name:</label>
+                <input list="moduleNames" id="moduleNameInput" onchange="handleModuleChange(this.value)" placeholder="Start typing or select module name..." required>
+                <datalist id="moduleNames"></datalist>
+            </div>
+
+            <div class="form-group">
+                <label for="moduleCode">Module Code (Auto-filled or edit manually):</label>
+                <input type="text" id="moduleCode" required>
+            </div>
+
+            <div class="form-group">
+                <label for="location">Location:</label>
+                <input type="text" id="location" placeholder="e.g., D-07-11 or ONL" required>
+            </div>
+
+            <div class="form-group">
+                <label for="lecturer">Lecturer:</label>
+                <input type="text" id="lecturer" placeholder="e.g., DR. JANE DOE" required>
+            </div>
+
+            <div id="submissionMessage"></div>
+
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary">Add Class</button>
+            </div>
+        </form>
+      </div>
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -248,9 +414,18 @@
             const weekSelect = document.getElementById('week-select');
             const currentClock = document.getElementById('current-clock');
             const nextClassDisplay = document.getElementById('next-class-display');
+            const addClassButton = document.getElementById('addClassButton');
+            const addClassModal = document.getElementById('addClassModal');
+            const addClassForm = document.getElementById('addClassForm');
+            const moduleNameInput = document.getElementById('moduleNameInput');
+            const moduleCodeInput = document.getElementById('moduleCode');
+            const moduleNamesDatalist = document.getElementById('moduleNames');
+            const submissionMessage = document.getElementById('submissionMessage');
+
 
             // Set the API endpoint for fetching data
-            const API_ENDPOINT = 'http://localhost:5000/api/timetable'; // Must match your Flask server
+            const API_ENDPOINT = 'http://localhost:5000/api/timetable'; 
+            const ADD_CLASS_ENDPOINT = 'http://localhost:5000/api/class';
 
             let allWeeks = []; 
             let currentWeekStart = '';
@@ -261,7 +436,18 @@
                 '__TOMORROW__': 'Tomorrow'
             };
 
-            // Helper to get date string in the format "Mon, 01-Dec-2025"
+            // --- Module Name to Code Mapping for Auto-Fill ---
+            const MODULE_MAP = {
+                "Academic Research Skills": "ABUS007-4-1-ARS-L",
+                "Mathematics and Statistics for Computing": "AAQS038-4-1-MSC-L",
+                "Introduction to Programming": "PROG101-L",
+                "Web Development Project": "WEBDEV-P",
+                "Advanced Data Science": "ADATA505-S",
+                // Add your module mappings here
+            };
+
+
+            // --- Helper Functions ---
             const getFormattedDateString = (dateObj) => {
                 const day = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
                 const dateNum = String(dateObj.getDate()).padStart(2, '0');
@@ -270,20 +456,118 @@
                 return `${day}, ${dateNum}-${month}-${year}`;
             };
             
-            // Helper to handle date strings like "Mon, 01-Dec-2025" and return a Date object
             const parseJsonDate = (dateStr) => {
+                // Takes "Mon, 01-Dec-2025" or "01-Dec-2025"
                 const datePart = dateStr.includes(',') ? dateStr.split(', ')[1] : dateStr;
                 const [dayNum, monthStr, yearStr] = datePart.split('-');
                 return new Date(`${monthStr} ${dayNum}, ${yearStr}`);
             };
 
-            // Helper function to parse time string "HH:MM - HH:MM" and returns start hour and minute
             function parseStartTime(timeStr) {
+                // Takes "HH:MM - HH:MM"
                 const parts = timeStr.split(' - ')[0].split(':');
                 return { hour: parseInt(parts[0], 10), minute: parseInt(parts[1], 10) };
             }
 
-            // --- Find the Next Class Across All Weeks ---
+            // --- Modal Control Functions ---
+            function openModal() {
+                // Pre-populate datalist
+                moduleNamesDatalist.innerHTML = Object.keys(MODULE_MAP).map(name => 
+                    `<option value="${name}">`
+                ).join('');
+
+                // Pre-populate date to today
+                document.getElementById('classDate').valueAsDate = new Date();
+                
+                // Reset form and message
+                addClassForm.reset();
+                submissionMessage.style.display = 'none';
+
+                addClassModal.style.display = 'block';
+            }
+
+            function closeModal() {
+                addClassModal.style.display = 'none';
+            }
+            window.closeModal = closeModal; // Expose to global scope for HTML onclick
+
+            // --- Auto-Fill Logic ---
+            window.handleModuleChange = function(moduleName) {
+                const code = MODULE_MAP[moduleName.trim()];
+                moduleCodeInput.value = code || '';
+            }
+
+            // --- Submission Logic ---
+            addClassForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const moduleName = moduleNameInput.value.trim();
+                const moduleCode = moduleCodeInput.value.trim();
+                const classDate = document.getElementById('classDate').value; // YYYY-MM-DD format
+                const locationValue = document.getElementById('location').value.trim();
+
+                // Determine if online
+                const isOnline = locationValue.toUpperCase().includes('ONL') || locationValue.toUpperCase().includes('ONLINE');
+
+                const newClass = {
+                    date: classDate, 
+                    time: document.getElementById('classTime').value.trim(),
+                    moduleName: moduleName,
+                    moduleCode: moduleCode,
+                    location: locationValue,
+                    lecturer: document.getElementById('lecturer').value.trim(),
+                    campus: 'APU CAMPUS', // Default or hardcoded
+                    isOnline: isOnline
+                };
+
+                // Show loading message
+                submissionMessage.textContent = 'Submitting class...';
+                submissionMessage.className = 'error'; 
+                submissionMessage.style.display = 'block';
+
+                try {
+                    const response = await fetch(ADD_CLASS_ENDPOINT, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(newClass),
+                    });
+
+                    if (response.ok) {
+                        submissionMessage.textContent = '✅ Class added successfully!';
+                        submissionMessage.className = 'success';
+                        
+                        // Refresh data and UI
+                        setTimeout(async () => {
+                            closeModal();
+                            await fetchAllWeeks();
+                            // Reload the current view
+                            await loadTimetable(weekSelect.value); 
+                        }, 1000);
+
+                    } else {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || 'Server rejected the submission.');
+                    }
+                } catch (error) {
+                    submissionMessage.textContent = `❌ Error: ${error.message}`;
+                    submissionMessage.className = 'error';
+                    console.error('Submission Error:', error);
+                }
+            });
+
+            // --- Event Listeners ---
+            addClassButton.addEventListener('click', openModal);
+            window.onclick = function(event) {
+                if (event.target == addClassModal) {
+                    closeModal();
+                }
+            }
+
+
+            // --- Core Timetable Logic ---
+
             function findNextClass(data) {
                 if (Object.keys(data).length === 0) return null;
                 const now = new Date();
@@ -296,7 +580,6 @@
                     for (const dayGroup of data[weekStart]) {
                         const jsonDate = parseJsonDate(dayGroup.date);
                         
-                        // Only consider today or future days
                         if (jsonDate.setHours(0,0,0,0) >= now.setHours(0,0,0,0)) {
                             
                             for (const classItem of dayGroup.classes) {
@@ -305,7 +588,6 @@
                                 const classStartTime = new Date(jsonDate);
                                 classStartTime.setHours(hour, minute, 0, 0);
 
-                                // Check if the class is in the future
                                 if (classStartTime.getTime() > now.getTime()) {
                                     const diff = classStartTime.getTime() - now.getTime();
                                     if (diff < closestTime) {
@@ -320,7 +602,6 @@
                 return nextClass;
             }
 
-            // --- Update Clock and Next Class Display (Runs every second) ---
             function updateClockAndNextClass() {
                 const now = new Date();
                 const timeDisplay = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -360,11 +641,8 @@
             }
 
 
-            // --- Core Timetable Display Functions ---
-
             async function fetchAllWeeks() {
                 try {
-                    // Fetch data from the Flask API
                     const response = await fetch(API_ENDPOINT); 
                     
                     if (!response.ok) {
@@ -374,7 +652,7 @@
                     const data = await response.json();
                     
                     if (Array.isArray(data.weeks) && data.weeks.length > 0) {
-                        // The server is responsible for sorting, but we ensure it here too.
+                        // Sort weeks
                         data.weeks.sort((a, b) => new Date(a.weekStartDate) - new Date(b.weekStartDate));
                         
                         allWeeks = data.weeks.map(w => w.weekStartDate);
@@ -383,7 +661,7 @@
                             allWeekData[w.weekStartDate] = w.days;
                         });
                         
-                        // Logic to find the current week's start date
+                        // Determine current week
                         const now = new Date();
                         now.setHours(0, 0, 0, 0); 
         
@@ -420,9 +698,9 @@
             }
 
             function populateWeekOptions() {
+                const previousValue = weekSelect.value;
                 weekSelect.innerHTML = '';
 
-                // Add Today/Tomorrow options first
                 Object.keys(DAY_OPTIONS).forEach(key => {
                     const option = document.createElement('option');
                     option.value = key;
@@ -430,7 +708,6 @@
                     weekSelect.appendChild(option);
                 });
 
-                // Add Week options
                 allWeeks.forEach(week => {
                     const option = document.createElement('option');
                     option.value = week;
@@ -447,12 +724,16 @@
                     weekSelect.appendChild(option);
                 });
                 
-                // Set default to Today if possible, otherwise to the current week
-                const todayOption = weekSelect.querySelector('option[value="__TODAY__"]');
-                if (todayOption) {
-                    weekSelect.value = '__TODAY__'; 
+                // Restore previous selection or set default
+                if (previousValue && Array.from(weekSelect.options).some(opt => opt.value === previousValue)) {
+                    weekSelect.value = previousValue;
                 } else {
-                    weekSelect.value = currentWeekStart;
+                    const todayOption = weekSelect.querySelector('option[value="__TODAY__"]');
+                    if (todayOption) {
+                        weekSelect.value = '__TODAY__'; 
+                    } else {
+                        weekSelect.value = currentWeekStart;
+                    }
                 }
             }
 
@@ -463,7 +744,6 @@
                 let headerText = 'Timetable';
 
                 if (selectedValue === '__TODAY__' || selectedValue === '__TOMORROW__') {
-                    // Handle Today/Tomorrow view
                     const isToday = selectedValue === '__TODAY__';
                     const targetDate = new Date();
                     if (!isToday) {
@@ -475,7 +755,6 @@
                     
                     headerText = `${isToday ? 'Today' : 'Tomorrow'} (${formattedDateString})`;
 
-                    // Find the week that contains the target date
                     let targetWeekData = null;
                     for (const weekStart in allWeekData) {
                         const weekStartDate = new Date(weekStart);
@@ -490,31 +769,39 @@
                     }
 
                     if (targetWeekData) {
-                        // The day.date format in JSON is "Mon, 01-Dec-2025"
                         const dayData = targetWeekData.find(day => day.date.trim() === formattedDateString);
                         if (dayData) {
+                            // Sort classes by time
+                            dayData.classes.sort((a, b) => {
+                                const timeA = parseStartTime(a.time);
+                                const timeB = parseStartTime(b.time);
+                                return (timeA.hour * 60 + timeA.minute) - (timeB.hour * 60 + timeB.minute);
+                            });
+
                             dataToRender.push({
-                                // Remove comma for simpler display in day separator
                                 date: dayData.date.replace(/,/, '').trim(),
                                 classes: dayData.classes
                             });
                         }
-                    } else {
-                         timetableList.innerHTML = `<div style='text-align: center; padding: 50px;'><p style='color: var(--text-subtle);'>No timetable found for this date.</p></div>`;
-                         return;
                     }
 
                 } else if (allWeekData[selectedValue]) {
-                    // Handle Week view
                     headerText = Array.from(weekSelect.options).find(opt => opt.value === selectedValue)?.textContent || selectedValue;
-                    dataToRender = allWeekData[selectedValue].map(day => ({
-                        // Remove comma for simpler display in day separator
-                        date: day.date.replace(/,/, '').trim(), 
-                        classes: day.classes
-                    }));
-                } else {
-                    timetableList.innerHTML = `<div style='color: red; padding: 20px;'>No data for selected view.</div>`;
-                    return;
+                    
+                    dataToRender = allWeekData[selectedValue].map(day => {
+                        // Sort classes within the day by time
+                        day.classes.sort((a, b) => {
+                            const timeA = parseStartTime(a.time);
+                            const timeB = parseStartTime(b.time);
+                            return (timeA.hour * 60 + timeA.minute) - (timeB.hour * 60 + timeB.minute);
+                        });
+
+                        return {
+                            date: day.date.replace(/,/, '').trim(), 
+                            classes: day.classes
+                        };
+                    });
+
                 }
                 
                 renderTimetable(dataToRender, headerText);
@@ -528,7 +815,7 @@
                 mainHeader.textContent = headerText;
                 timetableList.appendChild(mainHeader);
 
-                if (dataToRender.length === 0) {
+                if (dataToRender.length === 0 || dataToRender.every(d => d.classes.length === 0)) {
                      const noClasses = document.createElement('p');
                      noClasses.style.padding = '10px 16px';
                      noClasses.style.color = 'var(--text-subtle)';
@@ -537,7 +824,6 @@
                      return;
                 }
 
-                // Get today's date string for comparison to highlight the card (without comma)
                 const todayDateStringWithoutComma = getFormattedDateString(new Date()).replace(/,/, '').trim();
 
                 dataToRender.forEach(dayGroup => {
@@ -561,12 +847,10 @@
                         const classCard = document.createElement('div');
                         classCard.classList.add('class-card');
                         
-                        // Add highlight for today's classes
                         if (dayGroup.date.trim() === todayDateStringWithoutComma) {
                             classCard.classList.add('today');
                         }
                         
-                        // Determine the icon and color based on modality
                         const modalityIcon = classItem.isOnline 
                             ? `<span class='material-icons online-icon'>videocam</span>`
                             : `<span class='material-icons inperson-icon'>apartment</span>`; 
@@ -577,62 +861,4 @@
                         
                         const subtitle = document.createElement('div');
                         subtitle.classList.add('card-subtitle');
-                        subtitle.textContent = classItem.moduleName || 'Module Description';
-                        
-                        const detailsContainer = document.createElement('div');
-                        detailsContainer.classList.add('card-details');
-
-                        const timeDetail = document.createElement('div');
-                        timeDetail.classList.add('card-detail-item');
-                        timeDetail.innerHTML = `<span class='material-icons'>schedule</span>${classItem.time} (GMT+8)`;
-                        detailsContainer.appendChild(timeDetail);
-
-                        const locationPillText = classItem.isOnline 
-                            ? 'Online Session' 
-                            : `${classItem.location} | ${classItem.campus}`;
-                            
-                        const locationDetail = document.createElement('div');
-                        locationDetail.classList.add('card-detail-item');
-                        
-                        locationDetail.innerHTML = `<span class='material-icons'>location_on</span><span class='pill'>${locationPillText}</span>`;
-                        detailsContainer.appendChild(locationDetail);
-                        
-                        const lecturerDetail = document.createElement('div');
-                        lecturerDetail.classList.add('card-detail-item');
-                        lecturerDetail.innerHTML = `<span class='material-icons'>person</span>${classItem.lecturer}`;
-                        detailsContainer.appendChild(lecturerDetail);
-
-
-                        classCard.appendChild(title);
-                        classCard.appendChild(subtitle);
-                        classCard.appendChild(detailsContainer);
-
-                        timetableList.appendChild(classCard);
-                    });
-                });
-            }
-
-            // --- Event Handler ---
-            weekSelect.addEventListener('change', async (e) => {
-                 currentWeekStart = e.target.value;
-                 await loadTimetable(currentWeekStart);
-            });
-
-            // --- Initial Execution ---
-            (async () => {
-                await fetchAllWeeks();
-                populateWeekOptions();
-                
-                // Load the default view (which is now Today)
-                const initialSelection = weekSelect.value;
-                await loadTimetable(initialSelection); 
-                
-                // Start the independent clock and next class timer
-                updateClockAndNextClass(); 
-                setInterval(updateClockAndNextClass, 1000);
-            })();
-        });
-    </script>
-
-</body>
-</html>
+                        subtitle.textContent
