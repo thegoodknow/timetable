@@ -59,13 +59,20 @@
             align-items: center;
         }
         
-        /* New SVG Styling */
-        .logo-svg {
-            height: 30px; 
+        /* New SVG Icon Styling (for external file via <img>) */
+        #logo-icon {
+            height: 30px; /* Set desired height */
             width: auto;
-            color: var(--color-primary); /* Use primary color for the SVG content */
+            display: block; /* Ensure correct image display */
         }
         
+        .logo-text {
+            font-size: 1.3rem; 
+            font-weight: bold; 
+            margin-left: 10px; 
+            color: var(--color-primary);
+        }
+
         /* Removed File Upload styles */
 
         .controls-group {
@@ -279,13 +286,7 @@
     <div class="header">
         <div class="logo-group">
             <div class="logo">
-                <svg class="logo-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 2l10 5.5v11L12 22 2 17.5v-11L12 2z"></path>
-                    <polyline points="2 7 12 12 22 7"></polyline>
-                    <line x1="12" y1="22" x2="12" y2="12"></line>
-                    <path d="M12 2v20"></path>
-                </svg>
-                <span style="font-size: 1.3rem; font-weight: bold; margin-left: 10px; color: var(--color-primary);">APSpace Timetable</span>
+                <img id="logo-icon" src="apspace-white.svg" alt="APSpace Logo">
             </div>
             </div>
         
@@ -316,7 +317,6 @@
         document.addEventListener('DOMContentLoaded', () => {
             const timetableList = document.getElementById('timetable-list');
             const weekSelect = document.getElementById('week-select');
-            // Removed htmlUploadInput and uploadStatus variables
             const currentClock = document.getElementById('current-clock');
             const nextClassDisplay = document.getElementById('next-class-display');
 
@@ -324,7 +324,9 @@
             let currentWeekStart = '';
             let allWeekData = {}; // Map of week start date -> array of day objects
             let currentClassUniqueId = null; // Store unique ID of the current class for highlighting
+            let lastLoadDate = new Date(); // Stores the date the files were last successfully loaded
             
+            // --- Helper Functions ---
             
             /**
              * Dynamically generates the list of timetable file paths based on the current date.
@@ -372,12 +374,7 @@
 
                 return weekStarts;
             }
-
-            const DAY_OPTIONS = {
-                '__TODAY__': 'Today',
-                '__TOMORROW__': 'Tomorrow'
-            };
-
+            
             // Helper to get date string in the format "Mon, 01-Dec-2025"
             const getFormattedDateString = (dateObj) => {
                 const day = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
@@ -401,7 +398,9 @@
                 return { hour: parseInt(parts[0], 10), minute: parseInt(parts[1], 10) };
             }
 
-            // --- Find the Current and Next Class Across All Weeks ---
+            // --- Real-time Calculation Functions (Uses already loaded data) ---
+
+            // Find the Current and Next Class Across All Weeks
             function findCurrentAndNextClass(data) {
                 if (Object.keys(data).length === 0) return { currentClass: null, nextClass: null };
                 
@@ -464,8 +463,8 @@
                 return { currentClass, nextClass };
             }
 
-            // --- Update Clock and Current/Next Class Display (Runs every second) ---
-            function updateClockAndNextClass() {
+            // Update Clock and Current/Next Class Display (Runs every second)
+            function updateClock() {
                 const now = new Date();
                 const timeDisplay = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
                 
@@ -526,15 +525,9 @@
                 if (weekSelect.value === '__TODAY__') {
                     applyCurrentClassHighlighting();
                 }
-                
-                // --- Daily Check for Timetable Reload ---
-                if (now.getHours() === 0 && now.getMinutes() >= 5 && now.getMinutes() < 60) { 
-                    console.log("Passed midnight (or past 12:05 AM). Reloading timetable data and view.");
-                    reloadApp(); 
-                }
             }
             
-            // --- Applies/removes the highlight class based on the current class ID
+            // Applies/removes the highlight class based on the current class ID
             function applyCurrentClassHighlighting() {
                 // Remove highlight from all cards first
                 document.querySelectorAll('.class-card.current-class').forEach(card => {
@@ -547,6 +540,32 @@
                     if (activeCard) {
                         activeCard.classList.add('current-class');
                     }
+                }
+            }
+            
+            // --- Daily File Reload Logic ---
+            
+            /**
+             * Checks if the current day has changed since the last successful load.
+             * If the date has changed, it calls fetchAllWeeks to reload the data.
+             * Runs on a regular interval (e.g., every 5 minutes).
+             */
+            function checkAndReloadDaily() {
+                const now = new Date();
+                
+                // Set both dates to midnight for comparison
+                const lastLoadMidnight = new Date(lastLoadDate);
+                lastLoadMidnight.setHours(0, 0, 0, 0);
+
+                const nowMidnight = new Date(now);
+                nowMidnight.setHours(0, 0, 0, 0);
+
+                // If the dates are different, it's a new day and we should reload
+                if (nowMidnight.getTime() > lastLoadMidnight.getTime()) {
+                    console.log("New day detected. Reloading timetable data.");
+                    fetchAllWeeks();
+                } else {
+                    console.log("Still the same day. No timetable file reload needed.");
                 }
             }
 
@@ -585,6 +604,9 @@
                     }
                 });
                 
+                // Update the last load date upon successful (partial or full) fetch
+                lastLoadDate = new Date(); 
+
                 // Sort weeks chronologically
                 allWeeks.sort((a, b) => new Date(a) - new Date(b));
 
@@ -609,13 +631,17 @@
             }
             
             function updateWeekSelect() {
+                // Store current selection before clearing
+                const currentSelection = weekSelect.value;
                 weekSelect.innerHTML = '';
                 
                 // 1. Add special views (Today/Tomorrow)
+                const DAY_OPTIONS = { '__TODAY__': 'Today', '__TOMORROW__': 'Tomorrow' };
                 Object.entries(DAY_OPTIONS).forEach(([key, value]) => {
                     const option = document.createElement('option');
                     option.value = key;
                     option.textContent = value;
+                    option.selected = (key === currentSelection);
                     weekSelect.appendChild(option);
                 });
                 
@@ -631,11 +657,12 @@
                     const option = document.createElement('option');
                     option.value = weekStart;
                     option.textContent = `Week: ${mondayStr} - ${endStr}`;
+                    option.selected = (weekStart === currentSelection);
                     weekSelect.appendChild(option);
                 });
 
                 if (allWeeks.length === 0) {
-                    weekSelect.innerHTML = `<option>No Timetable Data Found</option>`;
+                    weekSelect.innerHTML = `<option selected>No Timetable Data Found</option>`;
                 }
             }
 
@@ -661,7 +688,7 @@
                         }
                     }
                     if (daysToDisplay.length === 0) {
-                         timetableList.innerHTML = `<div class="day-header">${viewKey.replace(/__/g, '')}</div><p style="text-align: center; color: var(--text-subtle); padding: 20px;">No classes scheduled for ${viewKey}.</p>`;
+                         timetableList.innerHTML = `<div class="day-header">${viewKey.replace(/__/g, '')}</div><p style="text-align: center; color: var(--text-subtle); padding: 20px;">No classes scheduled for ${viewKey === '__TODAY__' ? 'Today' : 'Tomorrow'}.</p>`;
                          applyCurrentClassHighlighting(); // Clear any old highlights
                          return;
                     }
@@ -670,7 +697,7 @@
                     daysToDisplay = allWeekData[viewKey];
                     currentWeekStart = viewKey;
                 } else {
-                    timetableList.innerHTML = `<p style="text-align: center; color: var(--text-subtle); padding: 50px;">Please select a week view or upload a timetable file.</p>`;
+                    timetableList.innerHTML = `<p style="text-align: center; color: var(--text-subtle); padding: 50px;">Please select a week view or ensure timetable files are available.</p>`;
                     return;
                 }
 
@@ -748,13 +775,17 @@
                 renderTimetable(e.target.value);
             });
             
-            function reloadApp() {
-                 fetchAllWeeks();
-            }
-
             // --- Initial Load and Interval Setup ---
-            fetchAllWeeks(); // Initial load of data
-            setInterval(updateClockAndNextClass, 1000); // Start the clock and class checker
+            
+            // 1. Initial Load
+            fetchAllWeeks(); 
+            
+            // 2. Real-time Clock and Highlight Update (Every 1 second)
+            setInterval(updateClock, 1000); 
+            
+            // 3. Daily File Reload Check (Every 5 minutes, in case the app is left open across midnight)
+            // 5 * 60 * 1000 = 300000 milliseconds
+            setInterval(checkAndReloadDaily, 300000); 
 
         });
     </script>
