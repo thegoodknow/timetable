@@ -861,4 +861,59 @@
                         
                         const subtitle = document.createElement('div');
                         subtitle.classList.add('card-subtitle');
-                        subtitle.textContent
+                        subtitle.textContent = classItem.moduleName || 'Module Description';
+                        
+                        const detailsContainer = document.createElement('div');
+                        detailsContainer.classList.add('card-details');
+
+                        const timeDetail = document.createElement('div');
+                        timeDetail.classList.add('card-detail-item');
+                        timeDetail.innerHTML = `<span class='material-icons'>schedule</span>${classItem.time} (GMT+8)`;
+                        detailsContainer.appendChild(timeDetail);
+
+                        const locationPillText = classItem.isOnline 
+                            ? 'Online Session' 
+                            : `${classItem.location} | ${classItem.campus}`;
+                            
+                        const locationDetail = document.createElement('div');
+                        locationDetail.classList.add('card-detail-item');
+                        
+                        locationDetail.innerHTML = `<span class='material-icons'>location_on</span><span class='pill'>${locationPillText}</span>`;
+                        detailsContainer.appendChild(locationDetail);
+                        
+                        const lecturerDetail = document.createElement('div');
+                        lecturerDetail.classList.add('card-detail-item');
+                        lecturerDetail.innerHTML = `<span class='material-icons'>person</span>${classItem.lecturer}`;
+                        detailsContainer.appendChild(lecturerDetail);
+
+
+                        classCard.appendChild(title);
+                        classCard.appendChild(subtitle);
+                        classCard.appendChild(detailsContainer);
+
+                        timetableList.appendChild(classCard);
+                    });
+                });
+            }
+
+            weekSelect.addEventListener('change', async (e) => {
+                 currentWeekStart = e.target.value;
+                 await loadTimetable(currentWeekStart);
+            });
+
+            // --- Initial Execution ---
+            (async () => {
+                await fetchAllWeeks();
+                populateWeekOptions();
+                
+                const initialSelection = weekSelect.value;
+                await loadTimetable(initialSelection); 
+                
+                updateClockAndNextClass(); 
+                setInterval(updateClockAndNextClass, 1000);
+            })();
+        });
+    </script>
+
+</body>
+</html>
