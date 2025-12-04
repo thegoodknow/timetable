@@ -118,8 +118,58 @@
             }
           ]
         }
-      ]
+      ],
+				{
+      "weekStartDate": "2025-12-08",
+      "days": [
+        {
+          "date": "Mon, 08-Dec-2025",
+          "classes": []
+        },
+        {
+          "date": "Tue, 09-Dec-2025",
+          "classes": []
+        },
+        {
+          "date": "Wed, 10-Dec-2025",
+          "classes": [
+            {
+              "moduleCode": "AAQS038-4-1-MSC-L-8 (RPLC)",
+              "moduleName": "MATHEMATICS AND STATISTICS FOR COMPUTING (REPLACEMENT CLASS)",
+              "time": "09:30 - 10:30",
+              "location": "TBC",
+              "campus": "APU CAMPUS",
+              "lecturer": "KHOR LIAN PENG",
+              "isOnline": false
+            },
+            {
+              "moduleCode": "MPU2132-BMK1(FS)-L-8",
+              "moduleName": "BAHASA MELAYU KOMUNIKASI 1 (Online)",
+              "time": "18:45 - 20:45",
+              "location": "ONLMCO3-11",
+              "campus": "APU CAMPUS",
+              "lecturer": "NURHANI HAZIRAH BINTI AHMAD HAMIDI",
+              "isOnline": true
+            }
+          ]
+        },
+        {
+          "date": "Thu, 11-Dec-2025",
+          "classes": [
+            {
+              "moduleCode": "AAQS038-4-1-MSC-T-23 (RPLC)",
+              "moduleName": "MATHEMATICS AND STATISTICS FOR COMPUTING (REPLACEMENT CLASS)",
+              "time": "10:45 - 11:15",
+              "location": "TBC",
+              "campus": "APU CAMPUS",
+              "lecturer": "KHOR LIAN PENG",
+              "isOnline": false
+            }
+          ]
+        },
+        {
+          "date": "Fri, 12-Dec-2025",
+          "classes": []
     }
-  ]
-
+  ]
 }
