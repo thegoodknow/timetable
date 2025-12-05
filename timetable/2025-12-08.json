@@ -12,7 +12,9 @@
               "campus": "APU CAMPUS",
               "lecturer": "",
               "isOnline": false,
-              "classType": "Lecture"
+              "classType": "Lecture",
+              "isReplacement": false,
+              "replacementType": ""
             },
             {
               "moduleCode": "",
@@ -22,7 +24,9 @@
               "campus": "APU CAMPUS",
               "lecturer": "",
               "isOnline": false,
-              "classType": "Lecture"
+              "classType": "Lecture",
+              "isReplacement": false,
+              "replacementType": ""
             }
           ]
         },
@@ -37,7 +41,9 @@
               "campus": "APU CAMPUS",
               "lecturer": "",
               "isOnline": false,
-              "classType": "Lecture"
+              "classType": "Lecture",
+              "isReplacement": false,
+              "replacementType": ""
             },
             {
               "moduleCode": "",
@@ -47,7 +53,9 @@
               "campus": "APU CAMPUS",
               "lecturer": "",
               "isOnline": false,
-              "classType": "Lecture"
+              "classType": "Lecture",
+              "isReplacement": false,
+              "replacementType": ""
             }
           ]
         },
@@ -56,13 +64,15 @@
           "classes": [
             {
               "moduleCode": "AAQS038-4-1-MSC-L-9 (RLC)",
-              "moduleName": "MATHEMATICS AND STATISTICS FOR COMPUTING (REPLACEMENT LECTURE CLASS)",
+              "moduleName": "MATHEMATICS AND STATISTICS FOR COMPUTING",
               "time": "09:30 - 10:30",
               "location": "TBC",
               "campus": "APU CAMPUS",
               "lecturer": "KHOR LIAN PENG",
               "isOnline": false,
-              "classType": "Lecture"
+              "classType": "Lecture",
+              "isReplacement": true,
+              "replacementType": "Lecture"
             },
              {
               "moduleCode": "",
@@ -72,7 +82,9 @@
               "campus": "APU CAMPUS",
               "lecturer": "",
               "isOnline": false,
-              "classType": "Lecture"
+              "classType": "Lecture",
+              "isReplacement": false,
+              "replacementType": ""
             },
             {
               "moduleCode": "MPU2132-BMK1(FS)-L-8",
@@ -82,7 +94,9 @@
               "campus": "APU CAMPUS",
               "lecturer": "NURHANI HAZIRAH BINTI AHMAD HAMIDI",
               "isOnline": true,
-              "classType": "Lecture"
+              "classType": "Lecture",
+              "isReplacement": false,
+              "replacementType": ""
             }
           ]
         },
@@ -91,13 +105,15 @@
           "classes": [
             {
               "moduleCode": "AAQS38-4-1-MSC-T-23 (RTC)",
-              "moduleName": "MATHEMATICS AND STATISTICS FOR COMPUTING (REPLACEMENT TUROTIAL CLASS)",
+              "moduleName": "MATHEMATICS AND STATISTICS FOR COMPUTING",
               "time": "10:45 - 11:45",
               "location": "TBC",
               "campus": "APU CAMPUS",
               "lecturer": "KHOR LIAN PENG",
               "isOnline": false,
-              "classType": "Tutorial"
+              "classType": "Tutorial",
+              "isReplacement": true,
+              "replacementType": "Tutorial"
             },
             {
               "moduleCode": "",
@@ -107,7 +123,9 @@
               "campus": "APU CAMPUS",
               "lecturer": "",
               "isOnline": false,
-              "classType": "Lecture"
+              "classType": "Lecture",
+              "isReplacement": false,
+              "replacementType": ""
             }
           ]
         },
@@ -122,7 +140,9 @@
               "campus": "APU CAMPUS",
               "lecturer": "",
               "isOnline": false,
-              "classType": "Lecture"
+              "classType": "Lecture",
+              "isReplacement": false,
+              "replacementType": ""
             },
             {
               "moduleCode": "",
@@ -132,7 +152,9 @@
               "campus": "APU CAMPUS",
               "lecturer": "",
               "isOnline": false,
-              "classType": "Lecture"
+              "classType": "Lecture",
+              "isReplacement": false,
+              "replacementType": ""
             }
           ]
         }
