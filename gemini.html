@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[TESTING VER] Course Timetable</title>
+    <title>Course Timetable</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     
@@ -270,9 +270,6 @@
         <div class="logo-group">
             <div class="logo">
                 <img id="logo-icon" src="apspace-white.svg" alt="Logo">
-                <span id="logo-text" class="logo-text">
-                TESTING VERSION
-                </span>
             </div>
         </div>
 
@@ -637,6 +634,39 @@
                     const lecturerName = cls.lecturer || 'Staff TBC'; 
                     const classType = cls.classType || 'Class'; 
                     
+                    // --- DURATION CALCULATION ---
+                    let durationString = 'Duration TBD';
+                    if (typeof cls.time === 'string' && cls.time.includes(" - ")) {
+                        const st = parseTime(cls.time, true);
+                        const et = parseTime(cls.time, false);
+                        
+                        // Convert to total minutes
+                        const startMinutes = st.hour * 60 + st.minute;
+                        const endMinutes = et.hour * 60 + et.minute;
+                        let durationMinutes = endMinutes - startMinutes;
+
+                        // Handle negative duration (e.g., class starts at 23:00 and ends at 01:00 the next day)
+                        if (durationMinutes < 0) {
+                            durationMinutes += 24 * 60; 
+                        }
+
+                        const durationHours = Math.floor(durationMinutes / 60);
+                        const durationMins = durationMinutes % 60;
+                        
+                        durationString = '';
+                        if (durationHours > 0) {
+                            durationString += `${durationHours}hr`;
+                        }
+                        if (durationMins > 0) {
+                            if (durationHours > 0) durationString += ' ';
+                            durationString += `${durationMins}min`;
+                        }
+                        if (durationString === '') {
+                             durationString = '0 min';
+                        }
+                    }
+                    // --- END DURATION CALCULATION ---
+
                     let modalityIcon;
                     let modalityPill = '';
                     
@@ -664,6 +694,10 @@
                                 <span class="card-detail-item">
                                     <span class="material-icons">schedule</span>
                                     ${time}
+                                </span>
+                                <span class="card-detail-item">
+                                    <span class="material-icons">timer</span>
+                                    ${durationString}
                                 </span>
                                 <span class="card-detail-item">
                                     <span class="material-icons">location_on</span>
