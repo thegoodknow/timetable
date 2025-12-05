@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Improved Timetable Viewer</title>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+<style>
+:root {
+    --bg-dark: #121212;
+    --bg-card: #1e1e1e;
+    --text-light: #ffffff;
+    --text-subtle: #b0b0b0;
+    --color-primary: #2196f3;
+    --color-current: #ffc107;
+    --color-replacement: #ff8c00;
+    --color-replacement-bg: #cc7000;
+}
+body {
+    margin: 0;
+    font-family: "Segoe UI", sans-serif;
+    background: var(--bg-dark);
+    color: var(--text-light);
+}
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 18px;
+    background: var(--bg-card);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 1px solid #2c2c2c;
+}
+#week-select {
+    background: var(--bg-card);
+    color: var(--text-light);
+    border: 1px solid #333;
+    padding: 6px 10px;
+    border-radius: 6px;
+}
+#timetable-list {
+    padding: 16px;
+}
+.day-header {
+    background: #004d99;
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 20px;
+    font-weight: bold;
+}
+.class-card {
+    background: var(--bg-card);
+    padding: 12px;
+    margin-top: 10px;
+    border-radius: 8px;
+    border-left: 4px solid transparent;
+}
+.class-card.today {
+    border-left: 4px solid var(--color-primary);
+}
+.class-card.current-class {
+    border-left: 4px solid var(--color-current);
+    background: #2a2a2a;
+}
+.pill {
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    margin-left: 8px;
+}
+.online-tag {
+    background: var(--color-current);
+    color: black;
+}
+.replacement-tag {
+    background: var(--color-replacement-bg);
+    color: white;
+}
+</style>
+</head>
+<body>
+<header>
+    <div>
+        <span id="current-clock">Loading...</span>
+    </div>
+    <div>
+        <select id="week-select"></select>
+    </div>
+    <div id="next-class-display">
+        <span class="material-icons">alarm</span> Loading next class...
+    </div>
+</header>
+<div id="timetable-list"></div>
+<script>
+// Unified unique ID generator
+function makeUniqueId(weekStart, date, time, code) {
+    return `${weekStart}__${date}__${time}__${code}`;
+}
+
+const weekSelect = document.getElementById("week-select");
+const timetableList = document.getElementById("timetable-list");
+const nextClassDisplay = document.getElementById("next-class-display");
+const clock = document.getElementById("current-clock");
+
+let allWeekData = {};
+let weekKeys = [];
+let currentClassUniqueId = null;
+
+function parseDate(txt) {
+    const [_, rest] = txt.includes(",") ? txt.split(", ") : [null, txt];
+    const [d, m, y] = rest.split("-");
+    return new Date(`${m} ${d}, ${y}`);
+}
+function parseTime(str, start=true) {
+    if (!str.includes("-")) return {hour:0,minute:0};
+    const part = start ? str.split(" - ")[0] : str.split(" - ")[1];
+    const [h,m] = part.split(":");
+    return {hour:+h, minute:+m};
+}
+
+async function loadWeeks() {
+    const base = "timetable";
+    const files = await fetch(base).then(r=>r.text().catch(()=>""));
+
+    // We cannot list directory in browser normally; user must pre-know weeks
+    // So: auto-generate 4-week window
+    const now = new Date();
+    const weeks = [];
+    function monday(d){
+        const c = new Date(d);
+        const dow = c.getDay();
+        const delta = dow===0?-6:1-dow;
+        c.setDate(c.getDate()+delta);
+        return c;
+    }
+    function fmt(d){ return d.toISOString().slice(0,10); }
+
+    [-1,0,1,2].forEach(offset=>{
+        const m = monday(new Date(now.getFullYear(), now.getMonth(), now.getDate()+offset*7));
+        weeks.push(fmt(m));
+    });
+
+    let loaded = {};
+
+    for (const w of weeks) {
+        try {
+            const res = await fetch(`${base}/${w}.json`);
+            if (res.ok) {
+                const data = await res.json();
+                loaded[w] = data.days;
+            }
+        } catch(e){}
+    }
+
+    allWeekData = loaded;
+    weekKeys = Object.keys(loaded).sort((a,b)=>new Date(a)-new Date(b));
+
+    weekSelect.innerHTML =
+        `<option value="__TODAY__">Today</option>
+         <option value="__TOMORROW__">Tomorrow</option>` +
+        weekKeys.map(w=>`<option value="${w}">Week of ${w}</option>`).join("");
+
+    render("__TODAY__");
+}
+
+function render(mode) {
+    let days = [];
+    const today = new Date(); today.setHours(0,0,0,0);
+    const tomo = new Date(today); tomo.setDate(tomo.getDate()+1);
+
+    if (mode==="__TODAY__" || mode==="__TOMORROW__") {
+        const target = mode==="__TODAY__" ? today : tomo;
+        for (const w of weekKeys) {
+            const arr = allWeekData[w];
+            const found = arr.find(d=>{
+                const dd = parseDate(d.date);
+                dd.setHours(0,0,0,0);
+                return dd.getTime()===target.getTime();
+            });
+            if (found) {
+                days.push(found);
+                break;
+            }
+        }
+        if (days.length===0) {
+            timetableList.innerHTML = `<div class='day-header'>No classes for ${mode.replace("__"," ")}</div>`;
+            return;
+        }
+    }
+    else {
+        days = allWeekData[mode] || [];
+    }
+
+    let html="";
+    days.forEach(day=>{
+        html += `<div class='day-header'>${day.date}</div>`;
+        day.classes.forEach(cls=>{
+            const uid = makeUniqueId(mode, day.date, cls.time, cls.moduleCode);
+            const pills = cls.isReplacement
+                ? `<span class='pill replacement-tag'>R/P</span>`
+                : cls.isOnline
+                    ? `<span class='pill online-tag'>Online</span>`
+                    : "";
+
+            html += `
+            <div class='class-card' data-unique-id='${uid}'>
+                <div><b>${cls.moduleCode}</b> - ${cls.moduleName} ${pills}</div>
+                <div style='color:var(--text-subtle)'>${cls.lecturer}</div>
+                <div>${cls.time} — ${cls.location}</div>
+            </div>`;
+        });
+    });
+
+    timetableList.innerHTML = html;
+}
+
+function updateClock() {
+    const now = new Date();
+    clock.textContent = now.toLocaleTimeString();
+    updateNextClass();
+}
+
+function updateNextClass() {
+    const now = new Date();
+    let next = null;
+    let soonest = Infinity;
+
+    for (const w in allWeekData) {
+        for (const d of allWeekData[w]) {
+            for (const cls of d.classes) {
+                if (!cls.time.includes("-")) continue;
+
+                const date = parseDate(d.date);
+                const {hour,minute} = parseTime(cls.time,true);
+                const start = new Date(date);
+                start.setHours(hour,minute,0,0);
+
+                if (start > now) {
+                    const diff = start-now;
+                    if (diff < soonest) {
+                        soonest = diff;
+                        next = {...cls, start, week:w, date:d.date};
+                    }
+                }
+            }
+        }
+    }
+
+    if (!next) {
+        nextClassDisplay.innerHTML = `<span class='material-icons'>alarm</span> No upcoming classes`;
+        return;
+    }
+
+    const diff = next.start - now;
+    const h = Math.floor(diff/3600000);
+    const m = Math.floor((diff%3600000)/60000);
+
+    nextClassDisplay.innerHTML = `
+        <span class='material-icons'>alarm</span>
+        Next: ${next.moduleCode} in ${h>0? `${h}h `:""}${m}m
+    `;
+}
+
+weekSelect.addEventListener("change", e => render(e.target.value));
+
+loadWeeks();
+setInterval(updateClock, 1000);
+</script>
+</body>
+</html>
