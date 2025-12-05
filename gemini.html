@@ -1,818 +1,839 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Course Timetable</title>
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <style>
-        /* --- Theme Variables --- */
-        :root {
-            --bg-dark: #121212;
-            --bg-card: #1E1E1E;
-            --text-light: #FFFFFF;
-            --text-subtle: #B0B0B0;
-            --color-primary: #007BFF;
-            --color-blue-bg: #004D99; 
-            --color-pill-blue: #0056B3;
-            --border-color: #333333;
-            --header-height: 56px;
-            --color-current: #FFC107; /* Amber/Yellow for current class */
-        }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Timetable</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        /* --- Theme Variables --- */
+        :root {
+            --bg-dark: #121212;
+            --bg-card: #1E1E1E;
+            --text-light: #FFFFFF;
+            --text-subtle: #B0B0B0;
+            --color-primary: #007BFF;
+            --color-blue-bg: #004D99; 
+            --color-pill-blue: #0056B3;
+            --border-color: #333333;
+            --header-height: 56px;
+            --color-current: #FFC107; /* Amber/Yellow for current class */
+        }
 
-        /* --- Base Styles --- */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-light);
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-        }
+        /* --- Base Styles --- */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
 
-        /* --- Header/Control Bar --- */
-        .header {
-            display: flex;
-            flex-wrap: wrap; 
-            justify-content: space-between;
-            align-items: center; 
-            padding: 10px 16px; 
-            min-height: var(--header-height);
-            background-color: var(--bg-card);
-            border-bottom: 1px solid var(--border-color);
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            gap: 10px 20px; 
-        }
+        /* --- Header/Control Bar --- */
+        .header {
+            display: flex;
+            flex-wrap: wrap; 
+            justify-content: space-between;
+            align-items: center; 
+            padding: 10px 16px; 
+            min-height: var(--header-height);
+            background-color: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            gap: 10px 20px; 
+        }
 
-        .logo-group {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
+        .logo-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
 
-        .logo {
-            /* Ensures the logo is centered if it doesn't take up the full height */
-            display: flex;
-            align-items: center;
-        }
-        
-        /* New SVG Icon Styling (for external file via <img>) */
-        #logo-icon {
-            height: 30px; /* Set desired height */
-            width: auto;
-            display: block; /* Ensure correct image display */
-        }
-        
-        .logo-text {
-            font-size: 1.3rem; 
-            font-weight: bold; 
-            margin-left: 10px; 
-            color: var(--color-primary);
-        }
+        .logo {
+            /* Ensures the logo is centered if it doesn't take up the full height */
+            display: flex;
+            align-items: center;
+        }
+        
+        /* New SVG Icon Styling (for external file via <img>) */
+        #logo-icon {
+            height: 30px; /* Set desired height */
+            width: auto;
+            display: block; /* Ensure correct image display */
+        }
+        
+        .logo-text {
+            font-size: 1.3rem; 
+            font-weight: bold; 
+            margin-left: 10px; 
+            color: var(--color-primary);
+        }
 
-        /* Removed File Upload styles */
+        /* Removed File Upload styles */
 
-        .controls-group {
-            display: flex;
-            gap: 12px;
-            align-items: center; 
-            order: 3; 
-        }
+        .controls-group {
+            display: flex;
+            gap: 12px;
+            align-items: center; 
+            order: 3; 
+        }
 
-        /* --- Header Summary Bar --- */
-        .header-summary-bar {
-            display: flex;
-            align-items: center;
-            flex-grow: 1; 
-            gap: 20px;
-            padding: 5px 0;
-            min-width: 300px;
-            order: 2; 
-        }
-        .summary-item {
-            display: flex;
-            align-items: center;
-            font-size: 0.95rem;
-        }
-        .clock-display {
-            font-weight: 700;
-            color: var(--color-primary);
-        }
-        .next-class-display {
-            color: var(--text-light);
-            font-size: 0.9rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .next-class-display .material-icons {
-            font-size: 1.1rem;
-            margin-right: 5px;
-            color: var(--text-subtle);
-        }
-        
-        /* --- Week Select (select-control) --- */
-        .select-control {
-            background-color: var(--bg-card);
-            color: var(--text-light);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 8px 12px; 
-            font-size: 0.9rem;
-            cursor: pointer;
-            appearance: none;
-            outline: none;
-            height: 36px; 
-            box-sizing: border-box;
-            white-space: nowrap;
-        }
-        
-        /* --- Custom Timetable Card Styles --- */
-        .timetable-content {
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        
-        .day-header {
-            background-color: var(--color-blue-bg);
-            color: var(--text-light);
-            font-weight: bold;
-            padding: 10px 16px;
-            border-radius: 8px;
-            margin-top: 10px;
-            font-size: 1.1rem;
-        }
+        /* --- Header Summary Bar --- */
+        .header-summary-bar {
+            display: flex;
+            align-items: center;
+            flex-grow: 1; 
+            gap: 20px;
+            padding: 5px 0;
+            min-width: 300px;
+            order: 2; 
+        }
+        .summary-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.95rem;
+        }
+        .clock-display {
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+        .next-class-display {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .next-class-display .material-icons {
+            font-size: 1.1rem;
+            margin-right: 5px;
+            color: var(--text-subtle);
+        }
+        
+        /* --- Week Select (select-control) --- */
+        .select-control {
+            background-color: var(--bg-card);
+            color: var(--text-light);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 8px 12px; 
+            font-size: 0.9rem;
+            cursor: pointer;
+            appearance: none;
+            outline: none;
+            height: 36px; 
+            box-sizing: border-box;
+            white-space: nowrap;
+        }
+        
+        /* --- Custom Timetable Card Styles --- */
+        .timetable-content {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .day-header {
+            background-color: var(--color-blue-bg);
+            color: var(--text-light);
+            font-weight: bold;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 1.1rem;
+        }
 
-        .class-card {
-            background-color: var(--bg-card);
-            border-radius: 8px;
-            padding: 12px 16px;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            transition: border-left 0.3s ease;
-        }
+        .class-card {
+            background-color: var(--bg-card);
+            border-radius: 8px;
+            padding: 12px 16px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: border-left 0.3s ease;
+        }
 
-        /* Highlight for Today's date */
-        .class-card.today {
-             border-left: 5px solid var(--color-primary);
-        }
-        
-        /* Highlight for CURRENTLY active class */
-        .class-card.current-class {
-            background-color: #2b2b2b; /* Slightly darker background */
-            border-left: 5px solid var(--color-current); 
-            box-shadow: 0 4px 10px rgba(255, 193, 7, 0.2); 
-            animation: pulse-current 1.5s infinite alternate;
-        }
+        /* Highlight for Today's date */
+        .class-card.today {
+             border-left: 5px solid var(--color-primary);
+        }
+        
+        /* Highlight for CURRENTLY active class */
+        .class-card.current-class {
+            background-color: #2b2b2b; /* Slightly darker background */
+            border-left: 5px solid var(--color-current); 
+            box-shadow: 0 4px 10px rgba(255, 193, 7, 0.2); 
+            animation: pulse-current 1.5s infinite alternate;
+        }
 
-        @keyframes pulse-current {
-            from {
-                opacity: 1;
-            }
-            to {
-                opacity: 0.95;
-            }
-        }
-
-
-        .card-title {
-            font-weight: bold;
-            font-size: 1rem;
-            margin-bottom: 4px;
-            display: flex; 
-            align-items: center;
-        }
-        
-        .card-title .material-icons {
-            margin-right: 6px;
-            font-size: 1.2rem;
-        }
-
-        /* Specific Icon Colors for Modality */
-        .card-title .online-icon {
-            color: var(--color-current); 
-        }
-        .card-title .inperson-icon {
-            color: var(--color-primary); 
-        }
+        @keyframes pulse-current {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0.95;
+            }
+        }
 
 
-        .card-subtitle {
-            font-size: 0.85rem;
-            color: var(--text-subtle);
-            margin-bottom: 8px;
-        }
+        .card-title {
+            font-weight: bold;
+            font-size: 1rem;
+            margin-bottom: 4px;
+            display: flex; 
+            align-items: center;
+        }
+        
+        .card-title .material-icons {
+            margin-right: 6px;
+            font-size: 1.2rem;
+        }
 
-        .card-details {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.85rem;
-            color: var(--text-subtle);
-            flex-wrap: wrap; 
-            gap: 8px 0;
-        }
-
-        .card-detail-item {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .card-detail-item .material-icons {
-            font-size: 16px;
-            color: var(--color-primary);
-        }
-        
-        .class-card.current-class .card-detail-item .material-icons {
-             color: var(--color-current);
-        }
+        /* Specific Icon Colors for Modality */
+        .card-title .online-icon {
+            color: var(--color-current); 
+        }
+        .card-title .inperson-icon {
+            color: var(--color-primary); 
+        }
 
 
-        .pill {
-            background-color: var(--color-pill-blue);
-            color: var(--text-light);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            margin-left: 8px;
-            font-weight: 500;
-        }
+        .card-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-subtle);
+            margin-bottom: 8px;
+        }
 
-        .online-tag {
-             color: var(--color-current); 
-        }
+        .card-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-subtle);
+            flex-wrap: wrap; 
+            gap: 8px 0;
+        }
 
-        #parser-sandbox {
-            display: none;
-        }
-        
-        /* Responsive adjustments */
-        @media (max-width: 600px) {
-            .header-summary-bar {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 5px;
-                min-width: 100%;
-            }
-            .header {
-                 flex-direction: column;
-                 align-items: flex-start;
-            }
-            .controls-group, .logo-group {
-                width: 100%;
-                justify-content: space-between;
-                margin-top: 5px;
-            }
-            .controls-group {
-                 justify-content: flex-start;
-                 gap: 8px;
-            }
-            .select-control {
-                flex-grow: 1;
-                max-width: 60%;
-            }
-        }
+        .card-detail-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
 
-    </style>
+        .card-detail-item .material-icons {
+            font-size: 16px;
+            color: var(--color-primary);
+        }
+        
+        .class-card.current-class .card-detail-item .material-icons {
+             color: var(--color-current);
+        }
+
+
+        .pill {
+            background-color: var(--color-pill-blue);
+            color: var(--text-light);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-left: 8px;
+            font-weight: 500;
+        }
+
+        .online-tag {
+             color: var(--color-current); 
+        }
+
+        #parser-sandbox {
+            display: none;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .header-summary-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+                min-width: 100%;
+            }
+            .header {
+                 flex-direction: column;
+                 align-items: flex-start;
+            }
+            .controls-group, .logo-group {
+                width: 100%;
+                justify-content: space-between;
+                margin-top: 5px;
+            }
+            .controls-group {
+                 justify-content: flex-start;
+                 gap: 8px;
+            }
+            .select-control {
+                flex-grow: 1;
+                max-width: 60%;
+            }
+        }
+
+    </style>
 </head>
 <body>
 
-    <div class="header">
-        <div class="logo-group">
-            <div class="logo">
-                <img id="logo-icon" src="apspace-white.svg" alt="APSpace Logo">
-            </div>
-            </div>
-        
-        <div class="header-summary-bar">
-            <span id="current-clock" class="summary-item clock-display">Loading Time...</span>
-            <span id="next-class-display" class="summary-item next-class-display">
-                <span class="material-icons">alarm</span>Finding Next Class...
-            </span>
-        </div>
-        
-        <div class="controls-group">
-            <span style="color: var(--text-subtle); font-size: 0.9rem;">Select View:</span>
-            <select class="select-control" id="week-select">
-                <option>Loading Views...</option>
-            </select>
-        </div>
-    </div>
-    
-    <div class="timetable-content" id="timetable-list">
-        <div style="text-align: center; padding: 50px;">
-            <p style="color: var(--text-subtle);">Loading timetable...</p>
-        </div>
-    </div>
-    
-    <div id="parser-sandbox"></div>
+    <div class="header">
+        <div class="logo-group">
+            <div class="logo">
+                <img id="logo-icon" src="apspace-white.svg" alt="APSpace Logo">
+            </div>
+            </div>
+        
+        <div class="header-summary-bar">
+            <span id="current-clock" class="summary-item clock-display">Loading Time...</span>
+            <span id="next-class-display" class="summary-item next-class-display">
+                <span class="material-icons">alarm</span>Finding Next Class...
+            </span>
+        </div>
+        
+        <div class="controls-group">
+            <span style="color: var(--text-subtle); font-size: 0.9rem;">Select View:</span>
+            <select class="select-control" id="week-select">
+                <option>Loading Views...</option>
+            </select>
+        </div>
+    </div>
+    
+    <div class="timetable-content" id="timetable-list">
+        <div style="text-align: center; padding: 50px;">
+            <p style="color: var(--text-subtle);">Loading timetable...</p>
+        </div>
+    </div>
+    
+    <div id="parser-sandbox"></div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const timetableList = document.getElementById('timetable-list');
-            const weekSelect = document.getElementById('week-select');
-            const currentClock = document.getElementById('current-clock');
-            const nextClassDisplay = document.getElementById('next-class-display');
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const timetableList = document.getElementById('timetable-list');
+            const weekSelect = document.getElementById('week-select');
+            const currentClock = document.getElementById('current-clock');
+            const nextClassDisplay = document.getElementById('next-class-display');
 
-            let allWeeks = []; // List of week start dates (YYYY-MM-DD)
-            let currentWeekStart = '';
-            let allWeekData = {}; // Map of week start date -> array of day objects
-            let currentClassUniqueId = null; // Store unique ID of the current class for highlighting
-            let lastLoadDate = new Date(); // Stores the date the files were last successfully loaded
-            
-            // --- Helper Functions ---
-            
-            /**
-             * Dynamically generates the list of timetable file paths based on the current date.
-             * It looks for the previous week, current week, and the next two weeks.
-             * Files must exist in the 'timetable/' folder with the format YYYY-MM-DD.json.
-             * @returns {string[]} Array of expected file paths.
-             */
-            function generateTimetableFilePaths() {
-                const now = new Date();
-                const weekStarts = [];
+            let allWeeks = []; // List of week start dates (YYYY-MM-DD)
+            let currentWeekStart = '';
+            let allWeekData = {}; // Map of week start date -> array of day objects
+            let currentClassUniqueId = null; // Store unique ID of the current class for highlighting
+            let lastLoadDate = new Date(); // Stores the date the files were last successfully loaded
+            
+            // --- Helper Functions ---
+            
+            /**
+             * Dynamically generates the list of timetable file paths based on the current date.
+             * It looks for the previous week, current week, and the next two weeks.
+             * Files must exist in the 'timetable/' folder with the format YYYY-MM-DD.json.
+             * @returns {string[]} Array of expected file paths.
+             */
+            function generateTimetableFilePaths() {
+                const now = new Date();
+                const weekStarts = [];
 
-                // Helper to get the Monday date for a given day offset (0 = current week, -1 = previous, +1 = next)
-                const getMonday = (dateObj, offset = 0) => {
-                    const date = new Date(dateObj); // Clone the date
-                    date.setDate(date.getDate() + (offset * 7)); // Apply week offset
+                // Helper to get the Monday date for a given day offset (0 = current week, -1 = previous, +1 = next)
+                const getMonday = (dateObj, offset = 0) => {
+                    const date = new Date(dateObj); // Clone the date
+                    date.setDate(date.getDate() + (offset * 7)); // Apply week offset
 
-                    // Calculate the number of days to subtract to get to Monday (where Monday is day 1, Sunday is day 0)
-                    const dayOfWeek = date.getDay(); 
-                    // dayOfWeek is 0 (Sun) to 6 (Sat).
-                    // We want to subtract (dayOfWeek - 1) days. If it's Sunday (0), subtract 6.
-                    const diff = date.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-                    
-                    const monday = new Date(date.setDate(diff));
-                    // Reset time to ensure clean date comparison
-                    monday.setHours(0, 0, 0, 0); 
-                    return monday;
-                };
+                    // Get the day of the week: 0=Sun, 1=Mon, ..., 6=Sat
+                    let dayOfWeek = date.getDay();
+                    // Convert Sunday (0) to 7 for consistent (day - 1) subtraction from Monday
+                    dayOfWeek = dayOfWeek === 0 ? 7 : dayOfWeek; 
+                    
+                    // Calculate difference (1 = Monday, 2 = Tuesday... so subtract (day - 1) days)
+                    const diff = date.getDate() - dayOfWeek + 1;
 
-                const formatDate = (date) => {
-                    const y = date.getFullYear();
-                    const m = String(date.getMonth() + 1).padStart(2, '0');
-                    const d = String(date.getDate()).padStart(2, '0');
-                    return `${y}-${m}-${d}`;
-                };
+                    const monday = new Date(date.setDate(diff));
+                    // Reset time to ensure clean date comparison
+                    monday.setHours(0, 0, 0, 0); 
+                    return monday;
+                };
 
-                // Check 1 week back, current week, and 2 weeks forward (4 total weeks)
-                const weekOffsets = [-1, 0, 1, 2]; 
+                const formatDate = (date) => {
+                    const y = date.getFullYear();
+                    const m = String(date.getMonth() + 1).padStart(2, '0');
+                    const d = String(date.getDate()).padStart(2, '0');
+                    return `${y}-${m}-${d}`;
+                };
 
-                weekOffsets.forEach(offset => {
-                    const monday = getMonday(now, offset);
-                    const dateStr = formatDate(monday);
-                    // The path is relative to where the HTML file is served
-                    weekStarts.push(`timetable/${dateStr}.json`); 
-                });
+                // Check 1 week back, current week, and 2 weeks forward (4 total weeks)
+                const weekOffsets = [-1, 0, 1, 2]; 
 
-                return weekStarts;
-            }
-            
-            // Helper to get date string in the format "Mon, 01-Dec-2025"
-            const getFormattedDateString = (dateObj) => {
-                const day = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
-                const dateNum = String(dateObj.getDate()).padStart(2, '0');
-                const month = dateObj.toLocaleDateString('en-US', { month: 'short' });
-                const year = dateObj.getFullYear();
-                return `${day}, ${dateNum}-${month}-${year}`;
-            };
+                weekOffsets.forEach(offset => {
+                    const monday = getMonday(now, offset);
+                    const dateStr = formatDate(monday);
+                    // The path is relative to where the HTML file is served
+                    weekStarts.push(`timetable/${dateStr}.json`); 
+                });
 
-            // Helper to handle date strings like "Mon, 01-Dec-2025" and return a Date object
-            const parseJsonDate = (dateStr) => {
-                const datePart = dateStr.includes(',') ? dateStr.split(', ')[1] : dateStr;
-                const [dayNum, monthStr, yearStr] = datePart.split('-');
-                return new Date(`${monthStr} ${dayNum}, ${yearStr}`);
-            };
+                return weekStarts;
+            }
+            
+            // Helper to get date string in the format "Mon, 01-Dec-2025" (Used for display and JSON key matching)
+            const getFormattedDateString = (dateObj) => {
+                const day = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+                const dateNum = String(dateObj.getDate()).padStart(2, '0');
+                const month = dateObj.toLocaleDateString('en-US', { month: 'short' });
+                const year = dateObj.getFullYear();
+                return `${day}, ${dateNum}-${month}-${year}`;
+            };
 
-            // Helper function to parse time string "HH:MM - HH:MM" and returns start hour and minute
-            function parseTime(timeStr, isStart) {
-                const timePart = isStart ? timeStr.split(' - ')[0] : timeStr.split(' - ')[1];
-                const parts = timePart.split(':');
-                return { hour: parseInt(parts[0], 10), minute: parseInt(parts[1], 10) };
-            }
+            // Helper to handle date strings like "Mon, 01-Dec-2025" and return a Date object
+            const parseJsonDate = (dateStr) => {
+                const datePart = dateStr.includes(',') ? dateStr.split(', ')[1] : dateStr;
+                const [dayNum, monthStr, yearStr] = datePart.split('-');
+                return new Date(`${monthStr} ${dayNum}, ${yearStr}`);
+            };
 
-            // --- Real-time Calculation Functions (Uses already loaded data) ---
+            // Helper function to parse time string "HH:MM - HH:MM" and returns start hour and minute
+            function parseTime(timeStr, isStart) {
+                const timePart = isStart ? timeStr.split(' - ')[0] : timeStr.split(' - ')[1];
+                const parts = timePart.split(':');
+                return { hour: parseInt(parts[0], 10), minute: parseInt(parts[1], 10) };
+            }
 
-            // Find the Current and Next Class Across All Weeks
-            function findCurrentAndNextClass(data) {
-                if (Object.keys(data).length === 0) return { currentClass: null, nextClass: null };
-                
-                const now = new Date();
-                const todayDateStr = getFormattedDateString(now); // e.g., "Fri, 05-Dec-2025"
+            // --- Real-time Calculation Functions (Uses already loaded data) ---
 
-                let nextClass = null;
-                let currentClass = null;
-                let closestTime = Infinity;
-            
-                for (const weekStart in data) {
-                    if (!data.hasOwnProperty(weekStart)) continue;
+            // Find the Current and Next Class Across All Weeks
+            function findCurrentAndNextClass(data) {
+                if (Object.keys(data).length === 0) return { currentClass: null, nextClass: null };
+                
+                const now = new Date();
+                // Clone now and set to midnight for future/past day comparison (FIX 1)
+                const nowMidnight = new Date(now);
+                nowMidnight.setHours(0, 0, 0, 0); 
+                
+                const todayDateStr = getFormattedDateString(now);
 
-                    for (const dayGroup of data[weekStart]) {
-                        
-                        // Check if it's the current day or a future day
-                        const jsonDate = parseJsonDate(dayGroup.date);
-                        const isToday = dayGroup.date === todayDateStr;
-                        
-                        // Only consider today or future days for next class
-                        if (jsonDate.setHours(0,0,0,0) >= now.setHours(0,0,0,0)) {
-                            
-                            for (const classItem of dayGroup.classes) {
-                                // Create a unique ID for the class
-                                classItem.uniqueId = `${weekStart}-${dayGroup.date}-${classItem.time}`;
-                                
-                                const startTimeParts = parseTime(classItem.time, true);
-                                const endTimeParts = parseTime(classItem.time, false);
-                                
-                                // Reset JSON date object to its original date's 00:00 for accurate time setting
-                                const classDateBase = parseJsonDate(dayGroup.date);
+                let nextClass = null;
+                let currentClass = null;
+                let closestTime = Infinity;
+            
+                for (const weekStart in data) {
+                    if (!data.hasOwnProperty(weekStart)) continue;
 
-                                const classStartTime = new Date(classDateBase);
-                                classStartTime.setHours(startTimeParts.hour, startTimeParts.minute, 0, 0);
+                    for (const dayGroup of data[weekStart]) {
+                        
+                        const jsonDate = parseJsonDate(dayGroup.date);
+                        // Clone JSON date and set to midnight for future/past day comparison (FIX 1)
+                        const jsonDateMidnight = new Date(jsonDate);
+                        jsonDateMidnight.setHours(0, 0, 0, 0);
 
-                                const classEndTime = new Date(classDateBase);
-                                classEndTime.setHours(endTimeParts.hour, endTimeParts.minute, 0, 0);
-                                
-                                // Check for CURRENT Class (only possible if it is TODAY)
-                                if (isToday && now.getTime() >= classStartTime.getTime() && now.getTime() < classEndTime.getTime()) {
-                                    currentClass = { 
-                                        ...classItem, 
-                                        fullDate: classStartTime,
-                                        endTime: classEndTime
-                                    };
-                                }
-                                
-                                // Check for NEXT Class (class is in the future)
-                                if (classStartTime.getTime() > now.getTime()) {
-                                    const diff = classStartTime.getTime() - now.getTime();
-                                    if (diff < closestTime) {
-                                        closestTime = diff;
-                                        nextClass = { ...classItem, fullDate: classStartTime };
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                return { currentClass, nextClass };
-            }
+                        const isToday = dayGroup.date === todayDateStr; 
 
-            // Update Clock and Current/Next Class Display (Runs every second)
-            function updateClock() {
-                const now = new Date();
-                const timeDisplay = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                
-                currentClock.textContent = timeDisplay;
-                
-                const { currentClass, nextClass } = findCurrentAndNextClass(allWeekData);
-                
-                let htmlToDisplay = '';
+                        // Only consider today or future days for next class
+                        if (jsonDateMidnight.getTime() >= nowMidnight.getTime()) {
+                            
+                            for (const classItem of dayGroup.classes) {
+                                // Create a unique ID for the class
+                                classItem.uniqueId = `${weekStart}-${dayGroup.date}-${classItem.time}`;
+                                
+                                const startTimeParts = parseTime(classItem.time, true);
+                                const endTimeParts = parseTime(classItem.time, false);
+                                
+                                // Reset JSON date object to its original date's 00:00 for accurate time setting
+                                const classDateBase = parseJsonDate(dayGroup.date);
 
-                // 1. Handle CURRENT Class (Full details are always shown)
-                if (currentClass) {
-                    currentClassUniqueId = currentClass.uniqueId; // Update global state
-                    const timeRemaining = currentClass.endTime.getTime() - now.getTime();
-                    const minutes = Math.floor(timeRemaining / (1000 * 60));
-                    const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
-                    
-                    htmlToDisplay = `
-                        <span class="material-icons" style="color: var(--color-current);">play_arrow</span>
-                        <span style="color: var(--color-current); font-weight: 700;">LIVE! (${minutes}m ${seconds}s left)</span>
-                        | ${currentClass.moduleCode} - ${currentClass.location}
-                    `;
-                } 
-                // 2. Handle NEXT Class
-                else if (nextClass) {
-                    currentClassUniqueId = null; // No current class active
-                    const timeRemaining = nextClass.fullDate.getTime() - now.getTime();
-                    
-                    // --- 24-Hour Filter Implementation ---
-                    const MAX_DISPLAY_DIFF_MS = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-                    
-                    if (timeRemaining < 0) {
-                        htmlToDisplay = `<span class="material-icons">alarm</span>No immediate class.`;
-                        nextClassDisplay.innerHTML = htmlToDisplay;
-                        return;
-                    }
-                    
-                    if (timeRemaining > MAX_DISPLAY_DIFF_MS) {
-                        // If the class is more than 24 hours away, show a generic message
-                        htmlToDisplay = `<span class="material-icons">alarm</span>No classes in the next 24 hours.`;
-                        nextClassDisplay.innerHTML = htmlToDisplay;
-                        return; 
-                    }
-                    // --- End 24-Hour Filter Implementation ---
+                                const classStartTime = new Date(classDateBase);
+                                classStartTime.setHours(startTimeParts.hour, startTimeParts.minute, 0, 0);
 
-                    const hours = Math.floor(timeRemaining / (1000 * 60 * 60));
-                    const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
-                    const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
-                    
-                    const timeRemainingStr = hours > 0 
-                        ? `${hours}h ${minutes}m ${seconds}s` 
-                        : `${minutes}m ${seconds}s`;
+                                const classEndTime = new Date(classDateBase);
+                                classEndTime.setHours(endTimeParts.hour, endTimeParts.minute, 0, 0);
+                                
+                                // Check for CURRENT Class (only possible if it is TODAY)
+                                if (isToday && now.getTime() >= classStartTime.getTime() && now.getTime() < classEndTime.getTime()) {
+                                    currentClass = { 
+                                        ...classItem, 
+                                        fullDate: classStartTime,
+                                        endTime: classEndTime
+                                    };
+                                }
+                                
+                                // Check for NEXT Class (class is in the future)
+                                if (classStartTime.getTime() > now.getTime()) {
+                                    const diff = classStartTime.getTime() - now.getTime();
+                                    if (diff < closestTime) {
+                                        closestTime = diff;
+                                        nextClass = { ...classItem, fullDate: classStartTime };
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                return { currentClass, nextClass };
+            }
 
-                    const datePart = nextClass.fullDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-                    
-                    // --- Customizing Next Class Display ---
-                    let classDetails = '';
-                    
-                    if (nextClass.isOnline) {
-                         // Show Online tag and location (which is usually the link/teams name)
-                        classDetails = `<span style="color: var(--color-current); font-weight: 500;">Online</span> | ${nextClass.moduleCode} - ${nextClass.location}`;
-                    } else {
-                        // Default to just class code and location (classroom)
-                        classDetails = `${nextClass.moduleCode} - ${nextClass.location}`;
-                    }
+            // Update Clock and Current/Next Class Display (Runs every second)
+            function updateClock() {
+                const now = new Date();
+                const timeDisplay = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                
+                currentClock.textContent = timeDisplay;
+                
+                const { currentClass, nextClass } = findCurrentAndNextClass(allWeekData);
+                
+                let htmlToDisplay = '';
 
-                    htmlToDisplay = `
-                        <span class="material-icons">alarm</span>
-                        <span style="color: var(--color-primary);">${timeRemainingStr}</span>
-                        | ${classDetails} (${datePart})
-                    `;
-                } 
-                // 3. Handle No Classes
-                else {
-                    currentClassUniqueId = null;
-                    htmlToDisplay = `<span class="material-icons">alarm</span>No upcoming classes found.`;
-                }
-                
-                nextClassDisplay.innerHTML = htmlToDisplay;
-                
-                // Re-render only if we are currently on the "Today" view
-                if (weekSelect.value === '__TODAY__') {
-                    applyCurrentClassHighlighting();
-                }
-            }
-            
-            // Applies/removes the highlight class based on the current class ID
-            function applyCurrentClassHighlighting() {
-                // Remove highlight from all cards first
-                document.querySelectorAll('.class-card.current-class').forEach(card => {
-                    card.classList.remove('current-class');
-                });
-                
-                // Apply highlight to the active class, if one exists and we are in the correct view
-                if (currentClassUniqueId) {
-                    const activeCard = document.querySelector(`.class-card[data-unique-id="${currentClassUniqueId}"]`);
-                    if (activeCard) {
-                        activeCard.classList.add('current-class');
-                    }
-                }
-            }
-            
-            // --- Daily File Reload Logic ---
-            
-            /**
-             * Checks if the current day has changed since the last successful load.
-             * If the date has changed, it calls fetchAllWeeks to reload the data.
-             * Runs on a regular interval (e.g., every 5 minutes).
-             */
-            function checkAndReloadDaily() {
-                const now = new Date();
-                
-                // Set both dates to midnight for comparison
-                const lastLoadMidnight = new Date(lastLoadDate);
-                lastLoadMidnight.setHours(0, 0, 0, 0);
+                // 1. Handle CURRENT Class (Full details are always shown)
+                if (currentClass) {
+                    currentClassUniqueId = currentClass.uniqueId; // Update global state
+                    const timeRemaining = currentClass.endTime.getTime() - now.getTime();
+                    const minutes = Math.floor(timeRemaining / (1000 * 60));
+                    const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+                    
+                    htmlToDisplay = `
+                        <span class="material-icons" style="color: var(--color-current);">play_arrow</span>
+                        <span style="color: var(--color-current); font-weight: 700;">LIVE! (${minutes}m ${seconds}s left)</span>
+                        | ${currentClass.moduleCode} - ${currentClass.location}
+                    `;
+                } 
+                // 2. Handle NEXT Class
+                else if (nextClass) {
+                    currentClassUniqueId = null; // No current class active
+                    const timeRemaining = nextClass.fullDate.getTime() - now.getTime();
+                    
+                    // --- 24-Hour Filter Implementation ---
+                    const MAX_DISPLAY_DIFF_MS = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+                    
+                    if (timeRemaining < 0) {
+                        // Should be caught by findCurrentAndNextClass, but safety check
+                        htmlToDisplay = `<span class="material-icons">alarm</span>No immediate class.`;
+                        nextClassDisplay.innerHTML = htmlToDisplay;
+                        return;
+                    }
+                    
+                    if (timeRemaining > MAX_DISPLAY_DIFF_MS) {
+                        // If the class is more than 24 hours away, show a generic message
+                        htmlToDisplay = `<span class="material-icons">alarm</span>Next class is >24 hours away.`;
+                        nextClassDisplay.innerHTML = htmlToDisplay;
+                        return; 
+                    }
+                    // --- End 24-Hour Filter Implementation ---
 
-                const nowMidnight = new Date(now);
-                nowMidnight.setHours(0, 0, 0, 0);
+                    const hours = Math.floor(timeRemaining / (1000 * 60 * 60));
+                    const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+                    
+                    const timeRemainingStr = hours > 0 
+                        ? `${hours}h ${minutes}m ${seconds}s` 
+                        : `${minutes}m ${seconds}s`;
 
-                // If the dates are different, it's a new day and we should reload
-                if (nowMidnight.getTime() > lastLoadMidnight.getTime()) {
-                    console.log("New day detected. Reloading timetable data.");
-                    fetchAllWeeks();
-                } else {
-                    console.log("Still the same day. No timetable file reload needed.");
-                }
-            }
+                    const datePart = nextClass.fullDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                    
+                    // --- Customizing Next Class Display ---
+                    let classDetails = '';
+                    
+                    if (nextClass.isOnline) {
+                         // Show Online tag and location (which is usually the link/teams name)
+                         classDetails = `<span style="color: var(--color-current); font-weight: 500;">Online</span> | ${nextClass.moduleCode} - ${nextClass.location}`;
+                    } else {
+                        // Default to just class code and location (classroom)
+                        classDetails = `${nextClass.moduleCode} - ${nextClass.location}`;
+                    }
 
+                    htmlToDisplay = `
+                        <span class="material-icons">alarm</span>
+                        <span style="color: var(--color-primary);">${timeRemainingStr}</span>
+                        | ${classDetails} (${datePart})
+                    `;
+                } 
+                // 3. Handle No Classes
+                else {
+                    currentClassUniqueId = null;
+                    htmlToDisplay = `<span class="material-icons">alarm</span>No upcoming classes found.`;
+                }
+                
+                nextClassDisplay.innerHTML = htmlToDisplay;
+                
+                // Re-render only if we are currently on the "Today" view, or if a class state changed
+                applyCurrentClassHighlighting();
+                
+                // Daily check to reload files
+                checkAndReloadDaily();
+            }
+            
+            // Applies/removes the highlight class based on the current class ID
+            function applyCurrentClassHighlighting() {
+                // Remove highlight from all cards first
+                document.querySelectorAll('.class-card.current-class').forEach(card => {
+                    card.classList.remove('current-class');
+                });
+                
+                // Apply highlight to the active class, if one exists and we are in the correct view
+                if (currentClassUniqueId) {
+                    const activeCard = document.querySelector(`.class-card[data-unique-id="${currentClassUniqueId}"]`);
+                    if (activeCard) {
+                        activeCard.classList.add('current-class');
+                        // Optional: Scroll the current class into view if it's not visible
+                        // activeCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+            }
+            
+            // --- Daily File Reload Logic ---
+            
+            /**
+             * Checks if the current day has changed since the last successful load.
+             * If the date has changed, it calls fetchAllWeeks to reload the data.
+             * Runs on a regular interval (e.g., every 5 minutes).
+             */
+            function checkAndReloadDaily() {
+                const now = new Date();
+                
+                // Set both dates to midnight for comparison
+                const lastLoadMidnight = new Date(lastLoadDate);
+                lastLoadMidnight.setHours(0, 0, 0, 0);
 
-            // --- Core Timetable Display Functions ---
+                const nowMidnight = new Date(now);
+                nowMidnight.setHours(0, 0, 0, 0);
 
-            async function fetchAllWeeks() {
-                timetableList.innerHTML = `<div style='text-align: center; padding: 50px;'><p style='color: var(--text-subtle);'>Fetching all week data...</p></div>`;
-            
-                const paths = generateTimetableFilePaths();
-                const fetchPromises = paths.map(path => 
-                    fetch(path)
-                        .then(response => {
-                            if (!response.ok && response.status !== 404) {
-                                throw new Error(`HTTP error! status: ${response.status}`);
-                            }
-                            // Return null for 404s, we only care about successful loads
-                            return response.status === 404 ? null : response.json(); 
-                        })
-                        .catch(error => {
-                            console.warn(`Could not load ${path}. Skipping.`, error);
-                            return null;
-                        })
-                );
-
-                const results = await Promise.all(fetchPromises);
-                
-                allWeekData = {};
-                allWeeks = [];
-
-                results.forEach(data => {
-                    if (data && data.weekStartDate && data.days.length > 0) {
-                        const weekStart = data.weekStartDate;
-                        allWeekData[weekStart] = data.days;
-                        allWeeks.push(weekStart);
-                    }
-                });
-                
-                // Update the last load date upon successful (partial or full) fetch
-                lastLoadDate = new Date(); 
-
-                // Sort weeks chronologically
-                allWeeks.sort((a, b) => new Date(a) - new Date(b));
-
-                updateWeekSelect();
-                
-                // Determine the default view
-                const defaultWeek = allWeeks.find(weekStart => {
-                    const now = new Date();
-                    const monday = new Date(weekStart);
-                    const sunday = new Date(monday);
-                    sunday.setDate(monday.getDate() + 6);
-                    
-                    // Check if today falls between Monday and Sunday of this week
-                    return now.getTime() >= monday.getTime() && now.getTime() < sunday.getTime() + (24 * 60 * 60 * 1000);
-                }) || allWeeks[0];
-                
-                // Set the current view to Today, or the current week if Today data is not available
-                weekSelect.value = defaultWeek ? '__TODAY__' : (allWeeks.length > 0 ? allWeeks[0] : '__TODAY__');
-                currentWeekStart = defaultWeek || allWeeks[0];
-
-                renderTimetable(weekSelect.value);
-            }
-            
-            function updateWeekSelect() {
-                // Store current selection before clearing
-                const currentSelection = weekSelect.value;
-                weekSelect.innerHTML = '';
-                
-                // 1. Add special views (Today/Tomorrow)
-                const DAY_OPTIONS = { '__TODAY__': 'Today', '__TOMORROW__': 'Tomorrow' };
-                Object.entries(DAY_OPTIONS).forEach(([key, value]) => {
-                    const option = document.createElement('option');
-                    option.value = key;
-                    option.textContent = value;
-                    option.selected = (key === currentSelection);
-                    weekSelect.appendChild(option);
-                });
-                
-                // 2. Add Week views
-                allWeeks.forEach(weekStart => {
-                    const mondayDate = new Date(weekStart);
-                    const endDate = new Date(mondayDate);
-                    endDate.setDate(mondayDate.getDate() + 6);
-                    
-                    const mondayStr = mondayDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                    const endStr = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                    
-                    const option = document.createElement('option');
-                    option.value = weekStart;
-                    option.textContent = `Week: ${mondayStr} - ${endStr}`;
-                    option.selected = (weekStart === currentSelection);
-                    weekSelect.appendChild(option);
-                });
-
-                if (allWeeks.length === 0) {
-                    weekSelect.innerHTML = `<option selected>No Timetable Data Found</option>`;
-                }
-            }
+                // If the dates are different, it's a new day and we should reload
+                if (nowMidnight.getTime() > lastLoadMidnight.getTime()) {
+                    console.log("New day detected. Reloading timetable data.");
+                    fetchAllWeeks();
+                } else {
+                    // Throttle this log if it becomes too noisy
+                    // console.log("Still the same day. No timetable file reload needed.");
+                }
+            }
 
 
-            function renderTimetable(viewKey) {
-                let daysToDisplay = [];
-                const now = new Date();
-                const todayDateStr = getFormattedDateString(now);
-                const tomorrow = new Date(now);
-                tomorrow.setDate(now.getDate() + 1);
-                const tomorrowDateStr = getFormattedDateString(tomorrow);
-                
-                if (viewKey === '__TODAY__' || viewKey === '__TOMORROW__') {
-                    const targetDateStr = viewKey === '__TODAY__' ? todayDateStr : tomorrowDateStr;
-                    
-                    // Iterate through all weeks to find the data for the specific day
-                    for (const weekStart in allWeekData) {
-                        const day = allWeekData[weekStart].find(d => d.date === targetDateStr);
-                        if (day) {
-                            daysToDisplay.push(day);
-                            currentWeekStart = weekStart; // Set for context, although this view is day-specific
-                            break; 
-                        }
-                    }
-                    if (daysToDisplay.length === 0) {
-                         timetableList.innerHTML = `<div class="day-header">${viewKey.replace(/__/g, '')}</div><p style="text-align: center; color: var(--text-subtle); padding: 20px;">No classes scheduled for ${viewKey === '__TODAY__' ? 'Today' : 'Tomorrow'}.</p>`;
-                         applyCurrentClassHighlighting(); // Clear any old highlights
-                         return;
-                    }
-                } else if (allWeekData[viewKey]) {
-                    // Display a full week
-                    daysToDisplay = allWeekData[viewKey];
-                    currentWeekStart = viewKey;
-                } else {
-                    timetableList.innerHTML = `<p style="text-align: center; color: var(--text-subtle); padding: 50px;">Please select a week view or ensure timetable files are available.</p>`;
-                    return;
-                }
+            // --- Core Timetable Display Functions ---
 
-                let html = '';
+            async function fetchAllWeeks() {
+                timetableList.innerHTML = `<div style='text-align: center; padding: 50px;'><p style='color: var(--text-subtle);'>Fetching all week data...</p></div>`;
+            
+                const paths = generateTimetableFilePaths();
+                const fetchPromises = paths.map(path => 
+                    fetch(path)
+                        .then(response => {
+                            if (!response.ok && response.status !== 404) {
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+                            // Return null for 404s, we only care about successful loads
+                            return response.status === 404 ? null : response.json(); 
+                        })
+                        .catch(error => {
+                            console.warn(`Could not load ${path}. Skipping.`, error);
+                            return null;
+                        })
+                );
 
-                daysToDisplay.forEach(day => {
-                    // Check if the day being rendered is today
-                    const isToday = day.date === todayDateStr;
-                    
-                    html += `<div class="day-header">${day.date} ${isToday ? ' (TODAY)' : ''}</div>`;
+                const results = await Promise.all(fetchPromises);
+                
+                allWeekData = {};
+                allWeeks = [];
 
-                    if (day.classes.length === 0) {
-                        html += `<div class="class-card" style="padding: 10px; color: var(--text-subtle); font-style: italic;">No classes scheduled.</div>`;
-                        return;
-                    }
+                results.forEach(data => {
+                    if (data && data.weekStartDate && data.days.length > 0) {
+                        const weekStart = data.weekStartDate;
+                        allWeekData[weekStart] = data.days;
+                        allWeeks.push(weekStart);
+                    }
+                });
+                
+                // Update the last load date upon successful (partial or full) fetch
+                lastLoadDate = new Date(); 
 
-                    day.classes.forEach(cls => {
-                        const modalityIcon = cls.isOnline 
-                            ? `<span class="material-icons online-icon">laptop_chromebook</span>` 
-                            : `<span class="material-icons inperson-icon">room</span>`;
-                        // Only show online tag if needed
-                        const modalityTag = cls.isOnline 
-                            ? `<span class="pill online-tag">Online</span>` 
-                            : ``; // Removed In-Person tag
-                        
-                        // Construct the unique ID for current class comparison
-                        const uniqueId = `${currentWeekStart}-${day.date}-${cls.time}`;
+                // Sort weeks chronologically
+                allWeeks.sort((a, b) => new Date(a) - new Date(b));
 
-                        // Apply today class if needed (for all classes today)
-                        const todayClass = isToday ? 'today' : '';
-                        
-                        // Current class highlight will be applied via applyCurrentClassHighlighting()
+                updateWeekSelect();
+                
+                // Determine the default view
+                const defaultWeek = allWeeks.find(weekStart => {
+                    const now = new Date();
+                    const monday = new Date(weekStart);
+                    const sunday = new Date(monday);
+                    sunday.setDate(monday.getDate() + 6);
+                    
+                    // Check if today falls between Monday and Sunday of this week
+                    return now.getTime() >= monday.getTime() && now.getTime() < sunday.getTime() + (24 * 60 * 60 * 1000);
+                }) || allWeeks[0];
+                
+                // Set the current view to Today, or the current week if Today data is not available
+                weekSelect.value = defaultWeek ? '__TODAY__' : (allWeeks.length > 0 ? allWeeks[0] : '__TODAY__');
+                currentWeekStart = defaultWeek || allWeeks[0];
 
-                        html += `
-                            <div class="class-card ${todayClass}" data-unique-id="${uniqueId}">
-                                <div class="card-title">
-                                    ${modalityIcon}
-                                    ${cls.moduleCode}
-                                    ${modalityTag}
-                                </div>
-                                <div class="card-subtitle">
-                                    ${cls.moduleName}
-                                </div>
-                                <div class="card-details">
-                                    <span class="card-detail-item">
-                                        <span class="material-icons">schedule</span>
-                                        ${cls.time}
-                                    </span>
-                                    <span class="card-detail-item">
-                                        <span class="material-icons">person</span>
-                                        ${cls.lecturer || 'TBA'}
-                                    </span>
-                                    <span class="card-detail-item">
-                                        <span class="material-icons">meeting_room</span>
-                                        ${cls.location}
-                                    </span>
-                                    <span class="card-detail-item">
-                                        <span class="material-icons">group</span>
-                                        Group ${cls.group}
-                                    </span>
-                                </div>
-                            </div>
-                        `;
-                    });
-                });
+                renderTimetable(weekSelect.value);
+            }
+            
+            function updateWeekSelect() {
+                // Store current selection before clearing
+                const currentSelection = weekSelect.value;
+                weekSelect.innerHTML = '';
+                
+                // 1. Add special views (Today/Tomorrow)
+                const DAY_OPTIONS = { '__TODAY__': 'Today', '__TOMORROW__': 'Tomorrow' };
+                Object.entries(DAY_OPTIONS).forEach(([key, value]) => {
+                    const option = document.createElement('option');
+                    option.value = key;
+                    option.textContent = value;
+                    // Preserve selection if it was one of these special keys
+                    if (key === currentSelection) {
+                        option.selected = true;
+                    } else if (!currentSelection || currentSelection.startsWith('__')) {
+                        // If no previous selection, default to Today
+                        option.selected = (key === '__TODAY__');
+                    }
+                    weekSelect.appendChild(option);
+                });
+                
+                // 2. Add Week views
+                allWeeks.forEach(weekStart => {
+                    const mondayDate = new Date(weekStart);
+                    const endDate = new Date(mondayDate);
+                    endDate.setDate(mondayDate.getDate() + 6);
+                    
+                    const mondayStr = mondayDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    const endStr = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    
+                    const option = document.createElement('option');
+                    option.value = weekStart;
+                    option.textContent = `Week: ${mondayStr} - ${endStr}`;
+                    option.selected = (weekStart === currentSelection);
+                    weekSelect.appendChild(option);
+                });
 
-                timetableList.innerHTML = html;
-                
-                // After rendering the new HTML, apply the 'current-class' highlight
-                applyCurrentClassHighlighting();
-            }
+                if (allWeeks.length === 0) {
+                    // If files failed to load, ensure the list isn't empty
+                    if (weekSelect.options.length === 0) {
+                        weekSelect.innerHTML = `<option selected>No Timetable Data Found</option>`;
+                    }
+                } else {
+                    // If a week was selected before, ensure it remains selected if it exists
+                    if (!weekSelect.value && allWeeks.includes(currentSelection)) {
+                        weekSelect.value = currentSelection;
+                    }
+                }
+            }
 
-            
-            // --- Event Listeners and Initializers ---
 
-            // Handle view change (Week/Today/Tomorrow)
-            weekSelect.addEventListener('change', (event) => {
-                renderTimetable(event.target.value);
-            });
+            function renderTimetable(viewKey) {
+                let daysToDisplay = [];
+                const now = new Date();
+                
+                // --- Preparation for Day-Specific View (FIX 2) ---
+                const todayMidnight = new Date(now);
+                todayMidnight.setHours(0, 0, 0, 0);
 
-            // Start the real-time clock and next-class update
-            setInterval(updateClock, 1000); 
-            
-            // Check for a new day and reload the data files every 5 minutes
-            // This ensures the 'Today' view and file paths are correct across midnight.
-            setInterval(checkAndReloadDaily, 5 * 60 * 1000); 
+                const tomorrowMidnight = new Date(now);
+                tomorrowMidnight.setDate(now.getDate() + 1);
+                tomorrowMidnight.setHours(0, 0, 0, 0);
+                // --- End Preparation ---
+                
+                if (viewKey === '__TODAY__' || viewKey === '__TOMORROW__') {
+                    const targetMidnight = viewKey === '__TODAY__' ? todayMidnight : tomorrowMidnight;
+                    let foundDay = null;
+                    
+                    // Iterate through all weeks to find the data for the specific day
+                    for (const weekStart in allWeekData) {
+                        foundDay = allWeekData[weekStart].find(d => {
+                            const dayMidnight = parseJsonDate(d.date);
+                            dayMidnight.setHours(0, 0, 0, 0);
+                            return dayMidnight.getTime() === targetMidnight.getTime();
+                        });
+                        
+                        if (foundDay) {
+                            daysToDisplay.push(foundDay);
+                            currentWeekStart = weekStart; // Set for context, although this view is day-specific
+                            break; 
+                        }
+                    }
+                    
+                    if (!foundDay) {
+                         timetableList.innerHTML = `<div class="day-header">${viewKey.replace(/__/g, '')}</div><p style="text-align: center; color: var(--text-subtle); padding: 20px;">No classes scheduled for ${viewKey === '__TODAY__' ? 'Today' : 'Tomorrow'}.</p>`;
+                         applyCurrentClassHighlighting(); // Clear any old highlights
+                         return;
+                    }
+                } else if (allWeekData[viewKey]) {
+                    // Display a full week
+                    daysToDisplay = allWeekData[viewKey];
+                    currentWeekStart = viewKey;
+                } else {
+                    timetableList.innerHTML = `<p style="text-align: center; color: var(--text-subtle); padding: 50px;">Please select a week view or ensure timetable files are available.</p>`;
+                    return;
+                }
 
-            // Initial load of data and render
-            fetchAllWeeks();
-            updateClock(); // Initial clock update right away
-        });
-    </script>
+                let html = '';
 
+                daysToDisplay.forEach(day => {
+                    // Check if the day being rendered is today (FIX 2: Using robust Date comparison)
+                    const dayMidnight = parseJsonDate(day.date);
+                    dayMidnight.setHours(0, 0, 0, 0);
+                    const isToday = dayMidnight.getTime() === todayMidnight.getTime();
+                    
+                    html += `<div class="day-header">${day.date} ${isToday ? ' (TODAY)' : ''}</div>`;
+
+                    if (day.classes.length === 0) {
+                        html += `<div class="class-card" style="padding: 10px; color: var(--text-subtle); font-style: italic;">No classes scheduled.</div>`;
+                        return;
+                    }
+
+                    day.classes.forEach(cls => {
+                        const modalityIcon = cls.isOnline 
+                            ? `<span class="material-icons online-icon">laptop_chromebook</span>` 
+                            : `<span class="material-icons inperson-icon">room</span>`;
+                        
+                        const modalityTag = cls.isOnline 
+                            ? `<span class="pill online-tag">Online</span>` 
+                            : ``; 
+                        
+                        // Construct the unique ID for current class comparison
+                        const uniqueId = `${currentWeekStart}-${day.date}-${cls.time}`;
+
+                        // Apply today class if needed (for all classes today)
+                        const todayClass = isToday ? 'today' : '';
+                        
+                        html += `
+                            <div class="class-card ${todayClass}" data-unique-id="${uniqueId}">
+                                <div class="card-title">
+                                    ${modalityIcon}
+                                    ${cls.moduleCode} - ${cls.moduleName} ${modalityTag}
+                                </div>
+                                <div class="card-subtitle">${cls.staffName} (${cls.classType})</div>
+                                <div class="card-details">
+                                    <span class="card-detail-item">
+                                        <span class="material-icons">schedule</span>
+                                        ${cls.time}
+                                    </span>
+                                    <span class="card-detail-item" style="flex-grow: 1; text-align: right;">
+                                        <span class="material-icons">location_on</span>
+                                        ${cls.location}
+                                    </span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                });
+                
+                timetableList.innerHTML = html;
+                // Apply current class highlight immediately after rendering
+                applyCurrentClassHighlighting(); 
+            }
+
+            // --- Event Listeners and Initialization ---
+
+            weekSelect.addEventListener('change', (event) => {
+                renderTimetable(event.target.value);
+            });
+
+            // Initial fetch and setup
+            fetchAllWeeks();
+
+            // Setup the recurring updates
+            setInterval(updateClock, 1000); // Update time and check for current/next class every second
+            // Daily reload is handled within updateClock now via checkAndReloadDaily()
+        });
+    </script>
 </body>
 </html>
