@@ -115,6 +115,36 @@
               "isOnline": false
             }
           ]
+        },
+        {
+          "date": "Sat, 06-Dec-2025",
+          "classes": [
+            {
+              "moduleCode": "AICT023-4-1-CA-L-7",
+              "moduleName": "COMPUTER ARCHITECTURE",
+              "time": "08:30 - 10:30",
+              "location": "S-05-02",
+              "campus": "APU CAMPUS",
+              "lecturer": "TS. MUHAMAD AMIN BIN SAHARI",
+              "isOnline": false,
+              "classType": "Lecture",
+              "isReplacement": false,
+              "replacementType": ""
+            },
+            {
+              "moduleCode": "AICT016-4-1-DTIN-L-9",
+              "moduleName": "DIGITAL THINKING AND INNOVATION",
+              "time": "14:30-16:30",
+              "location": "E-09-03",
+              "campus": "APU CAMPUS",
+              "lecturer": "DR. SAFA'IE BIN MANGIR",
+              "isOnline": false,
+              "classType": "Lecture",
+              "isReplacement": false,
+              "replacementType": ""
+            }
+          ]
         }
       ]
 }
+
