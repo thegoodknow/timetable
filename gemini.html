@@ -144,7 +144,14 @@
             display: flex;
             flex-direction: column;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            transition: border-left 0.3s ease;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .class-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
 
         .class-card.today {
@@ -221,7 +228,6 @@
             color: var(--color-current);
         }
 
-
         .pill {
             background-color: var(--color-pill-blue);
             color: var(--text-light);
@@ -242,6 +248,122 @@
             background-color: var(--color-replacement-bg);
             color: var(--text-light);
             font-weight: 700;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid var(--color-primary);
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            animation: fadeIn 0.3s;
+        }
+
+        .modal.show {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: var(--bg-card);
+            padding: 24px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideIn 0.3s;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--text-light);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-subtle);
+            cursor: pointer;
+            font-size: 24px;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+        }
+
+        .modal-body {
+            color: var(--text-subtle);
+        }
+
+        .modal-detail-row {
+            display: flex;
+            margin-bottom: 12px;
+            align-items: flex-start;
+        }
+
+        .modal-detail-icon {
+            margin-right: 12px;
+            color: var(--color-primary);
+            flex-shrink: 0;
+        }
+
+        .modal-detail-content {
+            flex-grow: 1;
+        }
+
+        .modal-detail-label {
+            font-weight: bold;
+            color: var(--text-light);
+            margin-bottom: 4px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
         
         /* Responsive adjustments */
@@ -281,7 +403,7 @@
 
         <div class="controls-group">
             <span style="color: var(--text-subtle); font-size: 0.9rem;">Select View:</span>
-            <select class="select-control" id="week-select">
+            <select class="select-control" id="week-select" aria-label="Select week view">
                 <option>Loading Views...</option>
             </select>
         </div>
@@ -289,7 +411,23 @@
 
     <div class="timetable-content" id="timetable-list">
         <div style="text-align: center; padding: 50px;">
+            <div class="spinner"></div>
             <p style="color: var(--text-subtle);">Loading timetable...</p>
+        </div>
+    </div>
+
+    <!-- Class Details Modal -->
+    <div id="class-modal" class="modal" role="dialog" aria-labelledby="modal-title" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title" class="modal-title">Class Details</h2>
+                <button class="modal-close" onclick="closeModal()" aria-label="Close modal">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <div id="modal-body" class="modal-body">
+                <!-- Modal content will be inserted here -->
+            </div>
         </div>
     </div>
 
@@ -300,19 +438,23 @@
         function makeUniqueId(weekStart, dayDate, time, moduleCode) {
             return `${weekStart}___${dayDate}___${time}___${moduleCode}`;
         }
+        
         function parseJsonDate(dateStr) {
             // Converts "Day, DD-Month-YYYY" to a Date object
             const datePart = dateStr.includes(',') ? dateStr.split(', ')[1] : dateStr;
             const [dayNum, monthStr, yearStr] = datePart.split('-');
             return new Date(`${monthStr} ${dayNum}, ${yearStr}`); 
         }
+        
         function parseTime(time, isStart) {
             if (!time || !time.includes("-")) return { hour: 0, minute: 0 };
             const str = isStart ? time.split(" - ")[0] : time.split(" - ")[1];
             const [h, m] = str.split(":");
             return { hour: +h, minute: +m };
         }
+        
         const formatYYYYMMDD = d => d.toISOString().slice(0,10);
+        
         function getMondayOf(date) {
             const c = new Date(date);
             const d = c.getDay(); // 0 = Sunday, 1 = Monday
@@ -323,11 +465,27 @@
             return c;
         }
 
+        // --- Simple Cache Mechanism ---
+        const cache = {
+            data: {},
+            isValid: function(key) {
+                return this.data[key] && (Date.now() - this.data[key].timestamp < 3600000); // 1 hour
+            },
+            get: function(key) {
+                return this.isValid(key) ? this.data[key].value : null;
+            },
+            set: function(key, value) {
+                this.data[key] = { value, timestamp: Date.now() };
+            }
+        };
+
         // --- DOM Elements & Global State ---
         const timetableList = document.getElementById('timetable-list');
         const weekSelect = document.getElementById('week-select');
         const currentClock = document.getElementById('current-clock');
         const nextClassDisplay = document.getElementById('next-class-display');
+        const classModal = document.getElementById('class-modal');
+        const modalBody = document.getElementById('modal-body');
 
         let allWeeks = [];
         let currentWeekStart = ''; 
@@ -335,6 +493,95 @@
         let currentClassUniqueId = null;
         let lastLoadDate = new Date(); 
 
+        // --- Modal Functions ---
+        function showModal(classData) {
+            const { moduleCode, moduleName, lecturer, classType, time, location, isOnline, isReplacement, replacementType, notes } = classData;
+            
+            let modalityInfo = '';
+            if (isReplacement) {
+                modalityInfo = `<span style="color: var(--color-replacement); font-weight: bold;">Replacement ${replacementType ? replacementType.toUpperCase() : 'CLASS'}</span>`;
+            } else if (isOnline) {
+                modalityInfo = `<span style="color: var(--color-current); font-weight: bold;">Online Class</span>`;
+            } else {
+                modalityInfo = `<span style="color: var(--color-primary); font-weight: bold;">In-Person Class</span>`;
+            }
+
+            modalBody.innerHTML = `
+                <div class="modal-detail-row">
+                    <span class="material-icons modal-detail-icon">book</span>
+                    <div class="modal-detail-content">
+                        <div class="modal-detail-label">Module</div>
+                        <div>${moduleCode ?? 'N/A'} - ${moduleName ?? 'N/A'}</div>
+                    </div>
+                </div>
+                <div class="modal-detail-row">
+                    <span class="material-icons modal-detail-icon">person</span>
+                    <div class="modal-detail-content">
+                        <div class="modal-detail-label">Lecturer</div>
+                        <div>${lecturer ?? 'N/A'}</div>
+                    </div>
+                </div>
+                <div class="modal-detail-row">
+                    <span class="material-icons modal-detail-icon">category</span>
+                    <div class="modal-detail-content">
+                        <div class="modal-detail-label">Type</div>
+                        <div>${classType ?? 'N/A'}</div>
+                    </div>
+                </div>
+                <div class="modal-detail-row">
+                    <span class="material-icons modal-detail-icon">schedule</span>
+                    <div class="modal-detail-content">
+                        <div class="modal-detail-label">Time</div>
+                        <div>${time ?? 'N/A'}</div>
+                    </div>
+                </div>
+                <div class="modal-detail-row">
+                    <span class="material-icons modal-detail-icon">location_on</span>
+                    <div class="modal-detail-content">
+                        <div class="modal-detail-label">Location</div>
+                        <div>${location ?? 'N/A'}</div>
+                    </div>
+                </div>
+                <div class="modal-detail-row">
+                    <span class="material-icons modal-detail-icon">info</span>
+                    <div class="modal-detail-content">
+                        <div class="modal-detail-label">Modality</div>
+                        <div>${modalityInfo}</div>
+                    </div>
+                </div>
+                ${notes ? `
+                <div class="modal-detail-row">
+                    <span class="material-icons modal-detail-icon">note</span>
+                    <div class="modal-detail-content">
+                        <div class="modal-detail-label">Notes</div>
+                        <div>${notes}</div>
+                    </div>
+                </div>
+                ` : ''}
+            `;
+            
+            classModal.classList.add('show');
+            classModal.setAttribute('aria-hidden', 'false');
+        }
+
+        function closeModal() {
+            classModal.classList.remove('show');
+            classModal.setAttribute('aria-hidden', 'true');
+        }
+
+        // Close modal when clicking outside
+        classModal.addEventListener('click', (e) => {
+            if (e.target === classModal) {
+                closeModal();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && classModal.classList.contains('show')) {
+                closeModal();
+            }
+        });
 
         // --- Real-time Logic (Finds current and next class from loaded data) ---
 
@@ -355,6 +602,7 @@
                     const classDateMidnight = new Date(classDate);
                     classDateMidnight.setHours(0,0,0,0);
                     
+                    // Skip past days
                     if (classDateMidnight < nowMidnight) continue; 
 
                     for (const cls of dayObj.classes) {
@@ -379,15 +627,14 @@
                             }
                         }
 
-                        // 2. Next Class Check (must be in the future, within 24 hours)
+                        // 2. Next Class Check (any future class)
                         if (start > now) {
                             const diff = start - now;
                             
-                            if (diff < 24 * 60 * 60 * 1000) { 
-                                if (diff < bestDiff) {
-                                    bestDiff = diff;
-                                    nextClass = { ...cls, fullDate: start };
-                                }
+                            // Find the closest upcoming class
+                            if (diff < bestDiff) {
+                                bestDiff = diff;
+                                nextClass = { ...cls, fullDate: start };
                             }
                         }
                     }
@@ -413,20 +660,29 @@
                 html = `
                     <span class="material-icons" style="color:var(--color-current)">play_arrow</span>
                     <span style="color:var(--color-current);font-weight:700">LIVE! (${m}m ${s}s)</span>
-                    | ${currentClass.moduleCode || 'CODE'} - ${currentClass.location || 'LOC'}
+                    | ${currentClass.moduleCode ?? 'CODE'} - ${currentClass.location ?? 'LOC'}
                 `;
             }
             else if (nextClass) {
                 currentClassUniqueId = null;
 
                 const diff = nextClass.fullDate - now;
-                const h = Math.floor(diff/3600000);
-                const m = Math.floor((diff%3600000)/60000);
-                const s = Math.floor((diff%60000)/1000);
+                const days = Math.floor(diff / (24 * 60 * 60 * 1000));
+                const hours = Math.floor((diff % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+                const minutes = Math.floor((diff % (60 * 60 * 1000)) / (60 * 1000));
+                const seconds = Math.floor((diff % (60 * 1000)) / 1000);
 
-                const timeStr = h > 0 ? `${h}h ${m}m ${s}s` : `${m}m ${s}s`;
-                const datePart = nextClass.fullDate.toLocaleDateString('en-US', { weekday: 'short' });
-                const codeLoc = `${nextClass.moduleCode || 'CODE'} - ${nextClass.location || 'LOC'}`;
+                let timeStr = '';
+                if (days > 0) {
+                    timeStr = `${days}d ${hours}h ${minutes}m`;
+                } else if (hours > 0) {
+                    timeStr = `${hours}h ${minutes}m ${seconds}s`;
+                } else {
+                    timeStr = `${minutes}m ${seconds}s`;
+                }
+
+                const datePart = nextClass.fullDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                const codeLoc = `${nextClass.moduleCode ?? 'CODE'} - ${nextClass.location ?? 'LOC'}`;
 
                 html += `
                     <span style="color:var(--color-primary)">${timeStr}</span>
@@ -435,7 +691,7 @@
             }
             else {
                 currentClassUniqueId = null;
-                html += `No upcoming classes within 24h.`;
+                html += `No upcoming classes.`;
             }
 
             nextClassDisplay.innerHTML = html;
@@ -473,7 +729,24 @@
         // --- Data Fetching and Rendering ---
 
         async function fetchAllWeeks() {
-            timetableList.innerHTML = `<p style="padding:30px;text-align:center;color:var(--text-subtle)">Loading week data...</p>`;
+            // Show loading state
+            timetableList.innerHTML = `
+                <div style="text-align: center; padding: 50px;">
+                    <div class="spinner"></div>
+                    <p style="color: var(--text-subtle);">Loading week data...</p>
+                </div>
+            `;
+            
+            // Check cache first
+            const cacheKey = 'timetableData';
+            const cachedData = cache.get(cacheKey);
+            
+            if (cachedData) {
+                console.log("Using cached data");
+                allWeekData = cachedData;
+                processWeekData();
+                return;
+            }
             
             const now = new Date();
             const paths = [];
@@ -484,22 +757,48 @@
                 paths.push(`timetable/${formatYYYYMMDD(m)}.json`);
             });
 
-            const results = await Promise.all(paths.map(p =>
-                fetch(p).then(r => r.ok ? r.json() : null).catch(()=>null)
-            ));
+            try {
+                const results = await Promise.all(paths.map(p =>
+                    fetch(p).then(r => r.ok ? r.json() : null).catch(()=>null)
+                ));
 
-            allWeekData = {};
-            allWeeks = [];
+                allWeekData = {};
+                allWeeks = [];
 
-            results.forEach(j=>{
-                if (j && j.weekStartDate) {
-                    allWeekData[j.weekStartDate] = j.days;
-                    allWeeks.push(j.weekStartDate);
-                }
-            });
+                results.forEach(j=>{
+                    if (j && j.weekStartDate) {
+                        allWeekData[j.weekStartDate] = j.days;
+                        allWeeks.push(j.weekStartDate);
+                    }
+                });
 
-            lastLoadDate = new Date();
-            
+                lastLoadDate = new Date();
+                
+                // Cache the data
+                cache.set(cacheKey, allWeekData);
+                
+                allWeeks.sort((a,b)=>new Date(a)-new Date(b));
+                updateWeekSelect();
+
+                const initialSelection = weekSelect.value || "__TODAY__";
+                weekSelect.value = initialSelection;
+                renderTimetable(initialSelection);
+            } catch (error) {
+                console.error("Failed to fetch timetable data:", error);
+                timetableList.innerHTML = `
+                    <div style="text-align: center; padding: 50px;">
+                        <p style="color: var(--text-subtle); margin-bottom: 20px;">Failed to load timetable. Please check your connection.</p>
+                        <button onclick="fetchAllWeeks()" class="select-control" style="margin: 0 auto; display: block;">
+                            <span class="material-icons" style="font-size: 18px; vertical-align: middle; margin-right: 5px;">refresh</span>
+                            Retry
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        function processWeekData() {
+            allWeeks = Object.keys(allWeekData);
             allWeeks.sort((a,b)=>new Date(a)-new Date(b));
             updateWeekSelect();
 
@@ -565,7 +864,22 @@
                     currentWeekStart = foundWeekStart; 
                     days = [foundDay];
                 } else {
-                    timetableList.innerHTML = `<div class="day-header">${key==="__TODAY__"?"Today":"Tomorrow"}</div><p style="padding:20px;color:var(--text-subtle);text-align:center">No classes scheduled.</p>`;
+                    const fragment = document.createDocumentFragment();
+                    const dayHeader = document.createElement('div');
+                    dayHeader.className = 'day-header';
+                    dayHeader.textContent = key==="__TODAY__"?"Today":"Tomorrow";
+                    fragment.appendChild(dayHeader);
+                    
+                    const noClasses = document.createElement('div');
+                    noClasses.className = 'class-card';
+                    noClasses.style.padding = '10px';
+                    noClasses.style.color = 'var(--text-subtle)';
+                    noClasses.style.fontStyle = 'italic';
+                    noClasses.textContent = 'No classes scheduled.';
+                    fragment.appendChild(noClasses);
+                    
+                    timetableList.innerHTML = '';
+                    timetableList.appendChild(fragment);
                     applyCurrentClassHighlighting();
                     return;
                 }
@@ -575,16 +889,26 @@
                 currentWeekStart = key;
             }
 
-            let html = "";
+            // Use document fragment for better performance
+            const fragment = document.createDocumentFragment();
 
             days.forEach(day=>{
                 const dd = parseJsonDate(day.date);
                 const isToday = dd.toDateString() === new Date().toDateString();
 
-                html += `<div class="day-header">${day.date}${isToday?" (TODAY)":""}</div>`;
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'day-header';
+                dayHeader.textContent = `${day.date}${isToday?" (TODAY)":""}`;
+                fragment.appendChild(dayHeader);
 
                 if (day.classes.length === 0) {
-                    html += `<div class="class-card" style="padding: 10px; color: var(--text-subtle); font-style: italic;">No classes scheduled.</div>`;
+                    const noClasses = document.createElement('div');
+                    noClasses.className = 'class-card';
+                    noClasses.style.padding = '10px';
+                    noClasses.style.color = 'var(--text-subtle)';
+                    noClasses.style.fontStyle = 'italic';
+                    noClasses.textContent = 'No classes scheduled.';
+                    fragment.appendChild(noClasses);
                     return;
                 }
                 
@@ -593,12 +917,12 @@
                     const isReplacement = cls.isReplacement || false;
                     const isOnline = cls.isOnline || false;
                     
-                    const moduleCode = cls.moduleCode || 'CODE';
-                    const moduleName = cls.moduleName || 'MODULE NAME MISSING';
-                    const time = cls.time || 'TBD';
-                    const location = cls.location || 'TBC';
-                    const lecturerName = cls.lecturer || 'Staff TBC'; 
-                    const classType = cls.classType || 'Class'; 
+                    const moduleCode = cls.moduleCode ?? 'CODE';
+                    const moduleName = cls.moduleName ?? 'MODULE NAME MISSING';
+                    const time = cls.time ?? 'TBD';
+                    const location = cls.location ?? 'TBC';
+                    const lecturerName = cls.lecturer ?? 'Staff TBC'; 
+                    const classType = cls.classType ?? 'Class'; 
                     
                     let modalityIcon;
                     let modalityPill = '';
@@ -616,29 +940,41 @@
                         modalityPill = ``; 
                     }
 
-                    html += `
-                        <div class="class-card ${isToday?"today":""}" data-unique-id="${uid}">
-                            <div class="card-title">
-                                ${modalityIcon}
-                                ${moduleCode} - ${moduleName} ${modalityPill}
-                            </div>
-                            <div class="card-subtitle">${lecturerName} (${classType})</div>
-                            <div class="card-details">
-                                <span class="card-detail-item">
-                                    <span class="material-icons">schedule</span>
-                                    ${time}
-                                </span>
-                                <span class="card-detail-item">
-                                    <span class="material-icons">location_on</span>
-                                    ${location}
-                                </span>
-                            </div>
+                    const card = document.createElement('div');
+                    card.className = `class-card ${isToday?"today":""}`;
+                    card.setAttribute('data-unique-id', uid);
+                    card.setAttribute('role', 'article');
+                    card.setAttribute('aria-label', `Class: ${moduleCode} - ${moduleName}`);
+                    card.style.cursor = 'pointer';
+                    
+                    card.innerHTML = `
+                        <div class="card-title">
+                            ${modalityIcon}
+                            ${moduleCode} - ${moduleName} ${modalityPill}
+                        </div>
+                        <div class="card-subtitle">${lecturerName} (${classType})</div>
+                        <div class="card-details">
+                            <span class="card-detail-item">
+                                <span class="material-icons">schedule</span>
+                                ${time}
+                            </span>
+                            <span class="card-detail-item">
+                                <span class="material-icons">location_on</span>
+                                ${location}
+                            </span>
                         </div>
                     `;
+                    
+                    // Add click event to show modal
+                    card.addEventListener('click', () => showModal(cls));
+                    
+                    fragment.appendChild(card);
                 });
             });
 
-            timetableList.innerHTML = html;
+            // Single DOM update
+            timetableList.innerHTML = '';
+            timetableList.appendChild(fragment);
             applyCurrentClassHighlighting();
         }
 
