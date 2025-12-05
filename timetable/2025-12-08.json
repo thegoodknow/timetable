@@ -11,7 +11,8 @@
               "location": "",
               "campus": "APU CAMPUS",
               "lecturer": "",
-              "isOnline": false
+              "isOnline": false,
+              "classType": "Lecture"
             },
             {
               "moduleCode": "",
@@ -20,7 +21,8 @@
               "location": "",
               "campus": "APU CAMPUS",
               "lecturer": "",
-              "isOnline": false
+              "isOnline": false,
+              "classType": "Lecture"
             }
           ]
         },
@@ -34,7 +36,8 @@
               "location": "",
               "campus": "APU CAMPUS",
               "lecturer": "",
-              "isOnline": false
+              "isOnline": false,
+              "classType": "Lecture"
             },
             {
               "moduleCode": "",
@@ -43,7 +46,8 @@
               "location": "",
               "campus": "APU CAMPUS",
               "lecturer": "",
-              "isOnline": false
+              "isOnline": false,
+              "classType": "Lecture"
             }
           ]
         },
@@ -57,7 +61,8 @@
               "location": "TBC",
               "campus": "APU CAMPUS",
               "lecturer": "KHOR LIAN PENG",
-              "isOnline": false
+              "isOnline": false,
+              "classType": "Lecture"
             },
              {
               "moduleCode": "",
@@ -66,7 +71,8 @@
               "location": "",
               "campus": "APU CAMPUS",
               "lecturer": "",
-              "isOnline": false
+              "isOnline": false,
+              "classType": "Lecture"
             },
             {
               "moduleCode": "MPU2132-BMK1(FS)-L-8",
@@ -75,7 +81,8 @@
               "location": "ONLMCO3-11",
               "campus": "APU CAMPUS",
               "lecturer": "NURHANI HAZIRAH BINTI AHMAD HAMIDI",
-              "isOnline": true
+              "isOnline": true,
+              "classType": "Lecture"
             }
           ]
         },
@@ -89,7 +96,8 @@
               "location": "TBC",
               "campus": "APU CAMPUS",
               "lecturer": "KHOR LIAN PENG",
-              "isOnline": false
+              "isOnline": false,
+              "classType": "Tutorial"
             },
             {
               "moduleCode": "",
@@ -98,7 +106,8 @@
               "location": "",
               "campus": "APU CAMPUS",
               "lecturer": "",
-              "isOnline": false
+              "isOnline": false,
+              "classType": "Lecture"
             }
           ]
         },
@@ -112,7 +121,8 @@
               "location": "",
               "campus": "APU CAMPUS",
               "lecturer": "",
-              "isOnline": false
+              "isOnline": false,
+              "classType": "Lecture"
             },
             {
               "moduleCode": "",
@@ -121,7 +131,8 @@
               "location": "",
               "campus": "APU CAMPUS",
               "lecturer": "",
-              "isOnline": false
+              "isOnline": false,
+              "classType": "Lecture"
             }
           ]
         }

@@ -54,16 +54,14 @@
         }
 
         .logo {
-            /* Ensures the logo is centered if it doesn't take up the full height */
             display: flex;
             align-items: center;
         }
         
-        /* New SVG Icon Styling (for external file via <img>) */
         #logo-icon {
-            height: 30px; /* Set desired height */
+            height: 30px; 
             width: auto;
-            display: block; /* Ensure correct image display */
+            display: block; 
         }
         
         .logo-text {
@@ -72,8 +70,6 @@
             margin-left: 10px; 
             color: var(--color-primary);
         }
-
-        /* Removed File Upload styles */
 
         .controls-group {
             display: flex;
@@ -407,7 +403,7 @@
                 if (Object.keys(data).length === 0) return { currentClass: null, nextClass: null };
                 
                 const now = new Date();
-                // Clone now and set to midnight for future/past day comparison (FIX 1)
+                // Clone now and set to midnight for future/past day comparison 
                 const nowMidnight = new Date(now);
                 nowMidnight.setHours(0, 0, 0, 0); 
                 
@@ -423,7 +419,7 @@
                     for (const dayGroup of data[weekStart]) {
                         
                         const jsonDate = parseJsonDate(dayGroup.date);
-                        // Clone JSON date and set to midnight for future/past day comparison (FIX 1)
+                        // Clone JSON date and set to midnight for future/past day comparison 
                         const jsonDateMidnight = new Date(jsonDate);
                         jsonDateMidnight.setHours(0, 0, 0, 0);
 
@@ -493,7 +489,7 @@
                     htmlToDisplay = `
                         <span class="material-icons" style="color: var(--color-current);">play_arrow</span>
                         <span style="color: var(--color-current); font-weight: 700;">LIVE! (${minutes}m ${seconds}s left)</span>
-                        | ${currentClass.moduleCode} - ${currentClass.location}
+                        | ${currentClass.moduleCode || 'CODE'} - ${currentClass.location || 'LOC'}
                     `;
                 } 
                 // 2. Handle NEXT Class
@@ -505,14 +501,12 @@
                     const MAX_DISPLAY_DIFF_MS = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
                     
                     if (timeRemaining < 0) {
-                        // Should be caught by findCurrentAndNextClass, but safety check
                         htmlToDisplay = `<span class="material-icons">alarm</span>No immediate class.`;
                         nextClassDisplay.innerHTML = htmlToDisplay;
                         return;
                     }
                     
                     if (timeRemaining > MAX_DISPLAY_DIFF_MS) {
-                        // If the class is more than 24 hours away, show a generic message
                         htmlToDisplay = `<span class="material-icons">alarm</span>Next class is >24 hours away.`;
                         nextClassDisplay.innerHTML = htmlToDisplay;
                         return; 
@@ -533,11 +527,9 @@
                     let classDetails = '';
                     
                     if (nextClass.isOnline) {
-                         // Show Online tag and location (which is usually the link/teams name)
-                         classDetails = `<span style="color: var(--color-current); font-weight: 500;">Online</span> | ${nextClass.moduleCode} - ${nextClass.location}`;
+                         classDetails = `<span style="color: var(--color-current); font-weight: 500;">Online</span> | ${nextClass.moduleCode || 'CODE'} - ${nextClass.location || 'LOC'}`;
                     } else {
-                        // Default to just class code and location (classroom)
-                        classDetails = `${nextClass.moduleCode} - ${nextClass.location}`;
+                        classDetails = `${nextClass.moduleCode || 'CODE'} - ${nextClass.location || 'LOC'}`;
                     }
 
                     htmlToDisplay = `
@@ -584,7 +576,6 @@
             /**
              * Checks if the current day has changed since the last successful load.
              * If the date has changed, it calls fetchAllWeeks to reload the data.
-             * Runs on a regular interval (e.g., every 5 minutes).
              */
             function checkAndReloadDaily() {
                 const now = new Date();
@@ -601,7 +592,6 @@
                     console.log("New day detected. Reloading timetable data.");
                     fetchAllWeeks();
                 } else {
-                    // Throttle this log if it becomes too noisy
                     // console.log("Still the same day. No timetable file reload needed.");
                 }
             }
@@ -780,6 +770,18 @@
                     }
 
                     day.classes.forEach(cls => {
+                        // --- Data Safety and Key Mismatch Fixes ---
+                        const moduleCode = cls.moduleCode || 'CODE';
+                        const moduleName = cls.moduleName || 'MODULE NAME MISSING';
+                        const time = cls.time || 'TBD';
+                        const location = cls.location || 'TBC';
+                        
+                        // FIX: Use 'lecturer' key from your JSON, defaulting staffName/classType
+                        const lecturerName = cls.lecturer || 'Staff TBC'; 
+                        // The JSON structure is missing 'classType', so we default it
+                        const classType = cls.classType || 'Class'; 
+                        // --- End Fixes ---
+
                         const modalityIcon = cls.isOnline 
                             ? `<span class="material-icons online-icon">laptop_chromebook</span>` 
                             : `<span class="material-icons inperson-icon">room</span>`;
@@ -789,7 +791,7 @@
                             : ``; 
                         
                         // Construct the unique ID for current class comparison
-                        const uniqueId = `${currentWeekStart}-${day.date}-${cls.time}`;
+                        const uniqueId = `${currentWeekStart}-${day.date}-${time}`;
 
                         // Apply today class if needed (for all classes today)
                         const todayClass = isToday ? 'today' : '';
@@ -798,17 +800,17 @@
                             <div class="class-card ${todayClass}" data-unique-id="${uniqueId}">
                                 <div class="card-title">
                                     ${modalityIcon}
-                                    ${cls.moduleCode} - ${cls.moduleName} ${modalityTag}
+                                    ${moduleCode} - ${moduleName} ${modalityTag}
                                 </div>
-                                <div class="card-subtitle">${cls.staffName} (${cls.classType})</div>
+                                <div class="card-subtitle">${lecturerName} (${classType})</div>
                                 <div class="card-details">
                                     <span class="card-detail-item">
                                         <span class="material-icons">schedule</span>
-                                        ${cls.time}
+                                        ${time}
                                     </span>
                                     <span class="card-detail-item" style="flex-grow: 1; text-align: right;">
                                         <span class="material-icons">location_on</span>
-                                        ${cls.location}
+                                        ${location}
                                     </span>
                                 </div>
                             </div>
