@@ -80,9 +80,9 @@
             order: 2; 
         }
         .summary-item {
-             display: flex;
-             align-items: center;
-             font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            font-size: 0.95rem;
         }
 
         .clock-display {
@@ -263,16 +263,15 @@
         }
     </style>
 </head>
-<body>
+<body onload="loadTimetable()">
 
     <div class="header">
         <div class="logo-group">
             <div class="logo">
-                <img id="logo-icon" src="apspace-white.svg" alt="Logo">
+                <svg id="logo-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF"><path d="M12 2L1 21h22L12 2zm0 18l-8-14h16l-8 14z"/></svg>
             </div>
         </div>
 
-        <!-- Left group: clock and next class -->
         <div class="header-summary-bar" style="flex-grow:1; gap:32px; min-width:300px;">
             <span id="current-clock" class="summary-item clock-display">Loading Time...</span>
             <span id="next-class-display" class="summary-item next-class-display">
@@ -280,10 +279,9 @@
             </span>
         </div>
 
-        <!-- Right: select view -->
         <div class="controls-group" style="order:99; margin-left:auto;">
             <span style="color: var(--text-subtle); font-size: 0.9rem;">Select View:</span>
-            <select class="select-control" id="week-select">
+            <select class="select-control" id="week-select" onchange="renderTimetable(this.value)">
                 <option>Loading Views...</option>
             </select>
         </div>
@@ -296,56 +294,136 @@
     </div>
 
     <script>
-    // ---------- Robust date parser (replace existing parseJsonDate) ----------
+// --- Global State Variables and Element References ---
+const currentClock = document.getElementById('current-clock');
+const nextClassDisplay = document.getElementById('next-class-display');
+const timetableList = document.getElementById('timetable-list');
+const weekSelect = document.getElementById('week-select');
+
+// Mock Data structure for demonstration. Keys are week-start dates.
+const allWeekData = {
+    "01-Dec-2025": [
+        { 
+            date: "Mon, 01-Dec-2025", 
+            day: "Monday",
+            classes: [
+                { moduleCode: "TCS301", moduleName: "AI Ethics", type: "Lecture", location: "Online", isOnline: true, time: "09:00 - 11:00", lecturer: "Dr. L. K. Smith" },
+                { moduleCode: "TCS302", moduleName: "Web Development", type: "Lab", location: "Lab 3B-21", time: "14:00 - 17:00", lecturer: "Mr. J. A. Chan" }
+            ]
+        },
+        { 
+            date: "Fri, 05-Dec-2025", // Current day
+            day: "Friday",
+            classes: [
+                // Past class
+                { moduleCode: "TCS303", moduleName: "Advanced Data Mining", type: "Tutorial", location: "B-210", time: "09:00 - 10:00", lecturer: "Ms. Y. O. Lee" },
+                // Current/Next Class (Adjusting time to be near 13:20 +08)
+                { moduleCode: "TCS304", moduleName: "Software Engineering", type: "Lecture", location: "Online", isOnline: true, time: "13:00 - 14:00", lecturer: "Dr. K. T. Raj", isReplacement: false }, 
+                // Future class
+                { moduleCode: "TCS305", moduleName: "Cloud Computing", type: "Lecture", location: "Block C, LT1", time: "15:30 - 17:30", lecturer: "Dr. M. A. Hassan" } 
+            ]
+        },
+        { 
+            date: "Sat, 06-Dec-2025", 
+            day: "Saturday",
+            classes: [
+                { moduleCode: "TCS306", moduleName: "Dissertation", type: "Meeting", location: "B-301", time: "10:00 - 11:00", lecturer: "Prof. S. R. Jones", isReplacement: true }
+            ]
+        }
+    ],
+    "08-Dec-2025": [
+        { 
+            date: "Mon, 08-Dec-2025", 
+            day: "Monday",
+            classes: [
+                { moduleCode: "TCS301", moduleName: "AI Ethics", type: "Lecture", location: "Online", isOnline: true, time: "09:00 - 11:00", lecturer: "Dr. L. K. Smith" }
+            ]
+        }
+    ]
+};
+
+let selectedWeek = Object.keys(allWeekData)[0];
+let currentClassUniqueId = null;
+
+// --- Helper Functions ---
+
+/**
+ * Creates a stable ID for highlighting the current class card.
+ */
+function makeUniqueId(weekStart, date, time, moduleCode) {
+    return `${weekStart}-${date}-${time}-${moduleCode}`.replace(/[^a-zA-Z0-9-]/g, '');
+}
+
+/**
+ * Parses a time string "HH:MM - HH:MM" to get start or end hour/minute.
+ */
+function parseTime(timeStr, isStart) {
+    if (!timeStr || !timeStr.includes('-')) return { hour: 0, minute: 0 };
+    
+    const parts = timeStr.split('-').map(s => s.trim());
+    const targetPart = isStart ? parts[0] : parts[1];
+    
+    const [hourStr, minuteStr] = targetPart.split(':');
+    
+    return { 
+        hour: parseInt(hourStr) || 0, 
+        minute: parseInt(minuteStr) || 0
+    };
+}
+
+/**
+ * FIX 1: Robustly converts various date strings into a Date object at UTC midnight
+ * to prevent time zone shifts.
+ */
 function parseJsonDate(dateStr) {
-    // Accepts:
-    //  - "YYYY-MM-DD"  -> 2025-12-01
-    //  - "DD-MMM-YYYY" -> 01-Dec-2025
-    //  - "Mon, DD-MMM-YYYY" -> Mon, 01-Dec-2025
-    //  - fallback to Date.parse
     if (!dateStr) return null;
     dateStr = dateStr.trim();
 
+    let d;
+    
     // YYYY-MM-DD
     if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-        const d = new Date(dateStr + 'T00:00:00'); // ensure no timezone shift
-        if (!isNaN(d)) return d;
+        const [year, month, day] = dateStr.split('-');
+        // Use UTC date constructor to set midnight without local timezone bias
+        d = new Date(Date.UTC(year, month - 1, day, 0, 0, 0)); 
     }
-
     // If it contains a comma like "Mon, 01-Dec-2025", take part after comma
-    let candidate = dateStr.includes(',') ? dateStr.split(',')[1].trim() : dateStr;
-
-    // If format like "01-Dec-2025" or "1-Dec-2025"
-    if (/^\d{1,2}-[A-Za-z]{3}-\d{4}$/.test(candidate)) {
-        // convert "01-Dec-2025" -> "Dec 01, 2025"
-        const [day, mon, year] = candidate.split('-');
-        const parsed = new Date(`${mon} ${day}, ${year}T00:00:00`);
-        if (!isNaN(parsed)) return parsed;
+    else {
+        let candidate = dateStr.includes(',') ? dateStr.split(',')[1].trim() : dateStr;
+        
+        // If format like "01-Dec-2025" or "1-Dec-2025"
+        if (/^\d{1,2}-[A-Za-z]{3}-\d{4}$/.test(candidate)) {
+            // convert "01-Dec-2025" -> "Dec 01, 2025" for parsing
+            const [day, mon, year] = candidate.split('-');
+            // Create a parsable string then use UTC conversion
+            d = new Date(`${mon} ${day}, ${year}T00:00:00Z`); // Use 'Z' for UTC
+        } else {
+            // fallback: try Date.parse
+            d = new Date(Date.parse(dateStr));
+        }
     }
 
-    // fallback: try Date.parse
-    const fallback = new Date(Date.parse(dateStr));
-    if (!isNaN(fallback)) return fallback;
-
-    // last resort: return today's midnight
+    if (!isNaN(d) && d.getFullYear() > 1900) return d;
+    
     console.debug('parseJsonDate: failed to parse', dateStr);
-    const now = new Date();
-    now.setHours(0,0,0,0);
-    return now;
+    return null;
 }
 
-
-// ---------- Find current and next class (replace existing findCurrentAndNextClass) ----------
+/**
+ * Finds the currently running class and the next upcoming class.
+ */
 function findCurrentAndNextClass(data) {
     if (!data || Object.keys(data).length === 0) return { currentClass: null, nextClass: null };
 
     const now = new Date();
+    // Use the *local* midnight for accurate comparison to today's date
     const nowMidnight = new Date(now); nowMidnight.setHours(0,0,0,0);
 
     let currentClass = null;
     let nextClass = null;
     let bestDiff = Infinity;
 
+    // We search through ALL weeks to find the NEXT class, even if it's next week.
     for (const weekStart in data) {
         if (!data.hasOwnProperty(weekStart)) continue;
         const days = data[weekStart] || [];
@@ -353,40 +431,41 @@ function findCurrentAndNextClass(data) {
         for (const dayObj of days) {
             const jsonDate = parseJsonDate(dayObj.date);
             if (!jsonDate) continue;
-            const jsonDateMidnight = new Date(jsonDate); jsonDateMidnight.setHours(0,0,0,0);
 
-            // skip days fully in the past
-            if (jsonDateMidnight.getTime() < nowMidnight.getTime()) continue;
+            // Get the date's midnight in LOCAL time for comparison with nowMidnight
+            const classDate = new Date(jsonDate);
+            classDate.setHours(0,0,0,0); 
+
+            // Skip days fully in the past relative to local midnight
+            if (classDate.getTime() < nowMidnight.getTime()) continue;
 
             for (const classItem of (dayObj.classes || [])) {
-                // ensure we have a time string
                 if (!classItem.time || !classItem.time.includes('-')) {
-                    // still assign uniqueId so matching won't fail later
                     classItem.uniqueId = makeUniqueId(weekStart, dayObj.date, String(classItem.time || ''), classItem.moduleCode || '');
                     continue;
                 }
 
-                // create unique id (keeps it consistent with renderTimetable)
                 classItem.uniqueId = makeUniqueId(weekStart, dayObj.date, classItem.time, classItem.moduleCode || '');
 
                 const startParts = parseTime(classItem.time, true);
-                const endParts   = parseTime(classItem.time, false);
+                const endParts   = parseTime(classItem.time, false);
 
-                const classStart = new Date(jsonDate);
+                // Create full start and end date/time objects (in local time zone)
+                const classStart = new Date(classDate);
                 classStart.setHours(startParts.hour || 0, startParts.minute || 0, 0, 0);
 
-                const classEnd = new Date(jsonDate);
+                const classEnd = new Date(classDate);
                 classEnd.setHours(endParts.hour || 0, endParts.minute || 0, 0, 0);
 
                 // CURRENT class (only relevant when day is today)
-                if (jsonDateMidnight.getTime() === nowMidnight.getTime()) {
+                if (classDate.getTime() === nowMidnight.getTime()) {
                     if (now >= classStart && now < classEnd) {
                         currentClass = { ...classItem, fullDate: classStart, endTime: classEnd };
-                        // keep searching to find the most-recent current if duplicates (unlikely)
+                        // Don't break, allow search to finish in case a later class overwrites (unlikely)
                     }
                 }
 
-                // NEXT class: any start > now (no 24h limit)
+                // NEXT class: any start > now 
                 if (classStart.getTime() > now.getTime()) {
                     const diff = classStart.getTime() - now.getTime();
                     if (diff < bestDiff) {
@@ -398,12 +477,13 @@ function findCurrentAndNextClass(data) {
         }
     }
 
-    console.debug('findCurrentAndNextClass ->', { currentClass, nextClass });
     return { currentClass, nextClass };
 }
 
 
-// ---------- updateClock (replace existing updateClock) ----------
+/**
+ * Updates the clock display and the next class countdown.
+ */
 function updateClock() {
     const now = new Date();
     currentClock.textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -411,12 +491,16 @@ function updateClock() {
     const { currentClass, nextClass } = findCurrentAndNextClass(allWeekData);
 
     let htmlToDisplay = '';
+    let shouldRecalculate = false; 
 
     if (currentClass) {
         currentClassUniqueId = currentClass.uniqueId;
         const timeRemaining = currentClass.endTime.getTime() - now.getTime();
         const minutes = Math.floor(timeRemaining / (1000 * 60));
         const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+        
+        // If minutes/seconds hit zero, force a re-evaluation next cycle
+        if (minutes === 0 && seconds < 5) shouldRecalculate = true; 
 
         htmlToDisplay = `
             <span class="material-icons" style="color: var(--color-current);">play_arrow</span>
@@ -426,8 +510,10 @@ function updateClock() {
     } else if (nextClass) {
         currentClassUniqueId = null;
         const timeRemainingMs = nextClass.fullDate.getTime() - now.getTime();
+        
+        // Force re-evaluation when we are less than 1 second away from the next class
+        if (timeRemainingMs < 1000) shouldRecalculate = true;
 
-        // format into days/hours/minutes/seconds nicely
         const days = Math.floor(timeRemainingMs / (24*60*60*1000));
         let rem = timeRemainingMs % (24*60*60*1000);
         const hours = Math.floor(rem / (60*60*1000));
@@ -438,8 +524,18 @@ function updateClock() {
         const parts = [];
         if (days > 0) parts.push(`${days}d`);
         if (hours > 0) parts.push(`${hours}h`);
-        parts.push(`${minutes}m`);
-        parts.push(`${seconds}s`);
+        // Only show minutes/seconds if less than an hour away
+        if (days === 0 && hours === 0) {
+            parts.push(`${minutes}m`);
+            parts.push(`${seconds}s`);
+        } else if (days === 0) { // show only hours/minutes if less than a day away
+            parts.push(`${hours}h`);
+            parts.push(`${minutes}m`);
+        } else {
+            // For > 1 day, just show day/hour estimate
+            parts.push(`${hours}h`);
+        }
+
         const timeRemainingStr = parts.join(' ');
 
         const datePart = nextClass.fullDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
@@ -465,8 +561,150 @@ function updateClock() {
 
     nextClassDisplay.innerHTML = htmlToDisplay;
 
-    applyCurrentClassHighlighting();
-    checkAndReloadDaily();
+    // Only apply the visual highlighting if the current week is selected
+    if (currentClass) {
+        // We need to find the weekStart key for the current class
+        for (const weekStart in allWeekData) {
+            const days = allWeekData[weekStart].filter(day => {
+                const dayDate = parseJsonDate(day.date);
+                const now = new Date();
+                return dayDate && dayDate.toDateString() === now.toDateString();
+            });
+            if (days.length > 0) {
+                // If the current class is in the selected week, apply highlights
+                if (weekStart === selectedWeek) {
+                    applyCurrentClassHighlighting();
+                }
+                break;
+            }
+        }
+    } else {
+        // Clear highlights if no current class exists
+        applyCurrentClassHighlighting();
+    }
+    
+    // Check if we need to force a full re-render (e.g., at midnight, or when a class starts/ends)
+    if (shouldRecalculate) {
+        // Run update clock again after a tiny delay to ensure the DOM update is visible
+        setTimeout(updateClock, 500); 
+    }
+}
+
+/**
+ * Renders the HTML content for a specific week's timetable.
+ */
+function renderTimetable(weekStartKey) {
+    if (!allWeekData[weekStartKey]) {
+        timetableList.innerHTML = `<div style="text-align: center; padding: 50px;"><p style="color: var(--text-subtle);">No timetable data available for this week.</p></div>`;
+        return;
+    }
+
+    selectedWeek = weekStartKey;
+    const weekData = allWeekData[weekStartKey];
+    let html = '';
+    const today = new Date().toDateString();
+
+    weekData.forEach(dayObj => {
+        const classDate = parseJsonDate(dayObj.date);
+        const isToday = classDate ? classDate.toDateString() === today : false;
+
+        html += `<div class="day-header">${dayObj.day} - ${dayObj.date}</div>`;
+        
+        if (dayObj.classes && dayObj.classes.length > 0) {
+            dayObj.classes.forEach(classItem => {
+                const cardClasses = ['class-card'];
+                if (isToday) cardClasses.push('today');
+                
+                // Ensure uniqueId is calculated for rendering, matching the one in findCurrentAndNextClass
+                const uniqueId = makeUniqueId(weekStartKey, dayObj.date, classItem.time, classItem.moduleCode);
+
+                const locationIcon = classItem.isOnline ? 'laptop_mac' : 'location_on';
+                const iconClass = classItem.isOnline ? 'online-icon' : 'inperson-icon';
+                
+                let titlePill = '';
+                if (classItem.isReplacement) {
+                    titlePill = `<span class="pill replacement-tag">Replacement</span>`;
+                } else if (classItem.isOnline) {
+                    titlePill = `<span class="pill online-tag">Online</span>`;
+                } else {
+                    titlePill = `<span class="pill">In-Person</span>`;
+                }
+
+
+                html += `
+                    <div class="${cardClasses.join(' ')}" data-unique-id="${uniqueId}">
+                        <div class="card-title">
+                            <span class="material-icons ${iconClass}">${locationIcon}</span>
+                            ${classItem.moduleCode} - ${classItem.moduleName}
+                            ${titlePill}
+                        </div>
+                        <div class="card-subtitle">${classItem.type}</div>
+                        <div class="card-details">
+                            <div class="card-detail-item">
+                                <span class="material-icons">access_time</span>
+                                <span>${classItem.time}</span>
+                            </div>
+                            <div class="card-detail-item">
+                                <span class="material-icons">room</span>
+                                <span>${classItem.location}</span>
+                            </div>
+                            <div class="card-detail-item">
+                                <span class="material-icons">person</span>
+                                <span>${classItem.lecturer}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        } else {
+             html += `<p style="padding: 5px 16px; color: var(--text-subtle);">No classes scheduled.</p>`;
+        }
+    });
+
+    timetableList.innerHTML = html;
+    applyCurrentClassHighlighting(); // Apply highlighting after rendering
+}
+
+/**
+ * Applies or removes the 'current-class' CSS class based on global state.
+ */
+function applyCurrentClassHighlighting() {
+    // 1. Clear all existing highlights
+    document.querySelectorAll('.class-card.current-class').forEach(card => {
+        card.classList.remove('current-class');
+    });
+
+    // 2. Apply highlight to the current class, if one exists and is visible
+    if (currentClassUniqueId) {
+        const currentCard = document.querySelector(`[data-unique-id="${currentClassUniqueId}"]`);
+        if (currentCard) {
+            currentCard.classList.add('current-class');
+        }
+    }
+}
+
+/**
+ * Main function to run on page load.
+ */
+function loadTimetable() {
+    // 1. Populate the week selection dropdown
+    weekSelect.innerHTML = '';
+    Object.keys(allWeekData).forEach(weekKey => {
+        const option = document.createElement('option');
+        option.value = weekKey;
+        option.textContent = `Week starting ${weekKey}`;
+        weekSelect.appendChild(option);
+    });
+    
+    // Set the initial selected week to the first one in the data
+    selectedWeek = Object.keys(allWeekData)[0];
+    weekSelect.value = selectedWeek;
+
+    // 2. Render the initial timetable view
+    renderTimetable(selectedWeek);
+
+    // 3. Start the clock and next class countdown
+    setInterval(updateClock, 1000);
 }
     </script>
 </body>
