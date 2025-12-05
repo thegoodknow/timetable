@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Course Timetable</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[TESTING VER] Course Timetable</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
     <style>
         /* --- Theme Variables --- */
         :root {
@@ -14,14 +15,13 @@
             --text-light: #FFFFFF;
             --text-subtle: #B0B0B0;
             --color-primary: #007BFF;
-            --color-blue-bg: #004D99;
+            --color-blue-bg: #004D99; 
             --color-pill-blue: #0056B3;
             --border-color: #333333;
-            --header-height: 56px;
-            --color-current: #FFC107;
-            --color-replacement: #FF8C00;
-            --color-replacement-bg: #CC7000;
-            --error-red: #FF5252;
+            --header-height: 56px; 
+            --color-current: #FFC107; /* Amber/Yellow for LIVE */
+            --color-replacement: #FF8C00; /* Darker Orange for Replacement */
+            --color-replacement-bg: #CC7000; /* Deep Orange Background */
         }
 
         /* --- Base Styles --- */
@@ -37,17 +37,17 @@
         /* --- Header/Control Bar --- */
         .header {
             display: flex;
-            flex-wrap: wrap;
+            flex-wrap: wrap; 
             justify-content: space-between;
-            align-items: center;
-            padding: 10px 16px;
+            align-items: center; 
+            padding: 10px 16px; 
             min-height: var(--header-height);
             background-color: var(--bg-card);
             border-bottom: 1px solid var(--border-color);
             position: sticky;
             top: 0;
             z-index: 50;
-            gap: 10px 20px;
+            gap: 10px 20px; 
         }
 
         .logo-group {
@@ -57,27 +57,27 @@
         }
 
         #logo-icon {
-            height: 30px;
+            height: 30px; 
             width: auto;
-            display: block;
+            display: block; 
         }
 
         .controls-group {
             display: flex;
             gap: 12px;
-            align-items: center;
-            order: 3;
+            align-items: center; 
+            order: 3; 
         }
 
         /* --- Header Summary Bar --- */
         .header-summary-bar {
             display: flex;
             align-items: center;
-            flex-grow: 1;
+            flex-grow: 1; 
             gap: 20px;
             padding: 5px 0;
             min-width: 300px;
-            order: 2;
+            order: 2; 
         }
         .summary-item {
              display: flex;
@@ -109,12 +109,12 @@
             color: var(--text-light);
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            padding: 8px 12px;
+            padding: 8px 12px; 
             font-size: 0.9rem;
             cursor: pointer;
             appearance: none;
             outline: none;
-            height: 36px;
+            height: 36px; 
             box-sizing: border-box;
             white-space: nowrap;
         }
@@ -153,8 +153,8 @@
 
         .class-card.current-class {
             background-color: #2b2b2b;
-            border-left: 5px solid var(--color-current);
-            box-shadow: 0 4px 10px rgba(255, 193, 7, 0.2);
+            border-left: 5px solid var(--color-current); 
+            box-shadow: 0 4px 10px rgba(255, 193, 7, 0.2); 
             animation: pulse-current 1.5s infinite alternate;
         }
 
@@ -171,24 +171,24 @@
             font-weight: bold;
             font-size: 1rem;
             margin-bottom: 4px;
-            display: flex;
+            display: flex; 
             align-items: center;
         }
-
+        
         .card-title .material-icons {
             margin-right: 6px;
             font-size: 1.2rem;
         }
-
+        
         /* Icon Colors */
         .card-title .online-icon {
-            color: var(--color-current);
+            color: var(--color-current); 
         }
         .card-title .inperson-icon {
-            color: var(--color-primary);
+            color: var(--color-primary); 
         }
         .card-title .replacement-icon {
-            color: var(--color-replacement);
+            color: var(--color-replacement); 
         }
 
         .card-subtitle {
@@ -196,14 +196,14 @@
             color: var(--text-subtle);
             margin-bottom: 8px;
         }
-
+        
         .card-details {
             display: flex;
             justify-content: space-between;
             font-size: 0.85rem;
             color: var(--text-subtle);
-            flex-wrap: wrap;
-            gap: 8px 15px;
+            flex-wrap: wrap; 
+            gap: 8px 15px; 
         }
 
         .card-detail-item {
@@ -221,6 +221,7 @@
             color: var(--color-current);
         }
 
+
         .pill {
             background-color: var(--color-pill-blue);
             color: var(--text-light);
@@ -232,8 +233,8 @@
         }
 
         .online-tag {
-            background-color: var(--color-current);
-            color: var(--bg-card);
+            background-color: var(--color-current); 
+            color: var(--bg-card); 
             font-weight: 700;
         }
 
@@ -242,59 +243,7 @@
             color: var(--text-light);
             font-weight: 700;
         }
-
-        /* Error highlight for timetable area */
-        .error-highlight {
-            outline: 3px solid rgba(255,82,82,0.08);
-            box-shadow: 0 0 0 4px rgba(255,82,82,0.05);
-            border-left: 4px solid var(--error-red);
-        }
-
-        /* Toast styles */
-        .toast-container {
-            position: fixed;
-            top: 16px;
-            right: 16px;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            max-width: calc(100% - 40px);
-        }
-        .toast {
-            background: linear-gradient(180deg, #2b2b2b, #222);
-            color: var(--text-light);
-            border-radius: 8px;
-            padding: 12px 14px;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.6);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            min-width: 260px;
-            max-width: 420px;
-            border: 1px solid rgba(255,255,255,0.03);
-        }
-        .toast.error {
-            border-left: 6px solid var(--error-red);
-        }
-        .toast .msg {
-            flex: 1;
-            font-size: 0.95rem;
-            color: var(--text-light);
-        }
-        .toast .meta {
-            font-size: 0.82rem;
-            color: var(--text-subtle);
-        }
-        .toast button.dismiss {
-            background: transparent;
-            border: 0;
-            color: var(--text-subtle);
-            cursor: pointer;
-            font-size: 18px;
-            padding: 0 6px;
-        }
-
+        
         /* Responsive adjustments */
         @media (max-width: 600px) {
             .header-summary-bar {
@@ -315,6 +264,7 @@
     </style>
 </head>
 <body>
+
     <div class="header">
         <div class="logo-group">
             <div class="logo">
@@ -324,7 +274,7 @@
 
         <div class="header-summary-bar">
             <span id="current-clock" class="summary-item clock-display">Loading Time...</span>
-            <span id="next-class-display" class="summary-item next-class-display" aria-live="polite">
+            <span id="next-class-display" class="summary-item next-class-display">
                 <span class="material-icons">alarm</span>Finding Next Class...
             </span>
         </div>
@@ -343,9 +293,6 @@
         </div>
     </div>
 
-    <!-- Toast container -->
-    <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
-
     <script>
     document.addEventListener('DOMContentLoaded', () => {
 
@@ -357,8 +304,7 @@
             // Converts "Day, DD-Month-YYYY" to a Date object
             const datePart = dateStr.includes(',') ? dateStr.split(', ')[1] : dateStr;
             const [dayNum, monthStr, yearStr] = datePart.split('-');
-            // monthStr might be "Jan" or "January" -- this handles both by using Date constructor
-            return new Date(`${monthStr} ${dayNum}, ${yearStr}`);
+            return new Date(`${monthStr} ${dayNum}, ${yearStr}`); 
         }
         function parseTime(time, isStart) {
             if (!time || !time.includes("-")) return { hour: 0, minute: 0 };
@@ -370,7 +316,8 @@
         function getMondayOf(date) {
             const c = new Date(date);
             const d = c.getDay(); // 0 = Sunday, 1 = Monday
-            const diff = d === 0 ? -6 : 1 - d;
+            // If Sunday (0), go back 6 days (-6). Otherwise, go back d-1 days.
+            const diff = d === 0 ? -6 : 1 - d; 
             c.setDate(c.getDate() + diff);
             c.setHours(0,0,0,0);
             return c;
@@ -381,67 +328,16 @@
         const weekSelect = document.getElementById('week-select');
         const currentClock = document.getElementById('current-clock');
         const nextClassDisplay = document.getElementById('next-class-display');
-        const toastContainer = document.getElementById('toast-container');
 
         let allWeeks = [];
-        let currentWeekStart = '';
+        let currentWeekStart = ''; 
         let allWeekData = {};
         let currentClassUniqueId = null;
-        let lastLoadDate = new Date();
-        let fetchRetryCount = 0;
-        const MAX_FETCH_RETRIES = 1; // will retry once on failure
+        let lastLoadDate = new Date(); 
 
-        // --- Notification system (toast + console + highlight) ---
-        function showNotification(message, options = {}) {
-            const { type = 'error', persist = false, meta = '' } = options;
-            // console log
-            if (type === 'error') console.error(`Timetable Error: ${message}`, meta);
-            else console.log(`Timetable: ${message}`, meta);
-
-            // highlight timetable
-            timetableList.classList.add('error-highlight');
-            // remove highlight after a while if not persistent
-            if (!persist) {
-                setTimeout(()=> timetableList.classList.remove('error-highlight'), 8000);
-            }
-
-            // create toast
-            const toast = document.createElement('div');
-            toast.className = `toast ${type === 'error' ? 'error' : ''}`;
-            const msg = document.createElement('div');
-            msg.className = 'msg';
-            msg.textContent = message;
-            const metaDiv = document.createElement('div');
-            metaDiv.className = 'meta';
-            metaDiv.textContent = meta || '';
-            const dismiss = document.createElement('button');
-            dismiss.className = 'dismiss';
-            dismiss.innerHTML = '&times;';
-            dismiss.setAttribute('aria-label', 'Dismiss notification');
-
-            dismiss.addEventListener('click', () => {
-                toast.remove();
-                // remove highlight if no other toasts
-                if (!toastContainer.querySelector('.toast')) timetableList.classList.remove('error-highlight');
-            });
-
-            toast.appendChild(msg);
-            if (meta) toast.appendChild(metaDiv);
-            toast.appendChild(dismiss);
-
-            toastContainer.appendChild(toast);
-
-            if (!persist) {
-                setTimeout(() => {
-                    toast.remove();
-                    if (!toastContainer.querySelector('.toast')) timetableList.classList.remove('error-highlight');
-                }, 6000);
-            }
-
-            return toast;
-        }
 
         // --- Real-time Logic (Finds current and next class from loaded data) ---
+
         function findCurrentAndNextClass(data) {
             const now = new Date();
             const nowMidnight = new Date(now);
@@ -458,12 +354,11 @@
                     const classDate = parseJsonDate(dayObj.date);
                     const classDateMidnight = new Date(classDate);
                     classDateMidnight.setHours(0,0,0,0);
-
-                    // skip days in the past (whole day)
-                    if (classDateMidnight < nowMidnight) continue;
+                    
+                    if (classDateMidnight < nowMidnight) continue; 
 
                     for (const cls of dayObj.classes) {
-
+                        
                         cls.uniqueId = makeUniqueId(weekStart, dayObj.date, cls.time, cls.moduleCode);
 
                         if (!cls.time || !cls.time.includes("-")) continue;
@@ -484,12 +379,15 @@
                             }
                         }
 
-                        // 2. Next Class Check (any future class — pick the nearest)
+                        // 2. Next Class Check (must be in the future, within 24 hours)
                         if (start > now) {
                             const diff = start - now;
-                            if (diff < bestDiff) {
-                                bestDiff = diff;
-                                nextClass = { ...cls, fullDate: start };
+                            
+                            if (diff < 24 * 60 * 60 * 1000) { 
+                                if (diff < bestDiff) {
+                                    bestDiff = diff;
+                                    nextClass = { ...cls, fullDate: start };
+                                }
                             }
                         }
                     }
@@ -537,7 +435,7 @@
             }
             else {
                 currentClassUniqueId = null;
-                html += `No upcoming classes.`;
+                html += `No upcoming classes within 24h.`;
             }
 
             nextClassDisplay.innerHTML = html;
@@ -558,7 +456,7 @@
                 }
             }
         }
-
+        
         function checkAndReloadDaily() {
             const now = new Date();
             const lastLoadMidnight = new Date(lastLoadDate);
@@ -573,70 +471,37 @@
         }
 
         // --- Data Fetching and Rendering ---
+
         async function fetchAllWeeks() {
             timetableList.innerHTML = `<p style="padding:30px;text-align:center;color:var(--text-subtle)">Loading week data...</p>`;
-
+            
             const now = new Date();
             const paths = [];
-
+            
             // Generate paths for (-1, 0, +1, +2) weeks
             [-1, 0, 1, 2].forEach(off=>{
                 const m = getMondayOf(new Date(now.getFullYear(), now.getMonth(), now.getDate() + off*7));
                 paths.push(`timetable/${formatYYYYMMDD(m)}.json`);
             });
 
-            // fetch all in parallel but capture which failed
-            const fetchPromises = paths.map(p =>
-                fetch(p).then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status} for ${p}`))).catch(err => ({__fetchError: true, path: p, error: err}))
-            );
+            const results = await Promise.all(paths.map(p =>
+                fetch(p).then(r => r.ok ? r.json() : null).catch(()=>null)
+            ));
 
-            const results = await Promise.all(fetchPromises);
-
-            // reset
             allWeekData = {};
             allWeeks = [];
 
-            const failedPaths = [];
-            results.forEach(res=>{
-                if (!res) return;
-                if (res.__fetchError) {
-                    failedPaths.push(res.path + ' (' + (res.error && res.error.message ? res.error.message : 'fetch failed') + ')');
-                    return;
-                }
-                if (res.weekStartDate) {
-                    allWeekData[res.weekStartDate] = res.days;
-                    allWeeks.push(res.weekStartDate);
+            results.forEach(j=>{
+                if (j && j.weekStartDate) {
+                    allWeekData[j.weekStartDate] = j.days;
+                    allWeeks.push(j.weekStartDate);
                 }
             });
 
             lastLoadDate = new Date();
-
+            
             allWeeks.sort((a,b)=>new Date(a)-new Date(b));
             updateWeekSelect();
-
-            if (failedPaths.length > 0 && Object.keys(allWeekData).length === 0) {
-                // failed to load any useful data
-                const msg = `Failed to load timetable files: ${failedPaths.join(', ')}`;
-                showNotification(msg, { type: 'error', persist: true, meta: 'No timetable data loaded.' });
-                // retry policy: attempt one retry after short delay
-                if (fetchRetryCount < MAX_FETCH_RETRIES) {
-                    fetchRetryCount++;
-                    console.warn('Retrying fetch in 5s...');
-                    setTimeout(fetchAllWeeks, 5000);
-                    return;
-                } else {
-                    console.error('Max retries reached. Giving up.');
-                    timetableList.innerHTML = `<div style="padding:20px;color:var(--text-subtle);text-align:center">Unable to load timetable. Please check your JSON files and server.</div>`;
-                    return;
-                }
-            } else if (failedPaths.length > 0) {
-                // some files failed but we have data
-                const msg = `Some files failed to load: ${failedPaths.join(', ')}`;
-                showNotification(msg, { type: 'error', persist: false, meta: 'Partial data shown.' });
-            }
-
-            // Reset retry count on success
-            fetchRetryCount = 0;
 
             const initialSelection = weekSelect.value || "__TODAY__";
             weekSelect.value = initialSelection;
@@ -655,15 +520,15 @@
                 const e = new Date(d); e.setDate(e.getDate()+6);
                 const startStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                 const endStr = e.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-
+                
                 const option = document.createElement('option');
                 option.value = w;
                 option.textContent = `Week: ${startStr} - ${endStr}`;
                 if (w === currentSelection) option.selected = true;
-
+                
                 weekSelect.appendChild(option);
             });
-
+            
             if (currentSelection === '__TODAY__' || currentSelection === '__TOMORROW__') {
                  weekSelect.value = currentSelection;
             } else if (!weekSelect.value && allWeeks.length > 0) {
@@ -681,10 +546,10 @@
                 const target = key==="__TODAY__"?today:tomorrow;
                 let foundDay = null;
                 let foundWeekStart = null;
-
+                
                 for (const w in allWeekData) {
                     if (!allWeekData.hasOwnProperty(w)) continue;
-
+                    
                     foundDay = allWeekData[w].find(d=>{
                         const dd = parseJsonDate(d.date);
                         dd.setHours(0,0,0,0);
@@ -697,7 +562,7 @@
                 }
 
                 if (foundDay) {
-                    currentWeekStart = foundWeekStart;
+                    currentWeekStart = foundWeekStart; 
                     days = [foundDay];
                 } else {
                     timetableList.innerHTML = `<div class="day-header">${key==="__TODAY__"?"Today":"Tomorrow"}</div><p style="padding:20px;color:var(--text-subtle);text-align:center">No classes scheduled.</p>`;
@@ -718,37 +583,37 @@
 
                 html += `<div class="day-header">${day.date}${isToday?" (TODAY)":""}</div>`;
 
-                if (!day.classes || day.classes.length === 0) {
+                if (day.classes.length === 0) {
                     html += `<div class="class-card" style="padding: 10px; color: var(--text-subtle); font-style: italic;">No classes scheduled.</div>`;
                     return;
                 }
-
+                
                 day.classes.forEach(cls=>{
                     const uid = makeUniqueId(currentWeekStart, day.date, cls.time, cls.moduleCode);
                     const isReplacement = cls.isReplacement || false;
                     const isOnline = cls.isOnline || false;
-
+                    
                     const moduleCode = cls.moduleCode || 'CODE';
                     const moduleName = cls.moduleName || 'MODULE NAME MISSING';
                     const time = cls.time || 'TBD';
                     const location = cls.location || 'TBC';
-                    const lecturerName = cls.lecturer || 'Staff TBC';
-                    const classType = cls.classType || 'Class';
-
+                    const lecturerName = cls.lecturer || 'Staff TBC'; 
+                    const classType = cls.classType || 'Class'; 
+                    
                     let modalityIcon;
                     let modalityPill = '';
-
+                    
                     if (isReplacement) {
                         modalityIcon = `<span class="material-icons replacement-icon">event_note</span>`;
                         const type = cls.replacementType ? cls.replacementType.toUpperCase() : 'CLASS';
-                        modalityPill = `<span class="pill replacement-tag">R/P ${type}</span>`;
+                        modalityPill = `<span class="pill replacement-tag">REPLACEMENT ${type} CLASS</span>`;
                     }
                     else if (isOnline) {
                         modalityIcon = `<span class="material-icons online-icon">laptop_chromebook</span>`;
                         modalityPill = `<span class="pill online-tag">Online</span>`;
                     } else {
                         modalityIcon = `<span class="material-icons inperson-icon">room</span>`;
-                        modalityPill = ``;
+                        modalityPill = ``; 
                     }
 
                     html += `
@@ -778,11 +643,11 @@
         }
 
         // --- Initialization ---
+
         weekSelect.addEventListener("change", e => renderTimetable(e.target.value));
 
-        // start fetching and clock
         fetchAllWeeks();
-        setInterval(updateClock, 1000);
+        setInterval(updateClock, 1000); 
     });
     </script>
 </body>
