@@ -1,299 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[TESTING VER] Course Timetable</title>
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    
-    <style>
-        /* --- Theme Variables --- */
-        :root {
-            --bg-dark: #121212;
-            --bg-card: #1E1E1E;
-            --text-light: #FFFFFF;
-            --text-subtle: #B0B0B0;
-            --color-primary: #007BFF;
-            --color-blue-bg: #004D99; 
-            --color-pill-blue: #0056B3;
-            --border-color: #333333;
-            --header-height: 56px; 
-            --color-current: #FFC107; /* Amber/Yellow for LIVE */
-            --color-replacement: #FF8C00; /* Darker Orange for Replacement */
-            --color-replacement-bg: #CC7000; /* Deep Orange Background */
-        }
-
-        /* --- Base Styles --- */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-light);
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-        }
-
-        /* --- Header/Control Bar --- */
-        .header {
-            display: flex;
-            flex-wrap: wrap; 
-            justify-content: space-between;
-            align-items: center; 
-            padding: 10px 16px; 
-            min-height: var(--header-height);
-            background-color: var(--bg-card);
-            border-bottom: 1px solid var(--border-color);
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            gap: 10px 20px; 
-        }
-
-        .logo-group {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        #logo-icon {
-            height: 30px; 
-            width: auto;
-            display: block; 
-        }
-
-        .controls-group {
-            display: flex;
-            gap: 12px;
-            align-items: center; 
-            order: 3; 
-        }
-
-        /* --- Header Summary Bar --- */
-        .header-summary-bar {
-            display: flex;
-            align-items: center;
-            flex-grow: 1; 
-            gap: 20px;
-            padding: 5px 0;
-            min-width: 300px;
-            order: 2; 
-        }
-        .summary-item {
-             display: flex;
-             align-items: center;
-             font-size: 0.95rem;
-        }
-
-        .clock-display {
-            font-weight: 700;
-            color: var(--color-primary);
-        }
-
-        .next-class-display {
-            color: var(--text-light);
-            font-size: 0.9rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .next-class-display .material-icons {
-            font-size: 1.1rem;
-            margin-right: 5px;
-            color: var(--text-subtle);
-        }
-
-        .select-control {
-            background-color: var(--bg-card);
-            color: var(--text-light);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 8px 12px; 
-            font-size: 0.9rem;
-            cursor: pointer;
-            appearance: none;
-            outline: none;
-            height: 36px; 
-            box-sizing: border-box;
-            white-space: nowrap;
-        }
-
-        /* --- Custom Timetable Card Styles --- */
-        .timetable-content {
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .day-header {
-            background-color: var(--color-blue-bg);
-            color: var(--text-light);
-            font-weight: bold;
-            padding: 10px 16px;
-            border-radius: 8px;
-            margin-top: 10px;
-            font-size: 1.1rem;
-        }
-
-        .class-card {
-            background-color: var(--bg-card);
-            border-radius: 8px;
-            padding: 12px 16px;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            transition: border-left 0.3s ease;
-        }
-
-        .class-card.today {
-            border-left: 5px solid var(--color-primary);
-        }
-
-        .class-card.current-class {
-            background-color: #2b2b2b;
-            border-left: 5px solid var(--color-current); 
-            box-shadow: 0 4px 10px rgba(255, 193, 7, 0.2); 
-            animation: pulse-current 1.5s infinite alternate;
-        }
-
-        @keyframes pulse-current {
-            from {
-                opacity: 1;
-            }
-            to {
-                opacity: 0.95;
-            }
-        }
-
-        .card-title {
-            font-weight: bold;
-            font-size: 1rem;
-            margin-bottom: 4px;
-            display: flex; 
-            align-items: center;
-        }
-        
-        .card-title .material-icons {
-            margin-right: 6px;
-            font-size: 1.2rem;
-        }
-        
-        /* Icon Colors */
-        .card-title .online-icon {
-            color: var(--color-current); 
-        }
-        .card-title .inperson-icon {
-            color: var(--color-primary); 
-        }
-        .card-title .replacement-icon {
-            color: var(--color-replacement); 
-        }
-
-        .card-subtitle {
-            font-size: 0.85rem;
-            color: var(--text-subtle);
-            margin-bottom: 8px;
-        }
-        
-        .card-details {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.85rem;
-            color: var(--text-subtle);
-            flex-wrap: wrap; 
-            gap: 8px 15px; 
-        }
-
-        .card-detail-item {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .card-detail-item .material-icons {
-            font-size: 16px;
-            color: var(--color-primary);
-        }
-
-        .class-card.current-class .card-detail-item .material-icons {
-            color: var(--color-current);
-        }
-
-
-        .pill {
-            background-color: var(--color-pill-blue);
-            color: var(--text-light);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            margin-left: 8px;
-            font-weight: 500;
-        }
-
-        .online-tag {
-            background-color: var(--color-current); 
-            color: var(--bg-card); 
-            font-weight: 700;
-        }
-
-        .replacement-tag {
-            background-color: var(--color-replacement-bg);
-            color: var(--text-light);
-            font-weight: 700;
-        }
-        
-        /* Responsive adjustments */
-        @media (max-width: 600px) {
-            .header-summary-bar {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 5px;
-                min-width: 100%;
-            }
-            .header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .controls-group {
-                width: 100%;
-                justify-content: flex-start;
-            }
-        }
-    </style>
-</head>
-<body>
-
-    <div class="header">
-        <div class="logo-group">
-            <div class="logo">
-                <img id="logo-icon" src="apspace-white.svg" alt="Logo">
-            </div>
-        </div>
-
-        <div class="header-summary-bar">
-            <span id="current-clock" class="summary-item clock-display">Loading Time...</span>
-            <span id="next-class-display" class="summary-item next-class-display">
-                <span class="material-icons">alarm</span>Finding Next Class...
-            </span>
-        </div>
-
-        <div class="controls-group">
-            <span style="color: var(--text-subtle); font-size: 0.9rem;">Select View:</span>
-            <select class="select-control" id="week-select">
-                <option>Loading Views...</option>
-            </select>
-        </div>
-    </div>
-
-    <div class="timetable-content" id="timetable-list">
-        <div style="text-align: center; padding: 50px;">
-            <p style="color: var(--text-subtle);">Loading timetable...</p>
-        </div>
-    </div>
-
-    <script>
+<script>
     document.addEventListener('DOMContentLoaded', () => {
 
         // --- Helper Functions ---
@@ -304,14 +9,33 @@
             // Converts "Day, DD-Month-YYYY" to a Date object
             const datePart = dateStr.includes(',') ? dateStr.split(', ')[1] : dateStr;
             const [dayNum, monthStr, yearStr] = datePart.split('-');
-            return new Date(`${monthStr} ${dayNum}, ${yearStr}`); 
+            
+            // Note: This relies on JS's ability to parse "Mon DD, YYYY" format.
+            // A more robust solution would map month abbreviations to numbers, but this is usually sufficient.
+            const d = new Date(`${monthStr} ${dayNum}, ${yearStr}`);
+            
+            // Check if parsing failed
+            if (isNaN(d.getTime())) return new Date(0); 
+
+            return d; 
         }
+        
+        // FIX #2: Enhanced robustness in parseTime.
         function parseTime(time, isStart) {
-            if (!time || !time.includes("-")) return { hour: 0, minute: 0 };
-            const str = isStart ? time.split(" - ")[0] : time.split(" - ")[1];
+            // Ensure 'time' is a string containing the range separator "-"
+            if (typeof time !== 'string' || !time.includes("-")) return { hour: 0, minute: 0 };
+            
+            const parts = time.split(" - ");
+            // Use logical OR to ensure 'str' is at least an empty string if split failed
+            const str = isStart ? (parts[0] || '') : (parts[1] || '');
+            
+            // Ensure the time part contains the hour:minute separator ":"
+            if (!str.includes(":")) return { hour: 0, minute: 0 };
+            
             const [h, m] = str.split(":");
             return { hour: +h, minute: +m };
         }
+        
         const formatYYYYMMDD = d => d.toISOString().slice(0,10);
         function getMondayOf(date) {
             const c = new Date(date);
@@ -361,7 +85,9 @@
                         
                         cls.uniqueId = makeUniqueId(weekStart, dayObj.date, cls.time, cls.moduleCode);
 
-                        if (!cls.time || !cls.time.includes("-")) continue;
+                        // FIX #1: The crucial fix for the Uncaught TypeError.
+                        // Ensure cls.time is a string and contains the required time separator before parsing.
+                        if (typeof cls.time !== 'string' || !cls.time.includes("-")) continue;
 
                         const st = parseTime(cls.time, true);
                         const et = parseTime(cls.time, false);
@@ -386,8 +112,7 @@
                             if (diff < 24 * 60 * 60 * 1000) { 
                                 if (diff < bestDiff) {
                                     bestDiff = diff;
-                                    // FIX: Store the calculated time difference (diff) as timeUntil
-                                    nextClass = { ...cls, fullDate: start, timeUntil: diff };
+                                    nextClass = { ...cls, fullDate: start };
                                 }
                             }
                         }
@@ -397,7 +122,7 @@
             return { currentClass, nextClass };
         }
 
-       function updateClock() {
+        function updateClock() {
             const now = new Date();
             currentClock.textContent = now.toLocaleTimeString("en-US");
 
@@ -420,26 +145,12 @@
             else if (nextClass) {
                 currentClassUniqueId = null;
 
-                // FIX: nextClass now contains the correct timeUntil property
-                const diff = nextClass.timeUntil; 
-                
-                // --- NEW CALCULATION LOGIC ---
-                const msInDay = 24 * 60 * 60 * 1000;
-                const msInHour = 60 * 60 * 1000;
-                const msInMinute = 60 * 1000;
+                const diff = nextClass.fullDate - now;
+                const h = Math.floor(diff/3600000);
+                const m = Math.floor((diff%3600000)/60000);
+                const s = Math.floor((diff%60000)/1000);
 
-                const d = Math.floor(diff / msInDay);
-                const h = Math.floor((diff % msInDay) / msInHour);
-                const m = Math.floor((diff % msInHour) / msInMinute);
-                // --- END NEW CALCULATION LOGIC ---
-
-                let timeParts = [];
-                if (d > 0) timeParts.push(`${d}d`);
-                if (h > 0 || d > 0) timeParts.push(`${h}h`); // Show hours if days are present or if it's the largest unit remaining
-                timeParts.push(`${m}m`); // Always show minutes
-
-                const timeStr = timeParts.join(" ");
-
+                const timeStr = h > 0 ? `${h}h ${m}m ${s}s` : `${m}m ${s}s`;
                 const datePart = nextClass.fullDate.toLocaleDateString('en-US', { weekday: 'short' });
                 const codeLoc = `${nextClass.moduleCode || 'CODE'} - ${nextClass.location || 'LOC'}`;
 
@@ -450,16 +161,13 @@
             }
             else {
                 currentClassUniqueId = null;
-                // Message reflects the scope limit (within 24 hours)
-                html += `No upcoming classes found.`; 
+                html += `No upcoming classes within 24h.`;
             }
 
             nextClassDisplay.innerHTML = html;
             applyCurrentClassHighlighting();
             checkAndReloadDaily();
-        } 
-        
-        // Removed the invalid/duplicate 'else' block and its content that followed here.
+        }
 
         function applyCurrentClassHighlighting() {
             document.querySelectorAll('.class-card.current-class').forEach(e=>e.classList.remove('current-class'));
@@ -575,7 +283,8 @@
                     });
                     if (foundDay) {
                         foundWeekStart = w;
-                        break;
+                        // FIX #3: Add break to exit the loop once the target day is found.
+                        break; 
                     }
                 }
 
@@ -668,6 +377,3 @@
         setInterval(updateClock, 1000); 
     });
     </script>
-</body>
-
-</html>
