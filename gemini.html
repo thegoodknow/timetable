@@ -300,18 +300,48 @@
         function makeUniqueId(weekStart, dayDate, time, moduleCode) {
             return `${weekStart}___${dayDate}___${time}___${moduleCode}`;
         }
+
+        // FIX #1: Added check for invalid date parsing to prevent using an 'Invalid Date' object later.
         function parseJsonDate(dateStr) {
             // Converts "Day, DD-Month-YYYY" to a Date object
+            if (typeof dateStr !== 'string') return new Date(0);
+            
             const datePart = dateStr.includes(',') ? dateStr.split(', ')[1] : dateStr;
-            const [dayNum, monthStr, yearStr] = datePart.split('-');
-            return new Date(`${monthStr} ${dayNum}, ${yearStr}`); 
+            const parts = datePart.split('-');
+            
+            if (parts.length !== 3) return new Date(0); // Ensure format is correct
+            
+            const [dayNum, monthStr, yearStr] = parts;
+            
+            // Reconstruct as 'Month DD, YYYY' for better cross-browser compatibility
+            const d = new Date(`${monthStr} ${dayNum}, ${yearStr}`); 
+
+            // Return a default date if parsing fails (e.g., unrecognized month name)
+            if (isNaN(d.getTime())) return new Date(0); 
+
+            return d; 
         }
+
+        // FIX #2: Enhanced robustness in parseTime to handle null/undefined inputs and missing separators.
         function parseTime(time, isStart) {
-            if (!time || !time.includes("-")) return { hour: 0, minute: 0 };
-            const str = isStart ? time.split(" - ")[0] : time.split(" - ")[1];
+            // Must be a string AND contain the range separator "-"
+            if (typeof time !== 'string' || !time.includes("-")) { 
+                return { hour: 0, minute: 0 };
+            }
+            
+            const parts = time.split(" - ");
+            // Use logical OR to ensure 'str' is at least an empty string if split failed
+            const str = isStart ? (parts[0] || '') : (parts[1] || '');
+            
+            // Ensure the time part contains the hour:minute separator ":"
+            if (!str.includes(":")) {
+                 return { hour: 0, minute: 0 };
+            }
+            
             const [h, m] = str.split(":");
             return { hour: +h, minute: +m };
         }
+        
         const formatYYYYMMDD = d => d.toISOString().slice(0,10);
         function getMondayOf(date) {
             const c = new Date(date);
@@ -361,7 +391,9 @@
                         
                         cls.uniqueId = makeUniqueId(weekStart, dayObj.date, cls.time, cls.moduleCode);
 
-                        if (!cls.time || !cls.time.includes("-")) continue;
+                        // FIX #3: The crucial fix for the Uncaught TypeError.
+                        // Ensure cls.time is a string and contains the required time separator before parsing.
+                        if (typeof cls.time !== 'string' || !cls.time.includes("-")) continue;
 
                         const st = parseTime(cls.time, true);
                         const et = parseTime(cls.time, false);
@@ -557,7 +589,7 @@
                     });
                     if (foundDay) {
                         foundWeekStart = w;
-                        break;
+                        break; // Stop searching once the day is found (Efficiency fix)
                     }
                 }
 
