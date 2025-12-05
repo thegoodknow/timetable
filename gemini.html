@@ -272,14 +272,16 @@
             </div>
         </div>
 
-        <div class="header-summary-bar">
+        <!-- Left group: clock and next class -->
+        <div class="header-summary-bar" style="flex-grow:1; gap:32px; min-width:300px;">
             <span id="current-clock" class="summary-item clock-display">Loading Time...</span>
             <span id="next-class-display" class="summary-item next-class-display">
                 <span class="material-icons">alarm</span>Finding Next Class...
             </span>
         </div>
 
-        <div class="controls-group">
+        <!-- Right: select view -->
+        <div class="controls-group" style="order:99; margin-left:auto;">
             <span style="color: var(--text-subtle); font-size: 0.9rem;">Select View:</span>
             <select class="select-control" id="week-select">
                 <option>Loading Views...</option>
