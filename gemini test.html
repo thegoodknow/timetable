@@ -345,7 +345,7 @@
 
             let nextClass = null;
             let currentClass = null;
-            let bestDiff = Infinity;
+            let bestDiff = Infinity; // Time in milliseconds
 
             for (const weekStart in data) {
                 if (!data.hasOwnProperty(weekStart)) continue;
@@ -379,14 +379,16 @@
                             }
                         }
 
-                        // 2. Next Class Check (must be in the future, within 24 hours)
+                        // 2. Next Class Check (must be in the future, increasing scope to 7 days for days calculation)
                         if (start > now) {
                             const diff = start - now;
                             
-                            if (diff < 24 * 60 * 60 * 1000) { 
+                            // Check for classes within the next 7 days (168 hours)
+                            if (diff < 7 * 24 * 60 * 60 * 1000) { 
                                 if (diff < bestDiff) {
                                     bestDiff = diff;
-                                    nextClass = { ...cls, fullDate: start };
+                                    // Store the time difference (bestDiff) on the nextClass object
+                                    nextClass = { ...cls, fullDate: start, timeUntil: diff }; 
                                 }
                             }
                         }
@@ -396,10 +398,11 @@
             return { currentClass, nextClass };
         }
 
-       function updateClock() {
+        function updateClock() {
             const now = new Date();
             currentClock.textContent = now.toLocaleTimeString("en-US");
 
+            // nextClass will now contain the timeUntil property
             const { currentClass, nextClass } = findCurrentAndNextClass(allWeekData);
 
             let html = `<span class="material-icons">alarm</span>`;
@@ -419,24 +422,35 @@
             else if (nextClass) {
                 currentClassUniqueId = null;
 
-                const diff = nextClass.timeUntil; // Use the timeUntil property in milliseconds
+                const diff = nextClass.timeUntil; // Get time until next class in milliseconds
                 
-                // --- NEW CALCULATION LOGIC ---
+                // --- NEW CALCULATION LOGIC for Days, Hours, Minutes ---
                 const msInDay = 24 * 60 * 60 * 1000;
                 const msInHour = 60 * 60 * 1000;
                 const msInMinute = 60 * 1000;
 
-                const d = Math.floor(diff / msInDay);
-                const h = Math.floor((diff % msInDay) / msInHour);
-                const m = Math.floor((diff % msInHour) / msInMinute);
-                // --- END NEW CALCULATION LOGIC ---
+                let remainingMs = diff;
+                
+                const d = Math.floor(remainingMs / msInDay);
+                remainingMs %= msInDay;
+
+                const h = Math.floor(remainingMs / msInHour);
+                remainingMs %= msInHour;
+
+                const m = Math.floor(remainingMs / msInMinute);
+                // Note: Seconds are no longer displayed
 
                 let timeParts = [];
-                if (d > 0) timeParts.push(`${d}d`);
-                if (h > 0 || d > 0) timeParts.push(`${h}h`); // Show hours if days are present or if it's the largest unit remaining
-                timeParts.push(`${m}m`); // Always show minutes
+                // Only show Days if > 0
+                if (d > 0) timeParts.push(`${d}d`); 
+                // Only show Hours if > 0 OR if Days > 0 (to avoid "0d 10m" display)
+                if (h > 0 || d > 0) timeParts.push(`${h}h`); 
+                // Always show Minutes if hours and days are zero (unless the diff is huge, but bounded by 7 days)
+                if (m >= 0) timeParts.push(`${m}m`); 
 
-                const timeStr = timeParts.join(" ");
+                // Fallback for very close classes (e.g., less than 1 minute)
+                const timeStr = timeParts.join(" ") || "Less than 1m"; 
+                // --- END NEW CALCULATION LOGIC ---
 
                 const datePart = nextClass.fullDate.toLocaleDateString('en-US', { weekday: 'short' });
                 const codeLoc = `${nextClass.moduleCode || 'CODE'} - ${nextClass.location || 'LOC'}`;
@@ -448,17 +462,8 @@
             }
             else {
                 currentClassUniqueId = null;
-                // Updated message to reflect the new search scope (e.g., 7 days)
-                html += `No upcoming classes found.`; 
-            }
-
-            nextClassDisplay.innerHTML = html;
-            applyCurrentClassHighlighting();
-            checkAndReloadDaily();
-        }
-            else {
-                currentClassUniqueId = null;
-                html += `No upcoming classes within 24h.`;
+                // Updated message to reflect the new 7-day search scope.
+                html += `No upcoming classes found within 7 days.`; 
             }
 
             nextClassDisplay.innerHTML = html;
@@ -676,3 +681,4 @@
 </body>
 
 </html>
+
