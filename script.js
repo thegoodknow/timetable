@@ -18,43 +18,36 @@ function getCurrentWeekNumber() {
 }
 
 /**
- * Parses the raw HTML string into a structured Timetable array (Placeholder).
- * NOTE: Dates are set for testing based on current time (Dec 5, 2025).
+ * Parses and cleans the fetched JSON data.
+ * @param {Array} rawData - The array of timetable objects from the JSON file.
  */
-function parseTimetable(rawHtml) {
-    return [
-        {
-            day: "Friday", date: "2025-12-05", classes: [
-                // Class that has passed
-                { time: "09:00 - 10:00", course: "Web Development (Past)", type: "Practical", location: "Lab A" },
-                // Class that is CURRENTLY running/upcoming (adjust time to test)
-                { time: "12:30 - 13:30", course: "Database Management (Next)", type: "Tutorial", location: "S105" }, 
-                // Class far in the future
-                { time: "15:00 - 16:00", course: "Advanced Algorithms", type: "Lecture", location: "Online", status: "Current" },
-            ]
-        },
-        {
-            day: "Saturday", date: "2025-12-06", classes: []
-        },
-        {
-            day: "Sunday", date: "2025-12-07", classes: []
-        },
-        {
-            day: "Monday", date: "2025-12-08", classes: [
-                { time: "09:00 - 10:00", course: "Data Structures", type: "Lecture", location: "Online" },
-                { time: "10:00 - 11:00", course: "Algorithms", type: "Tutorial", location: "F201" },
-            ]
-        },
-        {
-            day: "Tuesday", date: "2025-12-09", classes: [
-                { time: "14:00 - 16:00", course: "Networking", type: "Practical", location: "L402", status: "Replacement" },
-            ]
-        },
-    ];
+function parseTimetable(rawData) {
+    // Aggressively clean up the data after it's been structured (or parsed)
+    const cleanedData = rawData.map(daySchedule => {
+        // Ensure daySchedule has a classes array before trying to filter it
+        if (!daySchedule.classes || !Array.isArray(daySchedule.classes)) {
+             return { ...daySchedule, classes: [] };
+        }
+        
+        // Filter out any classes that are missing the required 'time' property
+        const validClasses = daySchedule.classes.filter(classInfo => 
+            // Safety check: ensure classInfo is an object and has a time property that is a string
+            classInfo && classInfo.time && typeof classInfo.time === 'string'
+        );
+        
+        // Return the day schedule with only valid classes
+        return {
+            ...daySchedule,
+            classes: validClasses
+        };
+    });
+    
+    return cleanedData;
 }
 
 /**
- * Renders the timetable cards for a specific week number. (Unchanged)
+ * Renders the timetable cards for a specific week number.
+ * Note: This function assumes timetableData has been populated.
  */
 function renderTimetable(weekNum) {
     const container = document.getElementById('timetable-container');
@@ -124,7 +117,7 @@ function renderTimetable(weekNum) {
 
 /**
  * Updates the clock and finds the next upcoming class.
- * FIX: Added null checks and corrected multi-day search logic.
+ * Includes the critical safety check for the 'split' error.
  */
 function updateClock() {
     const now = new Date();
@@ -148,11 +141,11 @@ function updateClock() {
         let classesToConsider = [];
 
         if (daySchedule.date === todayDateStr) {
-            // --- CRITICAL FIX: Filtering for the current day ---
+            // Filtering for classes on the current day that haven't started yet
             classesToConsider = daySchedule.classes.filter(classInfo => {
                 // SAFETY CHECK: Prevents "Cannot read properties of undefined (reading 'split')"
-                if (!classInfo || !classInfo.time) {
-                    return false; // Skip this class object if time property is missing
+                if (!classInfo || !classInfo.time) { 
+                    return false; 
                 }
                 
                 const startTimeStr = classInfo.time.split(' - ')[0]; 
@@ -164,16 +157,17 @@ function updateClock() {
             });
 
         } else {
-            // For future days, consider all classes, but still apply the safety check
-            classesToConsider = daySchedule.classes.filter(classInfo => classInfo && classInfo.time);
+            // For future days, consider all classes (they are all upcoming)
+            classesToConsider = daySchedule.classes;
         }
 
         // If we found any classes (either today or a future day)
         if (classesToConsider.length > 0) {
             // Sort by time to ensure we pick the earliest one
             classesToConsider.sort((a, b) => {
-                const timeA = a.time.split(' - ')[0];
-                const timeB = b.time.split(' - ')[0];
+                // Ensure time property exists before splitting (though parseTimetable should handle this)
+                const timeA = (a.time || '').split(' - ')[0];
+                const timeB = (b.time || '').split(' - ')[0];
                 return new Date('1970/01/01 ' + timeA) - new Date('1970/01/01 ' + timeB);
             });
 
@@ -191,27 +185,43 @@ function updateClock() {
 
 
 /**
- * Initializes the application: loads data, sets up controls, and renders.
+ * Initializes the application: loads data from JSON, sets up controls, and renders.
  */
-function initApp() {
-    // 1. Load/Parse Data
-    timetableData = parseTimetable(parserSandbox.innerHTML);
+async function initApp() {
+    // 1. Fetch Data from external JSON file (PATH UPDATED for /timetable folder)
+    try {
+        const response = await fetch('timetable/timetable.json');
+        
+        if (!response.ok) {
+            // Throw a specific error if the file wasn't found (e.g., 404)
+            throw new Error(`HTTP error! status: ${response.status}. Ensure file is in 'timetable/timetable.json' and you are using a local server.`);
+        }
+        
+        const rawTimetableData = await response.json();
+        
+        // 2. Load/Parse Data
+        timetableData = parseTimetable(rawTimetableData);
 
-    // 2. Setup Week Selector
-    const weekSelect = document.getElementById('week-select');
-    weekSelect.value = currentWeek;
+        // 3. Setup Week Selector
+        const weekSelect = document.getElementById('week-select');
+        weekSelect.value = currentWeek;
 
-    // Add event listener for week change
-    weekSelect.addEventListener('change', (event) => {
-        renderTimetable(parseInt(event.target.value));
-    });
+        // Add event listener for week change
+        weekSelect.addEventListener('change', (event) => {
+            renderTimetable(parseInt(event.target.value));
+        });
 
-    // 3. Initial Render
-    renderTimetable(currentWeek);
+        // 4. Initial Render
+        renderTimetable(currentWeek);
 
-    // 4. Update Clock and Summary
-    setInterval(updateClock, 1000);
-    updateClock(); // Initial call
+        // 5. Update Clock and Summary
+        setInterval(updateClock, 1000);
+        updateClock(); // Initial call
+        
+    } catch (error) {
+        console.error("Could not load timetable data:", error);
+        document.getElementById('next-class-info').textContent = "ERROR: See console for data loading issue.";
+    }
 }
 
 
