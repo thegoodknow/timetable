@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML Timetable to JSON Converter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fb;
+        }
+        .container {
+            max-width: 1200px;
+        }
+        textarea {
+            resize: none;
+        }
+        input[type="file"] {
+            border: 1px solid #d1d5db;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            background-color: #ffffff;
+            width: 100%;
+            transition: border-color 0.15s ease-in-out;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8">
+
+    <div class="container mx-auto bg-white p-6 md:p-10 shadow-xl rounded-2xl">
+        <header class="text-center mb-10">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Timetable HTML to JSON Converter</h1>
+            <p class="text-gray-500">Import your HTML file or paste its content below to extract the schedule data.</p>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Input Panel -->
+            <div class="space-y-4">
+                <label for="fileInput" class="block text-lg font-medium text-gray-700">1a. Import HTML File</label>
+                <input type="file" id="fileInput" accept=".html,text/html" onchange="handleFileSelect(event)" class="text-sm">
+                
+                <div class="flex items-center space-x-2 my-4">
+                    <hr class="flex-grow border-gray-300">
+                    <span class="text-gray-500 font-medium text-sm">OR</span>
+                    <hr class="flex-grow border-gray-300">
+                </div>
+
+                <label for="htmlInput" class="block text-lg font-medium text-gray-700">1b. Paste Timetable HTML Source</label>
+                <textarea id="htmlInput" rows="10" 
+                          placeholder="Paste the entire content of the Timetable.html file here..."
+                          class="w-full p-4 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-sm shadow-inner"></textarea>
+                
+                <button onclick="convertHtmlToJson(htmlInput.value)" id="convertButton"
+                        class="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition duration-200 shadow-md">
+                    Convert to JSON
+                </button>
+            </div>
+
+            <!-- Output Panel -->
+            <div class="space-y-4">
+                <label for="jsonOutput" class="block text-lg font-medium text-gray-700 flex justify-between items-center">
+                    <span>2. Extracted JSON Output (New Format)</span>
+                    <button onclick="copyJson()" id="copyButton" disabled
+                            class="text-sm px-3 py-1 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300 disabled:opacity-50 transition duration-150">
+                        Copy JSON
+                    </button>
+                </label>
+                <textarea id="jsonOutput" rows="15" readonly
+                          placeholder="JSON output will appear here after conversion."
+                          class="w-full p-4 border border-gray-300 rounded-lg bg-gray-50 text-sm text-gray-800 shadow-inner"></textarea>
+            </div>
+        </main>
+        
+        <div id="messageBox" class="mt-6 p-4 text-sm font-medium rounded-lg text-center hidden"></div>
+    </div>
+
+    <script>
+        // Global utility functions for the UI
+        const htmlInput = document.getElementById('htmlInput');
+        const jsonOutput = document.getElementById('jsonOutput');
+        const convertButton = document.getElementById('convertButton');
+        const copyButton = document.getElementById('copyButton');
+        const messageBox = document.getElementById('messageBox');
+        const fileInput = document.getElementById('fileInput');
+
+        // MAPPING: Used to look up module name based on the module code prefix.
+        // NOTE: This list is based on the sample data you provided and should be expanded as needed.
+        const MODULE_MAPPING = {
+            'AAQS038': 'MATHEMATICS AND STATISTICS FOR COMPUTING',
+            'ABUS007': 'ACADEMIC RESEARCH SKILLS',
+            'AICT023': 'COMPUTER ARCHITECTURE',
+            'MPU2132': 'BAHASA MELAYU KOMUNIKASI 1',
+            'AICT016': 'DIGITAL THINKING AND INNOVATION'
+            // Add more module codes and names here
+        };
+
+        // --- Core Functions ---
+
+        function showMessage(text, type = 'success') {
+            messageBox.textContent = text;
+            messageBox.classList.remove('hidden', 'bg-red-100', 'text-red-800', 'bg-green-100', 'text-green-800');
+            if (type === 'error') {
+                messageBox.classList.add('bg-red-100', 'text-red-800');
+            } else {
+                messageBox.classList.add('bg-green-100', 'text-green-800');
+            }
+            setTimeout(() => {
+                messageBox.classList.add('hidden');
+            }, 5000);
+        }
+
+        /**
+         * Converts a date string like "Mon, 08-Dec-2025" to "YYYY-MM-DD" format.
+         * @param {string} dateStr The date string from the HTML table cell.
+         * @returns {string} Date in YYYY-MM-DD format or null.
+         */
+        function formatWeekDate(dateStr) {
+            const parts = dateStr.split(', ')[1]; // "08-Dec-2025"
+            if (!parts) return null;
+            
+            const [day, monthName, year] = parts.split('-');
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            const monthIndex = monthNames.indexOf(monthName);
+            
+            if (monthIndex === -1) return null;
+
+            const month = String(monthIndex + 1).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        
+        /**
+         * Extracts the module code prefix (e.g., 'AAQS038') from the full subject string.
+         * @param {string} subject Full subject string (e.g., AAQS038-4-1-MSC-L-9).
+         * @returns {string} The module code prefix.
+         */
+        function getModuleCodePrefix(subject) {
+            const match = subject.match(/^([A-Z0-9]+)/);
+            return match ? match[1] : null;
+        }
+
+        /**
+         * Parses the raw HTML content and converts it into the desired JSON format.
+         * @param {string} htmlContent The raw HTML string.
+         */
+        function convertHtmlToJson(htmlContent) {
+            htmlContent = htmlContent.trim();
+            jsonOutput.value = '';
+            copyButton.disabled = true;
+
+            if (!htmlContent) {
+                showMessage("Please paste or import the HTML content first.", 'error');
+                return;
+            }
+
+            try {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(htmlContent, 'text/html');
+
+                // 1. Extract Header Information
+                const intakeElement = doc.querySelector('.intake');
+                const weekElement = doc.querySelector('table tr.thead-dark th[colspan="6"]');
+                
+                const intakeGroup = intakeElement ? intakeElement.textContent.trim() : 'UCDFXXXXX';
+                
+                // Get the first date from the table to use as the week start date.
+                const firstDayCell = doc.querySelector('table.table tbody tr:not(.thead-dark) td:first-child');
+                const firstDateStr = firstDayCell ? firstDayCell.textContent.trim() : 'Mon, 01-Dec-2025';
+                const weekStartDate = formatWeekDate(firstDateStr);
+                
+                // 2. Extract Timetable Rows
+                const rows = doc.querySelectorAll('table.table tbody tr');
+                
+                let days = [];
+                let currentDay = null;
+
+                // 3. Process Data Rows
+                rows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+
+                    // Skip header rows and empty rows
+                    if (row.querySelector('th') || cells.length !== 6) {
+                        return;
+                    }
+
+                    const dayData = cells[0].textContent.trim(); 
+                    const time = cells[1].textContent.trim();
+                    const location = cells[2].textContent.trim(); // This maps to the `location` field (e.g., D-07-11)
+                    const campus = cells[3].textContent.trim(); // This maps to the `campus` field (e.g., APU CAMPUS)
+                    let subject = cells[4].textContent.trim();
+                    const lecturer = cells[5].textContent.trim();
+
+                    // Derived Fields Logic
+                    const moduleCodeMatch = subject.match(/^([A-Z0-9-]+)/); // Get the whole module code string
+                    let moduleCode = moduleCodeMatch ? moduleCodeMatch[1] : subject;
+
+                    // 1. Module Name
+                    const moduleCodePrefix = getModuleCodePrefix(moduleCode);
+                    const moduleName = MODULE_MAPPING[moduleCodePrefix] || 'UNKNOWN MODULE NAME';
+
+                    // 2. isOnline
+                    const isOnline = subject.toLowerCase().includes('(online)') || location.toLowerCase().startsWith('onl');
+                    
+                    // Clean up moduleCode/subject if it contains (Online) for cleaner moduleCode field
+                    let finalModuleCode = moduleCode.replace(' (Online)', '').trim();
+                    
+                    // 3. Class Type
+                    let classType = 'Lecture';
+                    const typeMatch = finalModuleCode.match(/-([LT]|Lab)-/i);
+                    if (typeMatch) {
+                        const typeChar = typeMatch[1].toUpperCase();
+                        if (typeChar === 'L') classType = 'Lecture';
+                        else if (typeChar === 'T') classType = 'Tutorial';
+                        // Add more conditions if Lab or other types are identifiable from the code
+                    } else if (location.toLowerCase().includes('lab')) {
+                        classType = 'Lab';
+                    }
+
+                    // 4. Replacement Fields (Assuming no replacement info in source HTML)
+                    const isReplacement = false;
+                    const replacementType = "";
+
+                    const newClass = {
+                        moduleCode: finalModuleCode,
+                        moduleName: moduleName,
+                        time: time,
+                        location: location,
+                        campus: campus,
+                        lecturer: lecturer,
+                        isOnline: isOnline,
+                        classType: classType,
+                        isReplacement: isReplacement,
+                        replacementType: replacementType
+                    };
+
+                    // Group classes by day
+                    if (currentDay !== dayData) {
+                        days.push({
+                            date: dayData,
+                            classes: [newClass]
+                        });
+                        currentDay = dayData;
+                    } else if (days.length > 0) {
+                        days[days.length - 1].classes.push(newClass);
+                    }
+                });
+
+                // 4. Construct the Final JSON Object
+                const finalJson = {
+                    intakeGroup: intakeGroup,
+                    weekStartDate: weekStartDate,
+                    days: days
+                };
+
+                // 5. Display the output
+                const jsonString = JSON.stringify(finalJson, null, 2);
+                jsonOutput.value = jsonString;
+                copyButton.disabled = days.length === 0;
+                showMessage("Conversion successful! JSON data is ready to copy.");
+
+            } catch (e) {
+                console.error("Parsing error:", e);
+                showMessage(`Error parsing HTML. Please ensure the content is complete and correct. Details: ${e.message}`, 'error');
+            }
+        }
+
+        // --- File Handling ---
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (file.type !== 'text/html') {
+                showMessage("Please select a valid HTML file.", 'error');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                // Clear the paste area and process the file content
+                htmlInput.value = content;
+                convertHtmlToJson(content);
+            };
+            reader.onerror = function(e) {
+                showMessage("Error reading file.", 'error');
+                console.error("File reading error:", e);
+            };
+            reader.readAsText(file);
+        }
+
+        // --- Clipboard Function ---
+
+        function copyJson() {
+            const jsonString = jsonOutput.value;
+            if (jsonString) {
+                const tempTextArea = document.createElement('textarea');
+                tempTextArea.value = jsonString;
+                document.body.appendChild(tempTextArea);
+                tempTextArea.select();
+                try {
+                    const successful = document.execCommand('copy');
+                    if (successful) {
+                        showMessage("JSON copied to clipboard!", 'success');
+                    } else {
+                        showMessage("Copy failed. Please copy manually.", 'error');
+                    }
+                } catch (err) {
+                    showMessage("Copy failed. Please copy manually.", 'error');
+                }
+                document.body.removeChild(tempTextArea);
+            }
+        }
+    </script>
+
+</body>
+</html>
