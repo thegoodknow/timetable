@@ -1,330 +1,330 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Course Timetable</title>
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <style>
-    /* --- Theme Variables --- */
-    :root {
-        --bg-dark: #121212;
-        --bg-card: #1E1E1E;
-        --text-light: #FFFFFF;
-        --text-subtle: #B0B0B0;
-        --color-primary: #007BFF;
-        --color-blue-bg: #004D99; 
-        --color-pill-blue: #0056B3;
-        --border-color: #333333;
-        --header-height: 56px;
-        --color-current: #FFC107; /* Amber/Yellow for current class (Online/LIVE) */
-        --color-replacement: #FF8C00; /* Darker Orange for Replacement classes */
-        --color-replacement-bg: #CC7000; /* Deep Orange Background */
-    }
-
-    /* --- Base Styles --- */
-    body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background-color: var(--bg-dark);
-        color: var(--text-light);
-        margin: 0;
-        padding: 0;
-        min-height: 100vh;
-    }
-
-    /* --- Header/Control Bar --- */
-    .header {
-        display: flex;
-        flex-wrap: wrap; 
-        justify-content: space-between;
-        align-items: center; 
-        padding: 10px 16px; 
-        min-height: var(--header-height);
-        background-color: var(--bg-card);
-        border-bottom: 1px solid var(--border-color);
-        position: sticky;
-        top: 0;
-        z-index: 50;
-        gap: 10px 20px; 
-    }
-
-    .logo-group {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-
-    .logo {
-        display: flex;
-        align-items: center;
-    }
-    
-    #logo-icon {
-        height: 30px; 
-        width: auto;
-        display: block; 
-    }
-    
-    .logo-text {
-        font-size: 1.3rem; 
-        font-weight: bold; 
-        margin-left: 10px; 
-        color: var(--color-primary);
-    }
-
-    .controls-group {
-        display: flex;
-        gap: 12px;
-        align-items: center; 
-        order: 3; 
-    }
-
-    /* --- Header Summary Bar --- */
-    .header-summary-bar {
-        display: flex;
-        align-items: center;
-        flex-grow: 1; 
-        gap: 20px;
-        padding: 5px 0;
-        min-width: 300px;
-        order: 2; 
-    }
-    .summary-item {
-        display: flex;
-        align-items: center;
-        font-size: 0.95rem;
-    }
-    .clock-display {
-        font-weight: 700;
-        color: var(--color-primary);
-    }
-    .next-class-display {
-        color: var(--text-light);
-        font-size: 0.9rem;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    .next-class-display .material-icons {
-        font-size: 1.1rem;
-        margin-right: 5px;
-        color: var(--text-subtle);
-    }
-    
-    /* --- Week Select (select-control) --- */
-    .select-control {
-        background-color: var(--bg-card);
-        color: var(--text-light);
-        border: 1px solid var(--border-color);
-        border-radius: 6px;
-        padding: 8px 12px; 
-        font-size: 0.9rem;
-        cursor: pointer;
-        appearance: none;
-        outline: none;
-        height: 36px; 
-        box-sizing: border-box;
-        white-space: nowrap;
-    }
-    
-    /* --- Custom Timetable Card Styles --- */
-    .timetable-content {
-        padding: 16px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
-    
-    .day-header {
-        background-color: var(--color-blue-bg);
-        color: var(--text-light);
-        font-weight: bold;
-        padding: 10px 16px;
-        border-radius: 8px;
-        margin-top: 10px;
-        font-size: 1.1rem;
-    }
-
-    .class-card {
-        background-color: var(--bg-card);
-        border-radius: 8px;
-        padding: 12px 16px;
-        display: flex;
-        flex-direction: column;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        transition: border-left 0.3s ease;
-    }
-
-    /* Highlight for Today's date */
-    .class-card.today {
-         border-left: 5px solid var(--color-primary);
-    }
-    
-    /* Highlight for CURRENTLY active class */
-    .class-card.current-class {
-        background-color: #2b2b2b; /* Slightly darker background */
-        border-left: 5px solid var(--color-current); 
-        box-shadow: 0 4px 10px rgba(255, 193, 7, 0.2); 
-        animation: pulse-current 1.5s infinite alternate;
-    }
-
-    @keyframes pulse-current {
-        from {
-            opacity: 1;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Timetable</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        /* --- Theme Variables --- */
+        :root {
+            --bg-dark: #121212;
+            --bg-card: #1E1E1E;
+            --text-light: #FFFFFF;
+            --text-subtle: #B0B0B0;
+            --color-primary: #007BFF;
+            --color-blue-bg: #004D99; 
+            --color-pill-blue: #0056B3;
+            --border-color: #333333;
+            /* FIX: Removed the semicolon error here */
+            --header-height: 56px; 
+            --color-current: #FFC107; /* Amber/Yellow for current class (Online/LIVE) */
+            --color-replacement: #FF8C00; /* Darker Orange for Replacement classes */
+            --color-replacement-bg: #CC7000; /* Deep Orange Background */
         }
-        to {
-            opacity: 0.95;
+
+        /* --- Base Styles --- */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
         }
-    }
 
-
-    .card-title {
-        font-weight: bold;
-        font-size: 1rem;
-        margin-bottom: 4px;
-        display: flex; 
-        align-items: center;
-    }
-    
-    .card-title .material-icons {
-        margin-right: 6px;
-        font-size: 1.2rem;
-    }
-
-    /* Specific Icon Colors for Modality */
-    .card-title .online-icon {
-        color: var(--color-current); 
-    }
-    .card-title .inperson-icon {
-        color: var(--color-primary); 
-    }
-    /* New: Icon color for replacement classes */
-    .card-title .replacement-icon {
-        color: var(--color-replacement); 
-    }
-
-
-    .card-subtitle {
-        font-size: 0.85rem;
-        color: var(--text-subtle);
-        margin-bottom: 8px;
-    }
-
-    .card-details {
-        display: flex;
-        justify-content: space-between;
-        font-size: 0.85rem;
-        color: var(--text-subtle);
-        flex-wrap: wrap; 
-        gap: 8px 0;
-    }
-
-    .card-detail-item {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-
-    .card-detail-item .material-icons {
-        font-size: 16px;
-        color: var(--color-primary);
-    }
-    
-    .class-card.current-class .card-detail-item .material-icons {
-         color: var(--color-current);
-    }
-
-
-    .pill {
-        background-color: var(--color-pill-blue);
-        color: var(--text-light);
-        padding: 2px 6px;
-        border-radius: 4px;
-        font-size: 0.75rem;
-        margin-left: 8px;
-        font-weight: 500;
-    }
-
-    .online-tag {
-         background-color: var(--color-current); 
-         color: var(--bg-card); /* Dark text on light background */
-         font-weight: 700;
-    }
-    
-    /* NEW: Custom style for Replacement Tag */
-    .replacement-tag {
-        background-color: var(--color-replacement-bg);
-        color: var(--text-light);
-        font-weight: 700;
-    }
-
-    #parser-sandbox {
-        display: none;
-    }
-    
-    /* Responsive adjustments */
-    @media (max-width: 600px) {
-        .header-summary-bar {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 5px;
-            min-width: 100%;
-        }
+        /* --- Header/Control Bar --- */
         .header {
-             flex-direction: column;
-             align-items: flex-start;
-        }
-        .controls-group, .logo-group {
-            width: 100%;
+            display: flex;
+            flex-wrap: wrap; 
             justify-content: space-between;
-            margin-top: 5px;
+            align-items: center; 
+            padding: 10px 16px; 
+            min-height: var(--header-height);
+            background-color: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            gap: 10px 20px; 
         }
-        .controls-group {
-             justify-content: flex-start;
-             gap: 8px;
-        }
-        .select-control {
-            flex-grow: 1;
-            max-width: 60%;
-        }
-    }
 
-</style>
+        .logo-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        #logo-icon {
+            height: 30px; 
+            width: auto;
+            display: block; 
+        }
+
+        .logo-text {
+            font-size: 1.3rem; 
+            font-weight: bold; 
+            margin-left: 10px; 
+            color: var(--color-primary);
+        }
+
+        .controls-group {
+            display: flex;
+            gap: 12px;
+            align-items: center; 
+            order: 3; 
+        }
+
+        /* --- Header Summary Bar --- */
+        .header-summary-bar {
+            display: flex;
+            align-items: center;
+            flex-grow: 1; 
+            gap: 20px;
+            padding: 5px 0;
+            min-width: 300px;
+            order: 2; 
+        }
+        .summary-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.95rem;
+        }
+        .clock-display {
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+        .next-class-display {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .next-class-display .material-icons {
+            font-size: 1.1rem;
+            margin-right: 5px;
+            color: var(--text-subtle);
+        }
+
+        /* --- Week Select (select-control) --- */
+        .select-control {
+            background-color: var(--bg-card);
+            color: var(--text-light);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 8px 12px; 
+            font-size: 0.9rem;
+            cursor: pointer;
+            appearance: none;
+            outline: none;
+            height: 36px; 
+            box-sizing: border-box;
+            white-space: nowrap;
+        }
+
+        /* --- Custom Timetable Card Styles --- */
+        .timetable-content {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .day-header {
+            background-color: var(--color-blue-bg);
+            color: var(--text-light);
+            font-weight: bold;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 1.1rem;
+        }
+
+        .class-card {
+            background-color: var(--bg-card);
+            border-radius: 8px;
+            padding: 12px 16px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: border-left 0.3s ease;
+        }
+
+        /* Highlight for Today's date */
+        .class-card.today {
+            border-left: 5px solid var(--color-primary);
+        }
+
+        /* Highlight for CURRENTLY active class */
+        .class-card.current-class {
+            background-color: #2b2b2b; /* Slightly darker background */
+            border-left: 5px solid var(--color-current); 
+            box-shadow: 0 4px 10px rgba(255, 193, 7, 0.2); 
+            animation: pulse-current 1.5s infinite alternate;
+        }
+
+        @keyframes pulse-current {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0.95;
+            }
+        }
+
+
+        .card-title {
+            font-weight: bold;
+            font-size: 1rem;
+            margin-bottom: 4px;
+            display: flex; 
+            align-items: center;
+        }
+
+        .card-title .material-icons {
+            margin-right: 6px;
+            font-size: 1.2rem;
+        }
+
+        /* Specific Icon Colors for Modality */
+        .card-title .online-icon {
+            color: var(--color-current); 
+        }
+        .card-title .inperson-icon {
+            color: var(--color-primary); 
+        }
+        /* New: Icon color for replacement classes */
+        .card-title .replacement-icon {
+            color: var(--color-replacement); 
+        }
+
+
+        .card-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-subtle);
+            margin-bottom: 8px;
+        }
+
+        .card-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-subtle);
+            flex-wrap: wrap; 
+            gap: 8px 0;
+        }
+
+        .card-detail-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .card-detail-item .material-icons {
+            font-size: 16px;
+            color: var(--color-primary);
+        }
+
+        .class-card.current-class .card-detail-item .material-icons {
+            color: var(--color-current);
+        }
+
+
+        .pill {
+            background-color: var(--color-pill-blue);
+            color: var(--text-light);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-left: 8px;
+            font-weight: 500;
+        }
+
+        .online-tag {
+            background-color: var(--color-current); 
+            color: var(--bg-card); /* Dark text on light background */
+            font-weight: 700;
+        }
+
+        /* NEW: Custom style for Replacement Tag */
+        .replacement-tag {
+            background-color: var(--color-replacement-bg);
+            color: var(--text-light);
+            font-weight: 700;
+        }
+
+        #parser-sandbox {
+            display: none;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .header-summary-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+                min-width: 100%;
+            }
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .controls-group, .logo-group {
+                width: 100%;
+                justify-content: space-between;
+                margin-top: 5px;
+            }
+            .controls-group {
+                justify-content: flex-start;
+                gap: 8px;
+            }
+            .select-control {
+                flex-grow: 1;
+                max-width: 60%;
+            }
+        }
+    </style>
 </head>
 <body>
 
-    <div class="header">
-        <div class="logo-group">
-            <div class="logo">
-                <img id="logo-icon" src="apspace-white.svg" alt="APSpace Logo">
-            </div>
-            </div>
-        
-        <div class="header-summary-bar">
-            <span id="current-clock" class="summary-item clock-display">Loading Time...</span>
-            <span id="next-class-display" class="summary-item next-class-display">
-                <span class="material-icons">alarm</span>Finding Next Class...
-            </span>
-        </div>
-        
-        <div class="controls-group">
-            <span style="color: var(--text-subtle); font-size: 0.9rem;">Select View:</span>
-            <select class="select-control" id="week-select">
-                <option>Loading Views...</option>
-            </select>
-        </div>
-    </div>
-    
-    <div class="timetable-content" id="timetable-list">
-        <div style="text-align: center; padding: 50px;">
-            <p style="color: var(--text-subtle);">Loading timetable...</p>
-        </div>
-    </div>
-    
-    <div id="parser-sandbox"></div>
+    <div class="header">
+        <div class="logo-group">
+            <div class="logo">
+                <img id="logo-icon" src="apspace-white.svg" alt="APSpace Logo">
+            </div>
+        </div>
 
-    <script>
+        <div class="header-summary-bar">
+            <span id="current-clock" class="summary-item clock-display">Loading Time...</span>
+            <span id="next-class-display" class="summary-item next-class-display">
+                <span class="material-icons">alarm</span>Finding Next Class...
+            </span>
+        </div>
+
+        <div class="controls-group">
+            <span style="color: var(--text-subtle); font-size: 0.9rem;">Select View:</span>
+            <select class="select-control" id="week-select">
+                <option>Loading Views...</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="timetable-content" id="timetable-list">
+        <div style="text-align: center; padding: 50px;">
+            <p style="color: var(--text-subtle);">Loading timetable...</p>
+        </div>
+    </div>
+
+    <div id="parser-sandbox"></div>
+
+    <script>
     document.addEventListener('DOMContentLoaded', () => {
         const timetableList = document.getElementById('timetable-list');
         const weekSelect = document.getElementById('week-select');
@@ -336,28 +336,30 @@
         let allWeekData = {}; // Map of week start date -> array of day objects
         let currentClassUniqueId = null; // Store unique ID of the current class for highlighting
         let lastLoadDate = new Date(); // Stores the date the files were last successfully loaded
-        
+
         // --- Helper Functions ---
-        
+
         /**
          * Dynamically generates the list of timetable file paths based on the current date.
+         * Fetches files for the current week, 1 week back, and 2 weeks forward.
          */
         function generateTimetableFilePaths() {
             const now = new Date();
             const weekStarts = [];
 
-            // Helper to get the Monday date for a given day offset
+            // Helper to get the Monday date for a given day offset (0 = current week)
             const getMonday = (dateObj, offset = 0) => {
                 const date = new Date(dateObj); 
                 date.setDate(date.getDate() + (offset * 7));
 
+                // dayOfWeek: 0 (Sun) to 6 (Sat)
                 let dayOfWeek = date.getDay();
-                dayOfWeek = dayOfWeek === 0 ? 7 : dayOfWeek; 
                 
-                const diff = date.getDate() - dayOfWeek + 1;
+                // If it's Sunday (0), go back 6 days. If it's Monday (1), go back 0 days.
+                const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1; 
 
-                const monday = new Date(date.setDate(diff));
-                monday.setHours(0, 0, 0, 0); 
+                const monday = new Date(date.setDate(date.getDate() - daysToSubtract));
+                monday.setHours(0, 0, 0, 0); 
                 return monday;
             };
 
@@ -369,17 +371,17 @@
             };
 
             // Check 1 week back, current week, and 2 weeks forward (4 total weeks)
-            const weekOffsets = [-1, 0, 1, 2]; 
+            const weekOffsets = [-1, 0, 1, 2]; 
 
             weekOffsets.forEach(offset => {
                 const monday = getMonday(now, offset);
                 const dateStr = formatDate(monday);
-                weekStarts.push(`timetable/${dateStr}.json`); 
+                weekStarts.push(`timetable/${dateStr}.json`); 
             });
 
             return weekStarts;
         }
-        
+
         // Helper to get date string in the format "Mon, 01-Dec-2025" 
         const getFormattedDateString = (dateObj) => {
             const day = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
@@ -398,6 +400,9 @@
 
         // Helper function to parse time string "HH:MM - HH:MM" and returns start hour and minute
         function parseTime(timeStr, isStart) {
+            // Handle potential missing time string gracefully
+            if (!timeStr || !timeStr.includes('-')) return { hour: 0, minute: 0 };
+            
             const timePart = isStart ? timeStr.split(' - ')[0] : timeStr.split(' - ')[1];
             const parts = timePart.split(':');
             return { hour: parseInt(parts[0], 10), minute: parseInt(parts[1], 10) };
@@ -428,14 +433,16 @@
                     const jsonDateMidnight = new Date(jsonDate);
                     jsonDateMidnight.setHours(0, 0, 0, 0);
 
-                    const isToday = dayGroup.date === todayDateStr; 
-
+                    // Only process days from today onwards
                     if (jsonDateMidnight.getTime() >= nowMidnight.getTime()) {
                         
+                        const isToday = dayGroup.date === todayDateStr; 
+
                         for (const classItem of dayGroup.classes) {
-                            classItem.uniqueId = `${weekStart}-${dayGroup.date}-${classItem.time}`;
                             
-                            // Skip classes without time information
+                            // Create a unique ID for highlighting
+                            classItem.uniqueId = `${weekStart}-${dayGroup.date}-${classItem.time}-${classItem.moduleCode}`;
+                            
                             if (!classItem.time || !classItem.time.includes('-')) continue;
 
                             const startTimeParts = parseTime(classItem.time, true);
@@ -507,28 +514,27 @@
                 if (timeRemaining < 0 || timeRemaining > MAX_DISPLAY_DIFF_MS) {
                     htmlToDisplay = `<span class="material-icons">alarm</span>Next class is >24 hours away.`;
                     nextClassDisplay.innerHTML = htmlToDisplay;
-                    return; 
+                    return; 
                 }
 
                 const hours = Math.floor(timeRemaining / (1000 * 60 * 60));
                 const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
                 
-                const timeRemainingStr = hours > 0 
-                    ? `${hours}h ${minutes}m ${seconds}s` 
+                const timeRemainingStr = hours > 0 
+                    ? `${hours}h ${minutes}m ${seconds}s` 
                     : `${minutes}m ${seconds}s`;
 
                 const datePart = nextClass.fullDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
                 
                 let classDetails = '';
                 
-                // *** UPDATED LOGIC HERE ***
+                // Display special tags (REPLACEMENT takes precedence over Online)
                 if (nextClass.isReplacement) {
-                    // Use the replacement color defined in CSS variables
                     classDetails = `<span style="color: var(--color-replacement); font-weight: 500;">REPLACEMENT</span> | ${nextClass.moduleCode || 'CODE'} - ${nextClass.location || 'LOC'}`;
                 }
                 else if (nextClass.isOnline) {
-                     classDetails = `<span style="color: var(--color-current); font-weight: 500;">Online</span> | ${nextClass.moduleCode || 'CODE'} - ${nextClass.location || 'LOC'}`;
+                    classDetails = `<span style="color: var(--color-current); font-weight: 500;">Online</span> | ${nextClass.moduleCode || 'CODE'} - ${nextClass.location || 'LOC'}`;
                 } else {
                     classDetails = `${nextClass.moduleCode || 'CODE'} - ${nextClass.location || 'LOC'}`;
                 }
@@ -550,7 +556,7 @@
             applyCurrentClassHighlighting();
             checkAndReloadDaily();
         }
-        
+
         // Applies/removes the highlight class based on the current class ID
         function applyCurrentClassHighlighting() {
             document.querySelectorAll('.class-card.current-class').forEach(card => {
@@ -561,6 +567,10 @@
                 const activeCard = document.querySelector(`.class-card[data-unique-id="${currentClassUniqueId}"]`);
                 if (activeCard) {
                     activeCard.classList.add('current-class');
+                    // Scroll to current class when the view is Today
+                    if (weekSelect.value === '__TODAY__') {
+                        activeCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
                 }
             }
         }
@@ -574,6 +584,7 @@
             const nowMidnight = new Date(now);
             nowMidnight.setHours(0, 0, 0, 0);
 
+            // If the current date is greater than the last load date (i.e., it's a new day)
             if (nowMidnight.getTime() > lastLoadMidnight.getTime()) {
                 console.log("New day detected. Reloading timetable data.");
                 fetchAllWeeks();
@@ -587,13 +598,13 @@
             timetableList.innerHTML = `<div style='text-align: center; padding: 50px;'><p style='color: var(--text-subtle);'>Fetching all week data...</p></div>`;
         
             const paths = generateTimetableFilePaths();
-            const fetchPromises = paths.map(path => 
+            const fetchPromises = paths.map(path => 
                 fetch(path)
                     .then(response => {
                         if (!response.ok && response.status !== 404) {
                             throw new Error(`HTTP error! status: ${response.status}`);
                         }
-                        return response.status === 404 ? null : response.json(); 
+                        return response.status === 404 ? null : response.json(); 
                     })
                     .catch(error => {
                         console.warn(`Could not load ${path}. Skipping.`, error);
@@ -614,23 +625,18 @@
                 }
             });
             
-            lastLoadDate = new Date(); 
+            lastLoadDate = new Date(); 
 
+            // Sort weeks chronologically
             allWeeks.sort((a, b) => new Date(a) - new Date(b));
 
             updateWeekSelect();
             
-            const defaultWeek = allWeeks.find(weekStart => {
-                const now = new Date();
-                const monday = new Date(weekStart);
-                const sunday = new Date(monday);
-                sunday.setDate(monday.getDate() + 6);
-                
-                return now.getTime() >= monday.getTime() && now.getTime() < sunday.getTime() + (24 * 60 * 60 * 1000);
-            }) || allWeeks[0];
+            // Default to TODAY view if data is available
+            const defaultView = (allWeeks.length > 0) ? '__TODAY__' : (weekSelect.options[0] ? weekSelect.options[0].value : '__TODAY__');
             
-            weekSelect.value = defaultWeek ? '__TODAY__' : (allWeeks.length > 0 ? allWeeks[0] : '__TODAY__');
-            currentWeekStart = defaultWeek || allWeeks[0];
+            weekSelect.value = defaultView;
+            currentWeekStart = defaultView;
 
             renderTimetable(weekSelect.value);
         }
@@ -639,19 +645,22 @@
             const currentSelection = weekSelect.value;
             weekSelect.innerHTML = '';
             
+            // Add Today/Tomorrow options first
             const DAY_OPTIONS = { '__TODAY__': 'Today', '__TOMORROW__': 'Tomorrow' };
             Object.entries(DAY_OPTIONS).forEach(([key, value]) => {
                 const option = document.createElement('option');
                 option.value = key;
                 option.textContent = value;
-                if (key === currentSelection) {
+                
+                // Select the current view or default to TODAY
+                if (key === currentSelection || (!currentSelection && key === '__TODAY__')) {
                     option.selected = true;
-                } else if (!currentSelection || currentSelection.startsWith('__')) {
-                    option.selected = (key === '__TODAY__');
                 }
+                
                 weekSelect.appendChild(option);
             });
             
+            // Add full week options
             allWeeks.forEach(weekStart => {
                 const mondayDate = new Date(weekStart);
                 const endDate = new Date(mondayDate);
@@ -684,10 +693,12 @@
             tomorrowMidnight.setDate(now.getDate() + 1);
             tomorrowMidnight.setHours(0, 0, 0, 0);
             
+            // Determine the days to display based on the selected view
             if (viewKey === '__TODAY__' || viewKey === '__TOMORROW__') {
                 const targetMidnight = viewKey === '__TODAY__' ? todayMidnight : tomorrowMidnight;
                 let foundDay = null;
                 
+                // Search all weeks for the specific day
                 for (const weekStart in allWeekData) {
                     foundDay = allWeekData[weekStart].find(d => {
                         const dayMidnight = parseJsonDate(d.date);
@@ -697,17 +708,19 @@
                     
                     if (foundDay) {
                         daysToDisplay.push(foundDay);
-                        currentWeekStart = weekStart;
-                        break; 
+                        currentWeekStart = weekStart; // Set context for unique ID generation
+                        break; 
                     }
                 }
                 
                 if (!foundDay) {
-                     timetableList.innerHTML = `<div class="day-header">${viewKey.replace(/__/g, '')}</div><p style="text-align: center; color: var(--text-subtle); padding: 20px;">No classes scheduled for ${viewKey === '__TODAY__' ? 'Today' : 'Tomorrow'}.</p>`;
+                     const headerText = viewKey === '__TODAY__' ? 'Today' : 'Tomorrow';
+                     timetableList.innerHTML = `<div class="day-header">${headerText}</div><p style="text-align: center; color: var(--text-subtle); padding: 20px;">No classes scheduled for ${headerText}.</p>`;
                      applyCurrentClassHighlighting();
                      return;
                 }
             } else if (allWeekData[viewKey]) {
+                // Display the entire week
                 daysToDisplay = allWeekData[viewKey];
                 currentWeekStart = viewKey;
             } else {
@@ -735,30 +748,30 @@
                     const time = cls.time || 'TBD';
                     const location = cls.location || 'TBC';
                     const lecturerName = cls.lecturer || 'Staff TBC'; 
-                    // Use classType if available, otherwise default to 'Class'
                     const classType = cls.classType || 'Class'; 
                     
-                    let modalityIcon = `<span class="material-icons inperson-icon">room</span>`;
-                    let modalityTag = ``; 
+                    let modalityIcon;
+                    let modalityTag; 
 
-                    // *** REPLACEMENT LOGIC - Highest Priority ***
+                    // REPLACEMENT LOGIC - Highest Priority
                     if (cls.isReplacement) {
                         modalityIcon = `<span class="material-icons replacement-icon">event_note</span>`;
                         const type = cls.replacementType ? cls.replacementType.toUpperCase() : 'CLASS';
                         modalityTag = `<span class="pill replacement-tag">R/P ${type}</span>`;
                     }
-                    // *** ONLINE LOGIC - Second Priority ***
+                    // ONLINE LOGIC - Second Priority
                     else if (cls.isOnline) {
                          modalityIcon = `<span class="material-icons online-icon">laptop_chromebook</span>`;
                          modalityTag = `<span class="pill online-tag">Online</span>`;
                     }
-                    // *** DEFAULT LOGIC (In-person) - Lowest Priority ***
+                    // DEFAULT LOGIC (In-person) - Lowest Priority
                     else {
                          modalityIcon = `<span class="material-icons inperson-icon">room</span>`;
                          modalityTag = ``; 
                     }
                     
-                    const uniqueId = `${currentWeekStart}-${day.date}-${time}`;
+                    // Generate unique ID
+                    const uniqueId = `${currentWeekStart}-${day.date}-${time}-${moduleCode}`;
                     const todayClass = isToday ? 'today' : '';
                     
                     html += `
@@ -796,10 +809,9 @@
         // Initial fetch and setup
         fetchAllWeeks();
 
-        // Setup the recurring updates
+        // Setup the recurring updates (runs every second)
         setInterval(updateClock, 1000); 
     });
-</script>
+    </script>
 </body>
-</html><!DOCTYPE html>
-<html lang="en">
+</html>
