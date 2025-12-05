@@ -159,17 +159,53 @@
                 const doc = parser.parseFromString(htmlContent, 'text/html');
 
                 // 1. Extract Header Information
-                const intakeElement = doc.querySelector('.intake');
-                const weekElement = doc.querySelector('table tr.thead-dark th[colspan="6"]');
                 
-                const intakeGroup = intakeElement ? intakeElement.textContent.trim() : 'UCDFXXXXX';
+                // Try to find the h4 element that contains the intake/group information
+                // The expected structure from the previously provided HTML snippet is:
+                // <h4 class="text-center">Week: 2025-12-08 | Intake: UCDF2511ICT(SE) | Group: G1</h4>
+                const headerElement = doc.querySelector('h4.text-center');
+                let intake = 'N/A';
+                let group = 'N/A';
+                
+                if (headerElement) {
+                    const text = headerElement.textContent.trim();
+                    // Regex to robustly find Intake and Group values
+                    const intakeMatch = text.match(/Intake:\s*([A-Z0-9()]+)/i);
+                    const groupMatch = text.match(/Group:\s*([A-Z0-9()]+)/i);
+                    
+                    if (intakeMatch && intakeMatch[1]) {
+                        intake = intakeMatch[1];
+                    }
+                    if (groupMatch && groupMatch[1]) {
+                        group = groupMatch[1];
+                    }
+                }
                 
                 // Get the first date from the table to use as the week start date.
+                let weekStartDate = 'N/A';
+                const weekElement = doc.querySelector('h4.text-center');
+                if (weekElement) {
+                    // This regex specifically targets the week date in the header, e.g., "Week: 2025-12-08"
+                    const weekMatch = weekElement.textContent.match(/Week:\s*([0-9-]+)/); 
+                    if (weekMatch && weekMatch[1]) {
+                        weekStartDate = weekMatch[1];
+                    }
+                }
+                
+                // Fallback to table cell date if header date is not found or is 'N/A'
+                // This fallback logic relies on the structure of the data rows
                 const firstDayCell = doc.querySelector('table.table tbody tr:not(.thead-dark) td:first-child');
-                const firstDateStr = firstDayCell ? firstDayCell.textContent.trim() : 'Mon, 01-Dec-2025';
-                const weekStartDate = formatWeekDate(firstDateStr);
+                if (weekStartDate === 'N/A' && firstDayCell) {
+                    const firstDateStr = firstDayCell.textContent.trim();
+                    // If the cell content is a full date string like "Mon, 08-Dec-2025"
+                    const formattedDate = formatWeekDate(firstDateStr);
+                    if (formattedDate) {
+                        weekStartDate = formattedDate;
+                    }
+                }
                 
                 // 2. Extract Timetable Rows
+                // Assuming the timetable data is inside a table with class 'table'
                 const rows = doc.querySelectorAll('table.table tbody tr');
                 
                 let days = [];
@@ -179,17 +215,24 @@
                 rows.forEach(row => {
                     const cells = row.querySelectorAll('td');
 
-                    // Skip header rows and empty rows
-                    if (row.querySelector('th') || cells.length !== 6) {
-                        return;
+                    // Standard timetable rows have 6 columns (Day, Time, Location, Campus, Subject, Lecturer)
+                    // Skip merged or incomplete rows
+                    if (cells.length < 6) {
+                        return; 
                     }
-
+                    
                     const dayData = cells[0].textContent.trim(); 
                     const time = cells[1].textContent.trim();
-                    const location = cells[2].textContent.trim(); // This maps to the `location` field (e.g., D-07-11)
-                    const campus = cells[3].textContent.trim(); // This maps to the `campus` field (e.g., APU CAMPUS)
+                    const location = cells[2].textContent.trim(); 
+                    const campus = cells[3].textContent.trim(); 
                     let subject = cells[4].textContent.trim();
                     const lecturer = cells[5].textContent.trim();
+
+                    // Skip the row if the subject is an empty placeholder or just "BREAK"
+                    if (!subject || subject.toUpperCase() === 'BREAK') {
+                         return;
+                    }
+
 
                     // Derived Fields Logic
                     const moduleCodeMatch = subject.match(/^([A-Z0-9-]+)/); // Get the whole module code string
@@ -207,17 +250,19 @@
                     
                     // 3. Class Type
                     let classType = 'Lecture';
-                    const typeMatch = finalModuleCode.match(/-([LT]|Lab)-/i);
+                    // Check for type L or T or LAB in the module code string (e.g., ...-L-...)
+                    const typeMatch = finalModuleCode.match(/-([LT]|LAB)-/i);
                     if (typeMatch) {
                         const typeChar = typeMatch[1].toUpperCase();
                         if (typeChar === 'L') classType = 'Lecture';
                         else if (typeChar === 'T') classType = 'Tutorial';
-                        // Add more conditions if Lab or other types are identifiable from the code
+                        else if (typeChar === 'LAB') classType = 'Lab';
                     } else if (location.toLowerCase().includes('lab')) {
+                        // Fallback: check location for 'lab' if not found in module code
                         classType = 'Lab';
                     }
 
-                    // 4. Replacement Fields (Assuming no replacement info in source HTML)
+                    // 4. Replacement Fields (Assumed false as replacement info is typically external)
                     const isReplacement = false;
                     const replacementType = "";
 
@@ -248,8 +293,9 @@
 
                 // 4. Construct the Final JSON Object
                 const finalJson = {
-                    intakeGroup: intakeGroup,
                     weekStartDate: weekStartDate,
+                    intake: intake,
+                    group: group,
                     days: days
                 };
 
@@ -257,7 +303,7 @@
                 const jsonString = JSON.stringify(finalJson, null, 2);
                 jsonOutput.value = jsonString;
                 copyButton.disabled = days.length === 0;
-                showMessage("Conversion successful! JSON data is ready to copy.");
+                showMessage("Conversion successful! JSON data is ready to copy. Intake and Group extracted.", 'success');
 
             } catch (e) {
                 console.error("Parsing error:", e);

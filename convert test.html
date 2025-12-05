@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[TESTING VER] Course Timetable</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <style>
+        /* --- Theme Variables --- */
+        :root {
+            --bg-dark: #121212;
+            --bg-card: #1E1E1E;
+            --text-light: #FFFFFF;
+            --text-subtle: #B0B0B0;
+            --color-primary: #007BFF;
+            --color-blue-bg: #004D99; 
+            --color-pill-blue: #0056B3;
+            --border-color: #333333;
+            --header-height: 56px; 
+            --color-current: #FFC107; 
+            --color-replacement: #FF8C00; 
+            --color-replacement-bg: #CC7000; 
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        .header {
+            display: flex;
+            flex-wrap: wrap; 
+            justify-content: space-between;
+            align-items: center; 
+            padding: 10px 16px; 
+            min-height: var(--header-height);
+            background-color: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            gap: 10px 20px; 
+        }
+
+        .logo-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #logo-icon {
+            height: 30px; 
+            width: auto;
+            display: block; 
+        }
+
+        .controls-group {
+            display: flex;
+            gap: 12px;
+            align-items: center; 
+            order: 3; 
+        }
+
+        .header-summary-bar {
+            display: flex;
+            align-items: center;
+            flex-grow: 1; 
+            gap: 20px;
+            padding: 5px 0;
+            min-width: 300px;
+            order: 2; 
+        }
+
+        .summary-item {
+             display: flex;
+             align-items: center;
+             font-size: 0.95rem;
+        }
+
+        .clock-display {
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+
+        .next-class-display {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .next-class-display .material-icons {
+            font-size: 1.1rem;
+            margin-right: 5px;
+            color: var(--text-subtle);
+        }
+
+        /* --- Convert Button Styling --- */
+        #convert-btn {
+            background-color: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-left: 10px; 
+        }
+
+        #convert-btn:hover {
+            background-color: #0069d9;
+        }
+
+        /* Hide Convert button on small screens (mobile) */
+        @media (max-width: 600px) {
+            #convert-btn {
+                display: none;
+            }
+        }
+
+        .select-control {
+            background-color: var(--bg-card);
+            color: var(--text-light);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 8px 12px; 
+            font-size: 0.9rem;
+            cursor: pointer;
+            appearance: none;
+            outline: none;
+            height: 36px; 
+            box-sizing: border-box;
+            white-space: nowrap;
+        }
+
+        /* ... rest of your CSS (timetable cards, login overlay, etc.) remain unchanged ... */
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="logo-group">
+            <div class="logo">
+                <img id="logo-icon" src="apspace-white.svg" alt="Logo">
+                <span id="logo-text" class="logo-text">TESTING VERSION</span>
+            </div>
+        </div>
+
+        <div class="header-summary-bar">
+            <span id="current-clock" class="summary-item clock-display">Loading Time...</span>
+            <span id="next-class-display" class="summary-item next-class-display">
+                <span class="material-icons">alarm</span>Finding Next Class...
+            </span>
+
+            <!-- Convert Button (desktop only) -->
+            <button id="convert-btn">Convert</button>
+        </div>
+
+        <div class="controls-group">
+            <span style="color: var(--text-subtle); font-size: 0.9rem;">Select View:</span>
+            <select class="select-control" id="week-select">
+                <option>Loading Views...</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Login Overlay -->
+    <div class="login-overlay" id="login-overlay">
+        <div class="login-card">
+            <h3>Admin Login</h3>
+            <p>Enter your credentials to enter.</p>
+            <form id="login-form">
+                <div class="input-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit" id="login-button">Log In</button>
+                <p id="login-message" class="message-text"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Timetable content -->
+    <div class="timetable-content" id="timetable-list">
+        <div style="text-align: center; padding: 50px;">
+            <p style="color: var(--text-subtle);">Loading timetable...</p>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- Convert button navigates to convert.html ---
+        document.getElementById("convert-btn").addEventListener("click", () => {
+            window.location.href = "convert.html";
+        });
+
+        // --- Rest of your JS (clock, login, timetable) remains unchanged ---
+        // Example: updating clock, fetching weeks, rendering timetable, login logic...
+    });
+    </script>
+
+</body>
+</html>
