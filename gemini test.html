@@ -396,7 +396,7 @@
             return { currentClass, nextClass };
         }
 
-        function updateClock() {
+       function updateClock() {
             const now = new Date();
             currentClock.textContent = now.toLocaleTimeString("en-US");
 
@@ -419,12 +419,25 @@
             else if (nextClass) {
                 currentClassUniqueId = null;
 
-                const diff = nextClass.fullDate - now;
-                const h = Math.floor(diff/3600000);
-                const m = Math.floor((diff%3600000)/60000);
-                const s = Math.floor((diff%60000)/1000);
+                const diff = nextClass.timeUntil; // Use the timeUntil property in milliseconds
+                
+                // --- NEW CALCULATION LOGIC ---
+                const msInDay = 24 * 60 * 60 * 1000;
+                const msInHour = 60 * 60 * 1000;
+                const msInMinute = 60 * 1000;
 
-                const timeStr = h > 0 ? `${h}h ${m}m ${s}s` : `${m}m ${s}s`;
+                const d = Math.floor(diff / msInDay);
+                const h = Math.floor((diff % msInDay) / msInHour);
+                const m = Math.floor((diff % msInHour) / msInMinute);
+                // --- END NEW CALCULATION LOGIC ---
+
+                let timeParts = [];
+                if (d > 0) timeParts.push(`${d}d`);
+                if (h > 0 || d > 0) timeParts.push(`${h}h`); // Show hours if days are present or if it's the largest unit remaining
+                timeParts.push(`${m}m`); // Always show minutes
+
+                const timeStr = timeParts.join(" ");
+
                 const datePart = nextClass.fullDate.toLocaleDateString('en-US', { weekday: 'short' });
                 const codeLoc = `${nextClass.moduleCode || 'CODE'} - ${nextClass.location || 'LOC'}`;
 
@@ -433,6 +446,16 @@
                     | ${codeLoc} (${datePart})
                 `;
             }
+            else {
+                currentClassUniqueId = null;
+                // Updated message to reflect the new search scope (e.g., 7 days)
+                html += `No upcoming classes found.`; 
+            }
+
+            nextClassDisplay.innerHTML = html;
+            applyCurrentClassHighlighting();
+            checkAndReloadDaily();
+        }
             else {
                 currentClassUniqueId = null;
                 html += `No upcoming classes within 24h.`;
@@ -651,4 +674,5 @@
     });
     </script>
 </body>
+
 </html>
