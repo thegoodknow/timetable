@@ -1,8 +1,8 @@
 {
-"weekStartDate": "2025-12-08",
+"weekStartDate": "2025-12-15",
       "days": [
         {
-          "date": "Mon, 08-Dec-2025",
+          "date": "Mon, 15-Dec-2025",
           "classes": [
             {
               "moduleCode": "",
@@ -31,65 +31,7 @@
           ]
         },
         {
-          "date": "Tue, 09-Dec-2025",
-          "classes": [
-           {
-              "moduleCode": "",
-              "moduleName": "",
-              "time": "",
-              "location": "",
-              "campus": "APU CAMPUS",
-              "lecturer": "",
-              "isOnline": false,
-              "classType": "Lecture",
-              "isReplacement": false,
-              "replacementType": ""
-            },
-            {
-              "moduleCode": "",
-              "moduleName": "",
-              "time": "",
-              "location": "",
-              "campus": "APU CAMPUS",
-              "lecturer": "",
-              "isOnline": false,
-              "classType": "Lecture",
-              "isReplacement": false,
-              "replacementType": ""
-            }
-          ]
-        },
-        {
-          "date": "Wed, 10-Dec-2025",
-          "classes": [
-            {
-              "moduleCode": "",
-              "moduleName": "",
-              "time": "",
-              "location": "",
-              "campus": "APU CAMPUS",
-              "lecturer": "",
-              "isOnline": false,
-              "classType": "Lecture",
-              "isReplacement": false,
-              "replacementType": ""
-            },
-            {
-              "moduleCode": "",
-              "moduleName": "",
-              "time": "",
-              "location": "",
-              "campus": "APU CAMPUS",
-              "lecturer": "",
-              "isOnline": false,
-              "classType": "Lecture",
-              "isReplacement": false,
-              "replacementType": ""
-            }
-          ]
-        },
-        {
-          "date": "Thu, 11-Dec-2025",
+          "date": "Tue, 16-Dec-2025",
           "classes": [
            {
               "moduleCode": "",
@@ -118,7 +60,65 @@
           ]
         },
         {
-          "date": "Fri, 12-Dec-2025",
+          "date": "Wed, 17-Dec-2025",
+          "classes": [
+            {
+              "moduleCode": "",
+              "moduleName": "",
+              "time": "",
+              "location": "",
+              "campus": "APU CAMPUS",
+              "lecturer": "",
+              "isOnline": false,
+              "classType": "Lecture",
+              "isReplacement": false,
+              "replacementType": ""
+            },
+            {
+              "moduleCode": "",
+              "moduleName": "",
+              "time": "",
+              "location": "",
+              "campus": "APU CAMPUS",
+              "lecturer": "",
+              "isOnline": false,
+              "classType": "Lecture",
+              "isReplacement": false,
+              "replacementType": ""
+            }
+          ]
+        },
+        {
+          "date": "Thu, 18-Dec-2025",
+          "classes": [
+           {
+              "moduleCode": "",
+              "moduleName": "",
+              "time": "",
+              "location": "",
+              "campus": "APU CAMPUS",
+              "lecturer": "",
+              "isOnline": false,
+              "classType": "Lecture",
+              "isReplacement": false,
+              "replacementType": ""
+            },
+            {
+              "moduleCode": "",
+              "moduleName": "",
+              "time": "",
+              "location": "",
+              "campus": "APU CAMPUS",
+              "lecturer": "",
+              "isOnline": false,
+              "classType": "Lecture",
+              "isReplacement": false,
+              "replacementType": ""
+            }
+          ]
+        },
+        {
+          "date": "Fri, 19-Dec-2025",
           "classes": [
            {
               "moduleCode": "",
