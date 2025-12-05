@@ -34,26 +34,26 @@
           "date": "Tue, 09-Dec-2025",
           "classes": [
             {
-              "moduleCode": "",
-              "moduleName": "",
-              "time": "",
-              "location": "",
+              "moduleCode": "ABUS007-4-1-ARS-L-9",
+              "moduleName": "ACADEMIC RESEARCH SKILLS",
+              "time": "08:30 - 10:30",
+              "location": "S-08-01",
               "campus": "APU CAMPUS",
-              "lecturer": "",
+              "lecturer": "IMAN DANISH SHA BINTI MOHD SUHAIMI AKBAR",
               "isOnline": false,
               "classType": "Lecture",
               "isReplacement": false,
               "replacementType": ""
             },
             {
-              "moduleCode": "",
-              "moduleName": "",
-              "time": "",
-              "location": "",
+              "moduleCode": "ABUS007-4-1-ARS-T-33",
+              "moduleName": "ACADEMIC RESEARCH SKILLS",
+              "time": "14:30 - 15:30",
+              "location": "d-08-14",
               "campus": "APU CAMPUS",
-              "lecturer": "",
+              "lecturer": "IMAN DANISH SHA BINTI MOHD SUHAIMI AKBAR",
               "isOnline": false,
-              "classType": "Lecture",
+              "classType": "Tutorial",
               "isReplacement": false,
               "replacementType": ""
             }
@@ -63,7 +63,7 @@
           "date": "Wed, 10-Dec-2025",
           "classes": [
             {
-              "moduleCode": "AAQS038-4-1-MSC-L-9 (RLC)",
+              "moduleCode": "AAQS038-4-1-MSC-L-9",
               "moduleName": "MATHEMATICS AND STATISTICS FOR COMPUTING",
               "time": "09:30 - 10:30",
               "location": "TBC",
@@ -75,14 +75,14 @@
               "replacementType": "Lecture"
             },
              {
-              "moduleCode": "",
-              "moduleName": "",
-              "time": "",
-              "location": "",
+              "moduleCode": "AICT023-4-1-CA-T-21",
+              "moduleName": "COMPUTER ARCHITECTURE",
+              "time": "15:45 - 17:45",
+              "location": "d-08-14",
               "campus": "APU CAMPUS",
-              "lecturer": "",
+              "lecturer": "TS. MUHAMAD AMIN BIN SAHARI",
               "isOnline": false,
-              "classType": "Lecture",
+              "classType": "Tutorial",
               "isReplacement": false,
               "replacementType": ""
             },
@@ -116,14 +116,14 @@
               "replacementType": "Tutorial"
             },
             {
-              "moduleCode": "",
-              "moduleName": "",
-              "time": "",
-              "location": "",
+              "moduleCode": "AICT016-4-1-DTIN-T-31",
+              "moduleName": "DIGITAL THINKING AND INNOVATION",
+              "time": "13:30 - 15:30",
+              "location": "D-08-02",
               "campus": "APU CAMPUS",
-              "lecturer": "",
+              "lecturer": "DR. SAFA'IE BIN MANGIR",
               "isOnline": false,
-              "classType": "Lecture",
+              "classType": "Tutorial",
               "isReplacement": false,
               "replacementType": ""
             }
@@ -133,24 +133,24 @@
           "date": "Fri, 12-Dec-2025",
           "classes": [
             {
-              "moduleCode": "",
-              "moduleName": "",
-              "time": "",
-              "location": "",
+              "moduleCode": "AICT023-4-1-CA-L-7",
+              "moduleName": "COMPUTER ARCHITECTURE",
+              "time": "08:30 - 10:30",
+              "location": "S-05-02",
               "campus": "APU CAMPUS",
-              "lecturer": "",
+              "lecturer": "TS. MUHAMAD AMIN BIN SAHARI",
               "isOnline": false,
               "classType": "Lecture",
               "isReplacement": false,
               "replacementType": ""
             },
             {
-              "moduleCode": "",
-              "moduleName": "",
-              "time": "",
-              "location": "",
+              "moduleCode": "AICT016-4-1-DTIN-L-9",
+              "moduleName": "DIGITAL THINKING AND INNOVATION",
+              "time": "14:30-16:30",
+              "location": "E-09-03",
               "campus": "APU CAMPUS",
-              "lecturer": "",
+              "lecturer": "DR. SAFA'IE BIN MANGIR",
               "isOnline": false,
               "classType": "Lecture",
               "isReplacement": false,
