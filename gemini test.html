@@ -449,6 +449,51 @@
             return { hour: +h, minute: +m };
         }
         
+        /**
+         * Calculates the duration of a class given its time string (e.g., "09:00 - 11:00").
+         * @param {string} time The time range string.
+         * @returns {string} Formatted duration (e.g., "2h 0min" or "1h 30min").
+         */
+        function calculateDuration(time) {
+            if (typeof time !== 'string' || !time.includes("-")) { 
+                return 'N/A';
+            }
+            
+            const st = parseTime(time, true);
+            const et = parseTime(time, false);
+            
+            // Convert to total minutes since midnight
+            const startMinutes = st.hour * 60 + st.minute;
+            const endMinutes = et.hour * 60 + et.minute;
+            
+            // Calculate the duration in minutes. 
+            // Handles cases where end time might be numerically before start time (e.g., 23:00 - 01:00), 
+            // by assuming it crosses midnight (add 24*60 minutes).
+            let durationMinutes = endMinutes - startMinutes;
+            if (durationMinutes < 0) {
+                 durationMinutes += 24 * 60; 
+            }
+            
+            if (durationMinutes === 0) return '0 min';
+
+            const hours = Math.floor(durationMinutes / 60);
+            const minutes = durationMinutes % 60;
+            
+            let durationStr = '';
+            if (hours > 0) {
+                durationStr += `${hours}h`;
+            }
+            if (minutes > 0) {
+                // Ensure there is a space if both hours and minutes are present
+                if (hours > 0) {
+                    durationStr += ` `;
+                }
+                durationStr += `${minutes}min`;
+            }
+            
+            return durationStr.trim();
+        }
+        
         const formatYYYYMMDD = d => d.toISOString().slice(0,10);
         function getMondayOf(date) {
             const c = new Date(date);
@@ -769,6 +814,7 @@
                     const moduleCode = cls.moduleCode || 'CODE';
                     const moduleName = cls.moduleName || 'MODULE NAME MISSING';
                     const time = cls.time || 'TBD';
+                    const duration = calculateDuration(time); // Added: calculate duration
                     const location = cls.location || 'TBC';
                     const lecturerName = cls.lecturer || 'Staff TBC'; 
                     const classType = cls.classType || 'Class'; 
@@ -799,7 +845,7 @@
                             <div class="card-details">
                                 <span class="card-detail-item">
                                     <span class="material-icons">schedule</span>
-                                    ${time}
+                                    ${time} <span style="color:var(--text-subtle); margin-left:5px;">(${duration})</span>
                                 </span>
                                 <span class="card-detail-item">
                                     <span class="material-icons">location_on</span>
