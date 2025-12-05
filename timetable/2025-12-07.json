@@ -78,7 +78,7 @@
               "moduleCode": "AICT023-4-1-CA-T-21",
               "moduleName": "COMPUTER ARCHITECTURE",
               "time": "15:45 - 17:45",
-              "location": "d-08-14",
+              "location": "D-08-14",
               "campus": "APU CAMPUS",
               "lecturer": "TS. MUHAMAD AMIN BIN SAHARI",
               "isOnline": false,
@@ -116,7 +116,7 @@
               "replacementType": "Tutorial"
             },
                       {
-              "moduleCode": "AAQS38-4-1-MSC-T-23",
+              "moduleCode": "AAQS38-4-1-MSC-L-8",
               "moduleName": "MATHEMATICS AND STATISTICS FOR COMPUTING",
               "time": "11:45 - 13:45",
               "location": "B-05-04",
@@ -124,7 +124,7 @@
               "lecturer": "KHOR LIAN PENG",
               "isOnline": false,
               "classType": "Tutorial",
-              "isReplacement": true,
+              "isReplacement": false,
               "replacementType": "Tutorial"
             },
             {
