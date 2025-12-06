@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[TESTING VER] Course Timetable</title>
+    <title>Course Timetable</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     
@@ -244,91 +244,6 @@
             font-weight: 700;
         }
         
-        /* --- Login Overlay Styles --- */
-        .login-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.9); /* Dark semi-transparent backdrop */
-            z-index: 1000; /* Ensure it's above everything else */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(5px);
-        }
-
-        .login-card {
-            background-color: var(--bg-card);
-            padding: 30px 40px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-            width: 100%;
-            max-width: 380px;
-            text-align: center;
-        }
-
-        .login-card h3 {
-            margin-top: 0;
-            color: var(--color-primary);
-            font-size: 1.5rem;
-        }
-
-        .login-card p {
-            color: var(--text-subtle);
-            margin-bottom: 20px;
-        }
-
-        .input-group {
-            text-align: left;
-            margin-bottom: 15px;
-        }
-
-        .input-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-
-        .input-group input {
-            width: 100%;
-            padding: 10px 12px;
-            background-color: var(--bg-dark);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            color: var(--text-light);
-            font-size: 1rem;
-            box-sizing: border-box;
-        }
-
-        #login-button {
-            width: 100%;
-            padding: 12px;
-            background-color: var(--color-primary);
-            color: var(--text-light);
-            border: none;
-            border-radius: 6px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            margin-top: 10px;
-        }
-
-        #login-button:hover {
-            background-color: #0069d9;
-        }
-
-        .message-text {
-            height: 1.2em; /* Reserve space */
-            color: var(--color-current); /* Use a warning color for messages */
-            font-size: 0.9rem;
-            margin-top: 15px;
-            font-weight: bold;
-        }
-
         
         /* Responsive adjustments */
         @media (max-width: 600px) {
@@ -355,9 +270,6 @@
         <div class="logo-group">
             <div class="logo">
                 <img id="logo-icon" src="apspace-white.svg" alt="Logo">
-                <span id="logo-text" class="logo-text">
-                TESTING VERSION
-                </span>
             </div>
         </div>
 
@@ -376,24 +288,6 @@
         </div>
     </div>
 
-    <div class="login-overlay" id="login-overlay">
-        <div class="login-card">
-            <h3>Admin Login</h3>
-            <p>Enter your credentials to enter.</p>
-            <form id="login-form">
-                <div class="input-group">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" name="username" required>
-                </div>
-                <div class="input-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" required>
-                </div>
-                <button type="submit" id="login-button">Log In</button>
-                <p id="login-message" class="message-text"></p>
-            </form>
-        </div>
-    </div>
     <div class="timetable-content" id="timetable-list">
         <div style="text-align: center; padding: 50px;">
             <p style="color: var(--text-subtle);">Loading timetable...</p>
@@ -449,51 +343,6 @@
             return { hour: +h, minute: +m };
         }
         
-        /**
-         * Calculates the duration of a class given its time string (e.g., "09:00 - 11:00").
-         * @param {string} time The time range string.
-         * @returns {string} Formatted duration (e.g., "2h 0min" or "1h 30min").
-         */
-        function calculateDuration(time) {
-            if (typeof time !== 'string' || !time.includes("-")) { 
-                return 'N/A';
-            }
-            
-            const st = parseTime(time, true);
-            const et = parseTime(time, false);
-            
-            // Convert to total minutes since midnight
-            const startMinutes = st.hour * 60 + st.minute;
-            const endMinutes = et.hour * 60 + et.minute;
-            
-            // Calculate the duration in minutes. 
-            // Handles cases where end time might be numerically before start time (e.g., 23:00 - 01:00), 
-            // by assuming it crosses midnight (add 24*60 minutes).
-            let durationMinutes = endMinutes - startMinutes;
-            if (durationMinutes < 0) {
-                 durationMinutes += 24 * 60; 
-            }
-            
-            if (durationMinutes === 0) return '0 min';
-
-            const hours = Math.floor(durationMinutes / 60);
-            const minutes = durationMinutes % 60;
-            
-            let durationStr = '';
-            if (hours > 0) {
-                durationStr += `${hours}h`;
-            }
-            if (minutes > 0) {
-                // Ensure there is a space if both hours and minutes are present
-                if (hours > 0) {
-                    durationStr += ` `;
-                }
-                durationStr += `${minutes}min`;
-            }
-            
-            return durationStr.trim();
-        }
-        
         const formatYYYYMMDD = d => d.toISOString().slice(0,10);
         function getMondayOf(date) {
             const c = new Date(date);
@@ -510,44 +359,12 @@
         const weekSelect = document.getElementById('week-select');
         const currentClock = document.getElementById('current-clock');
         const nextClassDisplay = document.getElementById('next-class-display');
-        // --- Login Elements ---
-        const loginOverlay = document.getElementById('login-overlay');
-        const loginForm = document.getElementById('login-form');
-        const loginMessage = document.getElementById('login-message');
 
         let allWeeks = [];
         let currentWeekStart = ''; 
         let allWeekData = {};
         let currentClassUniqueId = null;
         let lastLoadDate = new Date(); 
-
-        // Hide timetable content initially until login is complete
-        timetableList.style.display = 'none';
-
-        // --- Login Logic (NON-SECURE DEMO) ---
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            // !!! This is for demonstration only. A real login requires a secure backend !!!
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-
-            // Demo Credentials:
-            const DEMO_USER = "admin";
-            const DEMO_PASS = "admin123";
-
-            if (username === DEMO_USER && password === DEMO_PASS) {
-                loginMessage.textContent = "Login successful!";
-                setTimeout(() => {
-                    loginOverlay.style.display = 'none'; // Hide the login screen
-                    timetableList.style.display = 'flex'; // Show the timetable content
-                    initializeApp(); // Start the main application logic
-                }, 500);
-            } else {
-                loginMessage.textContent = "Invalid username or password.";
-            }
-        });
-
 
         // --- Real-time Logic (Finds current and next class from loaded data) ---
 
@@ -576,7 +393,7 @@
 
                         // FIX #3: The crucial fix for the Uncaught TypeError.
                         // Ensure cls.time is a string and contains the required time separator before parsing.
-                        if (typeof cls.time !== 'string' || !cls.time.includes("-")) continue;
+                        if (typeof cls.time !== 'string' || !cls.time.includes(" -→ ")) continue;
 
                         const st = parseTime(cls.time, true);
                         const et = parseTime(cls.time, false);
@@ -615,51 +432,50 @@
             const now = new Date();
             currentClock.textContent = now.toLocaleTimeString("en-US");
 
-            // Only run data checks if timetable content is visible (i.e., user is logged in)
-            if (timetableList.style.display === 'flex') {
-                const { currentClass, nextClass } = findCurrentAndNextClass(allWeekData);
+            // Timetable content is now always visible since login is removed
+            const { currentClass, nextClass } = findCurrentAndNextClass(allWeekData);
 
-                let html = `<span class="material-icons">alarm</span>`;
+            let html = `<span class="material-icons">alarm</span>`;
 
-                if (currentClass) {
-                    currentClassUniqueId = currentClass.uniqueId;
-                    const remaining = currentClass.endTime - now;
-                    const m = Math.floor(remaining/60000);
-                    const s = Math.floor((remaining%60000)/1000);
+            if (currentClass) {
+                currentClassUniqueId = currentClass.uniqueId;
+                const remaining = currentClass.endTime - now;
+                const m = Math.floor(remaining/60000);
+                const s = Math.floor((remaining%60000)/1000);
 
-                    html = `
-                        <span class="material-icons" style="color:var(--color-current)">play_arrow</span>
-                        <span style="color:var(--color-current);font-weight:700">LIVE! (${m}m ${s}s)</span>
-                        | ${currentClass.moduleCode || 'CODE'} - ${currentClass.location || 'LOC'}
-                    `;
-                }
-                else if (nextClass) {
-                    currentClassUniqueId = null;
-
-                    const diff = nextClass.fullDate - now;
-                    const h = Math.floor(diff/3600000);
-                    const m = Math.floor((diff%3600000)/60000);
-                    const s = Math.floor((diff%60000)/1000);
-
-                    const timeStr = h > 0 ? `${h}h ${m}m ${s}s` : `${m}m ${s}s`;
-                    const datePart = nextClass.fullDate.toLocaleDateString('en-US', { weekday: 'short' });
-                    const codeLoc = `${nextClass.moduleCode || 'CODE'} - ${nextClass.location || 'LOC'}`;
-
-                    html += `
-                        <span style="color:var(--color-primary)">${timeStr}</span>
-                        | ${codeLoc} (${datePart})
-                    `;
-                }
-                else {
-                    currentClassUniqueId = null;
-                    html += `No upcoming classes within 24h.`;
-                }
-
-                nextClassDisplay.innerHTML = html;
-                applyCurrentClassHighlighting();
-                checkAndReloadDaily();
+                html = `
+                    <span class="material-icons" style="color:var(--color-current)">play_arrow</span>
+                    <span style="color:var(--color-current);font-weight:700">LIVE! (${m}m ${s}s)</span>
+                    | ${currentClass.moduleCode || 'CODE'} - ${currentClass.location || 'LOC'}
+                `;
             }
+            else if (nextClass) {
+                currentClassUniqueId = null;
+
+                const diff = nextClass.fullDate - now;
+                const h = Math.floor(diff/3600000);
+                const m = Math.floor((diff%3600000)/60000);
+                const s = Math.floor((diff%60000)/1000);
+
+                const timeStr = h > 0 ? `${h}h ${m}m ${s}s` : `${m}m ${s}s`;
+                const datePart = nextClass.fullDate.toLocaleDateString('en-US', { weekday: 'short' });
+                const codeLoc = `${nextClass.moduleCode || 'CODE'} - ${nextClass.location || 'LOC'}`;
+
+                html += `
+                    <span style="color:var(--color-primary)">${timeStr}</span>
+                    | ${codeLoc} (${datePart})
+                `;
+            }
+            else {
+                currentClassUniqueId = null;
+                html += `Oops! Looks like there is no upcoming classes within 24h from now.`;
+            }
+
+            nextClassDisplay.innerHTML = html;
+            applyCurrentClassHighlighting();
+            checkAndReloadDaily();
         }
+
 
         function applyCurrentClassHighlighting() {
             document.querySelectorAll('.class-card.current-class').forEach(e=>e.classList.remove('current-class'));
@@ -814,11 +630,43 @@
                     const moduleCode = cls.moduleCode || 'CODE';
                     const moduleName = cls.moduleName || 'MODULE NAME MISSING';
                     const time = cls.time || 'TBD';
-                    const duration = calculateDuration(time); // Added: calculate duration
                     const location = cls.location || 'TBC';
                     const lecturerName = cls.lecturer || 'Staff TBC'; 
                     const classType = cls.classType || 'Class'; 
                     
+                    // --- DURATION CALCULATION ---
+                    let durationString = 'Duration TBD';
+                    if (typeof cls.time === 'string' && cls.time.includes("  -→ ")) {
+                        const st = parseTime(cls.time, true);
+                        const et = parseTime(cls.time, false);
+                        
+                        // Convert to total minutes
+                        const startMinutes = st.hour * 60 + st.minute;
+                        const endMinutes = et.hour * 60 + et.minute;
+                        let durationMinutes = endMinutes - startMinutes;
+
+                        // Handle negative duration (e.g., class starts at 23:00 and ends at 01:00 the next day)
+                        if (durationMinutes < 0) {
+                            durationMinutes += 24 * 60; 
+                        }
+
+                        const durationHours = Math.floor(durationMinutes / 60);
+                        const durationMins = durationMinutes % 60;
+                        
+                        durationString = '';
+                        if (durationHours > 0) {
+                            durationString += `${durationHours}hr`;
+                        }
+                        if (durationMins > 0) {
+                            if (durationHours > 0) durationString += ' ';
+                            durationString += `${durationMins}min`;
+                        }
+                        if (durationString === '') {
+                             durationString = '0 min';
+                        }
+                    }
+                    // --- END DURATION CALCULATION ---
+
                     let modalityIcon;
                     let modalityPill = '';
                     
@@ -845,7 +693,11 @@
                             <div class="card-details">
                                 <span class="card-detail-item">
                                     <span class="material-icons">schedule</span>
-                                    ${time} <span style="color:var(--text-subtle); margin-left:5px;">(${duration})</span>
+                                    ${time}
+                                </span>
+                                <span class="card-detail-item">
+                                    <span class="material-icons">timer</span>
+                                    ${durationString}
                                 </span>
                                 <span class="card-detail-item">
                                     <span class="material-icons">location_on</span>
@@ -868,7 +720,8 @@
             fetchAllWeeks();
         }
         
-        // Start the clock updates immediately, but fetchAllWeeks only runs after successful login.
+        // Start the application immediately since login is removed
+        initializeApp();
         setInterval(updateClock, 1000); 
     });
     </script>

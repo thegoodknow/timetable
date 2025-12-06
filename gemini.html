@@ -393,7 +393,7 @@
 
                         // FIX #3: The crucial fix for the Uncaught TypeError.
                         // Ensure cls.time is a string and contains the required time separator before parsing.
-                        if (typeof cls.time !== 'string' || !cls.time.includes("-")) continue;
+                        if (typeof cls.time !== 'string' || !cls.time.includes(" -→ ")) continue;
 
                         const st = parseTime(cls.time, true);
                         const et = parseTime(cls.time, false);
@@ -468,7 +468,7 @@
             }
             else {
                 currentClassUniqueId = null;
-                html += `No upcoming classes within 24h.`;
+                html += `Oops! Looks like there is no upcoming classes within 24h from now.`;
             }
 
             nextClassDisplay.innerHTML = html;
@@ -636,7 +636,7 @@
                     
                     // --- DURATION CALCULATION ---
                     let durationString = 'Duration TBD';
-                    if (typeof cls.time === 'string' && cls.time.includes(" - ")) {
+                    if (typeof cls.time === 'string' && cls.time.includes("  -→ ")) {
                         const st = parseTime(cls.time, true);
                         const et = parseTime(cls.time, false);
                         
