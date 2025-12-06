@@ -1,31 +1,540 @@
-<script>
-    // ... (Existing global variable definitions)
-
-    // --- LOGIN/VIEW MANAGEMENT FUNCTIONS ---
-    // ... (Existing showLoginMessage and isMobile functions)
-
-    function showApp() {
-        // 1. Hide the login container completely
-        loginContainer.classList.add('hidden'); 
-        loginContainer.style.display = 'none'; // Ensure it's fully gone
-
-        // Check if it's a mobile device (small screen)
-        if (isMobile()) {
-            // On mobile, keep the app hidden and show the warning
-            appContainer.classList.add('hidden');
-            mobileWarning.style.display = 'flex';
-            document.body.classList.add('min-h-screen-center');
-        } else {
-            // On desktop, show the app
-            appContainer.classList.remove('hidden');
-            appContainer.classList.add('show-app'); // Custom class for desktop visibility
-            mobileWarning.style.display = 'none';
-            
-            // Adjust body classes after login, for desktop
-            document.body.classList.remove('min-h-screen-center'); 
-            document.body.classList.add('block');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timetable Converter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="shortcut icon" href="favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #121212; /* Deep Dark Background */
         }
-    }
-    
-    // ... (Rest of the script block remains the same)
-</script>
+        .container {
+            max-width: 1200px;
+        }
+        textarea {
+            resize: none;
+        }
+        /* Custom file input styling for dark mode */
+        input[type="file"] {
+            border: 1px solid #4B5563; /* Darker border */
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            background-color: #374151; /* Dark background */
+            color: #ffffff; /* Light text */
+            width: 100%;
+            transition: border-color 0.15s ease-in-out;
+        }
+        /* APSpace/Primary Button Color (Blue) */
+        .btn-apspace {
+            background-color: #007aff;
+        }
+        .btn-apspace:hover {
+            background-color: #0264cc;
+        }
+        /* Timetable Button Color (Orange) */
+        .btn-totimetable {
+            background-color: #CC7000;
+        }
+        .btn-totimetable:hover {
+             background-color: #a85d00;
+        }
+        .focus\:ring-apspace:focus {
+            --tw-ring-color: #007aff;
+        }
+        /* Ensure the body remains centered and full-height for the login screen on all sizes */
+        .min-h-screen-center {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* The app-container is hidden by default. */
+        #app-container {
+            display: none;
+        }
+        
+        /* IMPORTANT: Hide both login and mobile warning initially via CSS 
+           to let JavaScript decide what to show based on device size. */
+        #login-container, #mobile-warning {
+            display: none;
+        }
+
+        /* Desktop View: Only login container shown at first */
+        @media (min-width: 640px) {
+            #mobile-warning {
+                display: none !important;
+            }
+            #app-container.show-app {
+                display: block !important;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8 min-h-screen-center">
+
+    <div id="mobile-warning" class="flex-col items-center justify-center text-center p-8 bg-gray-900 shadow-xl rounded-2xl w-full max-w-sm mx-auto border border-gray-700">
+        <svg class="w-12 h-12 text-yellow-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.394 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+        <h3 class="text-xl font-bold text-white mb-2">Device Restriction</h3>
+        <p class="text-gray-400">This page only works on PC, please open me on a PC or a tablet for the best experience.</p>
+    </div>
+
+
+    <div id="login-container" class="w-full max-w-md">
+        <div class="bg-gray-900 p-6 md:p-10 shadow-xl rounded-2xl border border-gray-700">
+            <header class="text-center mb-6">
+                <h2 class="text-2xl font-bold text-white mb-1">Timetable Converter</h2>
+                <p class="text-gray-400 text-sm">Please log in to access this feature</p>
+            </header>
+            <div id="login-message" class="p-3 text-sm font-medium rounded-lg text-center hidden"></div>
+            
+            <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-300">Username</label>
+                    <input type="text" id="username" required
+                        class="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm 
+                               bg-gray-700 text-white focus:outline-none focus:ring-1 focus:ring-apspace focus:border-apspace sm:text-sm">
+                </div>
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-300">Password</label>
+                    <input type="password" id="password" required
+                        class="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm 
+                               bg-gray-700 text-white focus:outline-none focus:ring-1 focus:ring-apspace focus:border-apspace sm:text-sm">
+                </div>
+                <div class="pt-2">
+                    <button type="submit"
+                        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white btn-apspace hover:btn-apspace focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-apspace transition duration-150">
+                        Sign In
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="app-container" class="container mx-auto hidden flex-col">
+        
+        <nav class="bg-gray-900 p-4 mb-8 shadow-xl rounded-xl flex justify-between items-center border border-gray-700">
+            <div class="flex items-center">
+                <img src="logo.png" alt="Timetable Converter Logo" class="w-8 h-8 rounded-md mr-3">
+                <span class="text-xl font-bold text-white">Timetable Converter</span>
+            </div>
+            
+            <a href="https://thegoodknow.github.io/timetable/gemini.html" target="_blank"
+                class="text-sm px-4 py-2 rounded-lg text-white btn-totimetable hover:btn-totimetable transition duration-150 shadow-md">
+                View Timetable Page
+            </a>
+        </nav>
+        <div class="bg-gray-800 p-6 md:p-10 shadow-xl rounded-2xl border border-gray-700">
+            <header class="text-center mb-10">
+                <h1 class="text-3xl font-bold text-white mb-2">HTML to JSON Extractor</h1>
+                <p class="text-gray-400">Upload your HTML file to extract the schedule data.</p>
+            </header>
+
+            <main class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="space-y-4">
+                    <label for="fileInput" class="block text-lg font-medium text-gray-300">1. Select Timetable HTML File</label>
+                    <input type="file" id="fileInput" accept=".html,text/html" onchange="storeFile(event)" class="text-sm">
+                    
+                    <button onclick="triggerConversion()" id="convertButton" disabled
+                        class="w-full mt-6 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white btn-apspace hover:btn-apspace focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-apspace disabled:opacity-50 transition duration-150">
+                        Convert to JSON
+                    </button>
+                </div>
+
+                <div class="space-y-4">
+                    <label for="jsonOutput" class="block text-lg font-medium text-gray-300 flex justify-between items-center">
+                        <span>2. Extracted JSON Output (New Format)</span>
+                        <button onclick="downloadJson()" id="downloadButton" disabled
+                                class="text-sm px-3 py-1 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50 transition duration-150">
+                            Download JSON
+                        </button>
+                    </label>
+                    <textarea id="jsonOutput" rows="15" readonly
+                              placeholder="JSON output will appear here after conversion."
+                              class="w-full p-4 border border-gray-600 rounded-lg bg-gray-700 text-white text-sm shadow-inner"></textarea>
+                </div>
+            </main>
+            
+            <div id="messageBox" class="mt-6 p-4 text-sm font-medium rounded-lg text-center hidden"></div>
+        </div>
+    </div>
+
+    <script>
+        // Global utility functions for the UI
+        const jsonOutput = document.getElementById('jsonOutput');
+        const downloadButton = document.getElementById('downloadButton');
+        const messageBox = document.getElementById('messageBox');
+        const fileInput = document.getElementById('fileInput');
+        const convertButton = document.getElementById('convertButton');
+
+        // Login/View Elements
+        const loginContainer = document.getElementById('login-container');
+        const appContainer = document.getElementById('app-container');
+        const loginMessage = document.getElementById('login-message');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const mobileWarning = document.getElementById('mobile-warning');
+
+        // Store the file content globally after selection
+        let fileContent = null; 
+
+        // --- AUTHENTICATION CONSTANTS ---
+        const CORRECT_USERNAME = 'admin';
+        const CORRECT_PASSWORD = 'admin123';
+        // ---------------------------------
+
+
+        // MAPPING: Used to look up module name based on the module code prefix.
+        const MODULE_MAPPING = {
+            'AAQS038': 'MATHEMATICS AND STATISTICS FOR COMPUTING',
+            'ABUS007': 'ACADEMIC RESEARCH SKILLS',
+            'AICT023': 'COMPUTER ARCHITECTURE',
+            'MPU2132': 'BAHASA MELAYU KOMUNIKASI 1',
+            'AICT016': 'DIGITAL THINKING AND INNOVATION'
+            // Add more module codes and names here
+        };
+
+        // --- LOGIN/VIEW MANAGEMENT FUNCTIONS ---
+
+        function showLoginMessage(text, type = 'error') {
+            loginMessage.textContent = text;
+            loginMessage.classList.remove('hidden', 'bg-red-900', 'text-red-300', 'bg-green-900', 'text-green-300');
+            if (type === 'error') {
+                loginMessage.classList.add('bg-red-900', 'text-red-300');
+            } else {
+                loginMessage.classList.add('bg-green-900', 'text-green-300');
+            }
+            setTimeout(() => {
+                loginMessage.classList.add('hidden');
+            }, 3000);
+        }
+
+        function isMobile() {
+            // Check based on screen width (less than Tailwind's 'sm' breakpoint 640px)
+            return window.innerWidth < 640;
+        }
+
+        function showApp() {
+            // 1. Hide the login container completely (Crucial for fixing the overlap)
+            loginContainer.classList.add('hidden'); 
+            loginContainer.style.display = 'none';
+
+            // Check if it's a mobile device (small screen)
+            if (isMobile()) {
+                // On mobile, keep the app hidden and show the warning
+                appContainer.classList.add('hidden');
+                mobileWarning.style.display = 'flex';
+                document.body.classList.add('min-h-screen-center');
+            } else {
+                // On desktop, show the app
+                appContainer.classList.remove('hidden');
+                appContainer.classList.add('show-app'); // Custom class for desktop visibility
+                mobileWarning.style.display = 'none';
+                
+                // Adjust body classes after login, for desktop
+                document.body.classList.remove('min-h-screen-center'); 
+                document.body.classList.add('block');
+            }
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+
+            const user = usernameInput.value;
+            const pass = passwordInput.value;
+
+            if (user === CORRECT_USERNAME && pass === CORRECT_PASSWORD) {
+                showApp();
+            } else {
+                showLoginMessage('Invalid username or password.');
+                passwordInput.value = '';
+            }
+        }
+        
+        // --- Initialize view on page load ---
+        function initializeView() {
+            if (isMobile()) {
+                // If mobile, hide login, show warning
+                loginContainer.style.display = 'none';
+                mobileWarning.style.display = 'flex';
+                // Ensure body remains centered for the warning
+                document.body.classList.add('min-h-screen-center');
+            } else {
+                // If desktop, show login, hide warning
+                loginContainer.style.display = 'block';
+                mobileWarning.style.display = 'none';
+                document.body.classList.add('min-h-screen-center');
+            }
+        }
+
+        // Run initialization function when the script loads
+        window.addEventListener('load', initializeView);
+        // Also run if the screen size changes while the page is open
+        window.addEventListener('resize', initializeView);
+
+
+        // --- FILE HANDLING AND CONVERSION FUNCTIONS ---
+
+        // Step 1: Store the file content when a file is selected
+        function storeFile(event) {
+            const file = event.target.files[0];
+            fileContent = null; // Clear previous content
+            convertButton.disabled = true;
+
+            if (!file) return;
+
+            if (file.type !== 'text/html') {
+                showMessage("Please select a valid HTML file.", 'error');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                fileContent = e.target.result;
+                convertButton.disabled = false; // Enable conversion button
+                showMessage(`File selected: ${file.name}. Click 'Convert to JSON' to process.`, 'success');
+            };
+            reader.onerror = function(e) {
+                showMessage("Error reading file.", 'error');
+                console.error("File reading error:", e);
+            };
+            reader.readAsText(file);
+        }
+
+        // Step 2: Trigger conversion when the button is pressed
+        function triggerConversion() {
+            if (fileContent) {
+                convertHtmlToJson(fileContent);
+            } else {
+                showMessage("Please select an HTML file first.", 'error');
+            }
+        }
+
+        function showMessage(text, type = 'success') {
+            const currentMessageBox = document.getElementById('messageBox');
+            currentMessageBox.textContent = text;
+            currentMessageBox.classList.remove('hidden', 'bg-red-900', 'text-red-300', 'bg-green-900', 'text-green-300');
+            if (type === 'error') {
+                currentMessageBox.classList.add('bg-red-900', 'text-red-300');
+            } else {
+                currentMessageBox.classList.add('bg-green-900', 'text-green-300');
+            }
+            setTimeout(() => {
+                currentMessageBox.classList.add('hidden');
+            }, 5000);
+        }
+
+        /**
+         * Converts a date string like "Mon, 08-Dec-2025" to "YYYY-MM-DD" format.
+         */
+        function formatWeekDate(dateStr) {
+            const parts = dateStr.split(', ')[1];
+            if (!parts) return null;
+            
+            const [day, monthName, year] = parts.split('-');
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            const monthIndex = monthNames.indexOf(monthName);
+            
+            if (monthIndex === -1) return null;
+
+            const month = String(monthIndex + 1).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        
+        /**
+         * Extracts the module code prefix (e.g., 'AAQS038') from the full subject string.
+         */
+        function getModuleCodePrefix(subject) {
+            const match = subject.match(/^([A-Z0-9]+)/);
+            return match ? match[1] : null;
+        }
+
+        /**
+         * Parses the raw HTML content and converts it into the desired JSON format.
+         */
+        function convertHtmlToJson(htmlContent) {
+            htmlContent = htmlContent.trim();
+            jsonOutput.value = '';
+            downloadButton.disabled = true;
+            convertButton.disabled = true; // Disable button while processing
+
+            if (!htmlContent) {
+                showMessage("No HTML content loaded.", 'error');
+                return;
+            }
+
+            try {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(htmlContent, 'text/html');
+
+                // 1. Extract Header Information
+                
+                let weekStartDate = 'N/A';
+                const weekElement = doc.querySelector('h4.text-center');
+                if (weekElement) {
+                    const weekMatch = weekElement.textContent.match(/Week:\s*([0-9-]+)/); 
+                    if (weekMatch && weekMatch[1]) {
+                        weekStartDate = weekMatch[1];
+                    }
+                }
+                
+                const firstDayCell = doc.querySelector('table.table tbody tr:not(.thead-dark) td:first-child');
+                if (weekStartDate === 'N/A' && firstDayCell) {
+                    const firstDateStr = firstDayCell.textContent.trim();
+                    const formattedDate = formatWeekDate(firstDateStr);
+                    if (formattedDate) {
+                        weekStartDate = formattedDate;
+                    }
+                }
+                
+                // 2. Extract Timetable Rows
+                const rows = doc.querySelectorAll('table.table tbody tr');
+                
+                let days = [];
+                let currentDay = null;
+
+                // 3. Process Data Rows
+                rows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+
+                    if (cells.length < 6) {
+                        return; 
+                    }
+                    
+                    const dayData = cells[0].textContent.trim(); 
+                    const time = cells[1].textContent.trim();
+                    const location = cells[2].textContent.trim(); 
+                    const campus = cells[3].textContent.trim(); 
+                    let subject = cells[4].textContent.trim();
+                    const lecturer = cells[5].textContent.trim();
+
+                    if (!subject || subject.toUpperCase() === 'BREAK') {
+                         return;
+                    }
+
+
+                    // Derived Fields Logic
+                    const moduleCodeMatch = subject.match(/^([A-Z0-9-]+)/);
+                    let moduleCode = moduleCodeMatch ? moduleCodeMatch[1] : subject;
+
+                    // 1. Module Name
+                    const moduleCodePrefix = getModuleCodePrefix(moduleCode);
+                    const moduleName = MODULE_MAPPING[moduleCodePrefix] || 'UNKNOWN MODULE NAME';
+
+                    // 2. isOnline
+                    const isOnline = subject.toLowerCase().includes('(online)') || location.toLowerCase().startsWith('onl');
+                    
+                    let finalModuleCode = moduleCode.replace(' (Online)', '').trim();
+                    
+                    // 3. Class Type
+                    let classType = 'Lecture';
+                    const typeMatch = finalModuleCode.match(/-([LT]|LAB)-/i);
+                    if (typeMatch) {
+                        const typeChar = typeMatch[1].toUpperCase();
+                        if (typeChar === 'L') classType = 'Lecture';
+                        else if (typeChar === 'T') classType = 'Tutorial';
+                        else if (typeChar === 'LAB') classType = 'Lab';
+                    } else if (location.toLowerCase().includes('lab')) {
+                        classType = 'Lab';
+                    }
+
+                    // 4. Replacement Fields
+                    const isReplacement = false;
+                    const replacementType = "";
+
+                    const newClass = {
+                        moduleCode: finalModuleCode,
+                        moduleName: moduleName,
+                        time: time,
+                        location: location,
+                        campus: campus,
+                        lecturer: lecturer,
+                        isOnline: isOnline,
+                        classType: classType,
+                        isReplacement: isReplacement,
+                        replacementType: replacementType
+                    };
+
+                    // Group classes by day
+                    if (currentDay !== dayData) {
+                        days.push({
+                            date: dayData,
+                            classes: [newClass]
+                        });
+                        currentDay = dayData;
+                    } else if (days.length > 0) {
+                        days[days.length - 1].classes.push(newClass);
+                    }
+                });
+
+                // 4. Construct the Final JSON Object
+                const finalJson = {
+                    weekStartDate: weekStartDate,
+                    days: days
+                };
+
+                // 5. Display the output
+                const jsonString = JSON.stringify(finalJson, null, 2);
+                jsonOutput.value = jsonString;
+                downloadButton.disabled = days.length === 0;
+                convertButton.disabled = false; // Re-enable button after processing
+                showMessage("Conversion successful! JSON data is ready to download.", 'success');
+
+            } catch (e) {
+                console.error("Parsing error:", e);
+                convertButton.disabled = false; // Re-enable button on error
+                showMessage(`Error parsing HTML. Details: ${e.message}`, 'error');
+            }
+        }
+
+        // --- DOWNLOAD JSON FUNCTION ---
+
+        function downloadJson() {
+            const jsonString = jsonOutput.value;
+            if (!jsonString) {
+                showMessage("No JSON output available to download.", 'error');
+                return;
+            }
+
+            try {
+                const jsonObject = JSON.parse(jsonString);
+                const weekDate = jsonObject.weekStartDate;
+                
+                // Determine the filename. Default to a timestamp if the date is unavailable.
+                let filename = "timetable_converted.json";
+                if (weekDate && weekDate !== 'N/A') {
+                    // Create a clean filename using the date: e.g., "timetable_2025-12-08.json"
+                    filename = `timetable_${weekDate}.json`;
+                }
+
+                // Create a Blob from the JSON string
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                
+                // Create a temporary link element for the download
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                
+                // Programmatically click the link to trigger the download
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url); // Clean up the URL object
+
+                showMessage(`Successfully downloaded as **${filename}**!`, 'success');
+
+            } catch (e) {
+                console.error("Download error:", e);
+                showMessage("Error during JSON download or filename parsing.", 'error');
+            }
+        }
+    </script>
+
+</body>
+
+</html>
