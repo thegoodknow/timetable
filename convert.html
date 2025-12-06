@@ -18,6 +18,7 @@
         textarea {
             resize: none;
         }
+        /* Custom file input styling */
         input[type="file"] {
             border: 1px solid #d1d5db;
             padding: 0.75rem;
@@ -26,6 +27,16 @@
             width: 100%;
             transition: border-color 0.15s ease-in-out;
         }
+        /* APSpace Theme Colors */
+        .btn-apspace {
+            background-color: #d94a38; /* A deep red/orange */
+        }
+        .btn-apspace:hover {
+            background-color: #c03d2e; /* Slightly darker on hover */
+        }
+        .focus\:ring-apspace:focus {
+            --tw-ring-color: #d94a38;
+        }
     </style>
 </head>
 <body class="p-4 sm:p-8 flex items-center justify-center min-h-screen">
@@ -33,54 +44,52 @@
     <div id="login-container" class="w-full max-w-md">
         <div class="bg-white p-6 md:p-10 shadow-xl rounded-2xl">
             <header class="text-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-900 mb-1">Access Timetable Converter</h2>
-                <p class="text-gray-500 text-sm">Sign in to continue</p>
+                <h2 class="text-2xl font-bold text-gray-900 mb-1">Timetable Converter</h2>
+                <p class="text-gray-500 text-sm">Please log in to access this feature</p>
             </header>
             <div id="login-message" class="p-3 text-sm font-medium rounded-lg text-center hidden"></div>
             
             <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
                     <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
-                    <input type="text" id="username" value="admin" required
-                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    <input type="text" id="username" required
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-apspace focus:border-apspace sm:text-sm">
                 </div>
                 <div>
                     <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-                    <input type="password" id="password" value="admin123" required
-                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    <input type="password" id="password" required
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-apspace focus:border-apspace sm:text-sm">
                 </div>
-                <div>
+                <div class="pt-2">
                     <button type="submit"
-                        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150">
+                        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white btn-apspace hover:btn-apspace focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-apspace transition duration-150">
                         Sign In
                     </button>
                 </div>
             </form>
         </div>
-        <p class="text-center text-gray-400 text-xs mt-4">Demo credentials: **admin / admin123**</p>
     </div>
 
-    <div id="app-container" class="container mx-auto bg-white p-6 md:p-10 shadow-xl rounded-2xl hidden">
+    <div id="app-container" class="container mx-auto bg-white p-6 md:p-10 shadow-xl rounded-2xl hidden relative">
+        <a href="https://github.com/thegoodknow/timetable" target="_blank"
+            class="absolute top-6 right-6 text-sm px-3 py-1.5 rounded-lg text-white btn-apspace hover:bg-c03d2e transition duration-150 shadow-md hidden sm:inline-block">
+            To timetable
+        </a>
+        
         <header class="text-center mb-10">
             <h1 class="text-3xl font-bold text-gray-900 mb-2">Timetable Converter for thegoodknow/timetable</h1>
-            <p class="text-gray-500">Import your HTML file or paste its content below to extract the schedule data.</p>
+            <p class="text-gray-500">Upload your HTML file to extract the schedule data.</p>
         </header>
 
         <main class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div class="space-y-4">
-                <label for="fileInput" class="block text-lg font-medium text-gray-700">1a. Import HTML File</label>
-                <input type="file" id="fileInput" accept=".html,text/html" onchange="handleFileSelect(event)" class="text-sm">
+                <label for="fileInput" class="block text-lg font-medium text-gray-700">1. Select Timetable HTML File</label>
+                <input type="file" id="fileInput" accept=".html,text/html" onchange="storeFile(event)" class="text-sm">
                 
-                <div class="flex items-center space-x-2 my-4">
-                    <hr class="flex-grow border-gray-300">
-                    <span class="text-gray-500 font-medium text-sm">OR</span>
-                    <hr class="flex-grow border-gray-300">
-                </div>
-
-                <label for="htmlInput" class="block text-lg font-medium text-gray-700">1b. Paste Timetable HTML Source</label>
-                <textarea id="htmlInput" rows="10" 
-                          placeholder="Paste the entire content of the Timetable.html file here..."
-                          class="w-full p-4 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-sm shadow-inner"></textarea>
+                <button onclick="triggerConversion()" id="convertButton" disabled
+                    class="w-full mt-6 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white btn-apspace hover:btn-apspace focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-apspace disabled:opacity-50 transition duration-150">
+                    Convert to JSON
+                </button>
             </div>
 
             <div class="space-y-4">
@@ -102,11 +111,11 @@
 
     <script>
         // Global utility functions for the UI
-        const htmlInput = document.getElementById('htmlInput');
         const jsonOutput = document.getElementById('jsonOutput');
         const copyButton = document.getElementById('copyButton');
         const messageBox = document.getElementById('messageBox');
         const fileInput = document.getElementById('fileInput');
+        const convertButton = document.getElementById('convertButton'); // New button reference
 
         // New Login Elements
         const loginContainer = document.getElementById('login-container');
@@ -114,6 +123,9 @@
         const loginMessage = document.getElementById('login-message');
         const usernameInput = document.getElementById('username');
         const passwordInput = document.getElementById('password');
+
+        // Store the file content globally after selection
+        let fileContent = null; 
 
         // --- AUTHENTICATION CONSTANTS ---
         const CORRECT_USERNAME = 'admin';
@@ -141,7 +153,6 @@
             } else {
                 loginMessage.classList.add('bg-green-100', 'text-green-800');
             }
-            // Optionally hide after a delay
             setTimeout(() => {
                 loginMessage.classList.add('hidden');
             }, 3000);
@@ -150,35 +161,67 @@
         function showApp() {
             loginContainer.classList.add('hidden');
             appContainer.classList.remove('hidden');
-            // Remove the body centering class now that the app is full width
             document.body.classList.remove('flex', 'items-center', 'justify-center', 'min-h-screen'); 
             document.body.classList.add('block');
         }
 
         function handleLogin(event) {
-            event.preventDefault(); // Stop form submission
+            event.preventDefault();
 
             const user = usernameInput.value;
             const pass = passwordInput.value;
 
             if (user === CORRECT_USERNAME && pass === CORRECT_PASSWORD) {
                 showApp();
-                // Optionally save a token in sessionStorage/localStorage for persistent login
                 sessionStorage.setItem('loggedIn', 'true'); 
             } else {
                 showLoginMessage('Invalid username or password.');
-                passwordInput.value = ''; // Clear password on failure
+                passwordInput.value = '';
             }
         }
         
-        // Check for session/local storage on load
         (function checkLoginStatus() {
             if (sessionStorage.getItem('loggedIn') === 'true') {
                 showApp();
             }
         })();
 
-        // --- Core Functions (kept as-is, with minor style change for messageBox) ---
+        // --- FILE HANDLING AND CONVERSION FUNCTIONS ---
+
+        // Step 1: Store the file content when a file is selected
+        function storeFile(event) {
+            const file = event.target.files[0];
+            fileContent = null; // Clear previous content
+            convertButton.disabled = true;
+
+            if (!file) return;
+
+            if (file.type !== 'text/html') {
+                showMessage("Please select a valid HTML file.", 'error');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                fileContent = e.target.result;
+                convertButton.disabled = false; // Enable conversion button
+                showMessage(`File selected: ${file.name}. Click 'Convert to JSON' to process.`, 'success');
+            };
+            reader.onerror = function(e) {
+                showMessage("Error reading file.", 'error');
+                console.error("File reading error:", e);
+            };
+            reader.readAsText(file);
+        }
+
+        // Step 2: Trigger conversion when the button is pressed
+        function triggerConversion() {
+            if (fileContent) {
+                convertHtmlToJson(fileContent);
+            } else {
+                showMessage("Please select an HTML file first.", 'error');
+            }
+        }
 
         function showMessage(text, type = 'success') {
             const currentMessageBox = document.getElementById('messageBox');
@@ -196,11 +239,9 @@
 
         /**
          * Converts a date string like "Mon, 08-Dec-2025" to "YYYY-MM-DD" format.
-         * @param {string} dateStr The date string from the HTML table cell.
-         * @returns {string} Date in YYYY-MM-DD format or null.
          */
         function formatWeekDate(dateStr) {
-            const parts = dateStr.split(', ')[1]; // "08-Dec-2025"
+            const parts = dateStr.split(', ')[1];
             if (!parts) return null;
             
             const [day, monthName, year] = parts.split('-');
@@ -215,8 +256,6 @@
         
         /**
          * Extracts the module code prefix (e.g., 'AAQS038') from the full subject string.
-         * @param {string} subject Full subject string (e.g., AAQS038-4-1-MSC-L-9).
-         * @returns {string} The module code prefix.
          */
         function getModuleCodePrefix(subject) {
             const match = subject.match(/^([A-Z0-9]+)/);
@@ -225,15 +264,15 @@
 
         /**
          * Parses the raw HTML content and converts it into the desired JSON format.
-         * @param {string} htmlContent The raw HTML string.
          */
         function convertHtmlToJson(htmlContent) {
             htmlContent = htmlContent.trim();
             jsonOutput.value = '';
             copyButton.disabled = true;
+            convertButton.disabled = true; // Disable button while processing
 
             if (!htmlContent) {
-                showMessage("Please paste or import the HTML content first.", 'error');
+                showMessage("No HTML content loaded.", 'error');
                 return;
             }
 
@@ -242,7 +281,6 @@
                 const doc = parser.parseFromString(htmlContent, 'text/html');
 
                 // 1. Extract Header Information
-                
                 const headerElement = doc.querySelector('h4.text-center');
                 let intake = 'N/A';
                 let group = 'N/A';
@@ -370,36 +408,14 @@
                 const jsonString = JSON.stringify(finalJson, null, 2);
                 jsonOutput.value = jsonString;
                 copyButton.disabled = days.length === 0;
-                showMessage("Conversion successful! JSON data is ready to copy. Intake and Group extracted.", 'success');
+                convertButton.disabled = false; // Re-enable button after processing
+                showMessage("Conversion successful! JSON data is ready to copy.", 'success');
 
             } catch (e) {
                 console.error("Parsing error:", e);
-                showMessage(`Error parsing HTML. Please ensure the content is complete and correct. Details: ${e.message}`, 'error');
+                convertButton.disabled = false; // Re-enable button on error
+                showMessage(`Error parsing HTML. Details: ${e.message}`, 'error');
             }
-        }
-
-        // --- File Handling ---
-
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            if (file.type !== 'text/html') {
-                showMessage("Please select a valid HTML file.", 'error');
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const content = e.target.result;
-                htmlInput.value = content;
-                convertHtmlToJson(content);
-            };
-            reader.onerror = function(e) {
-                showMessage("Error reading file.", 'error');
-                console.error("File reading error:", e);
-            };
-            reader.readAsText(file);
         }
 
         // --- Clipboard Function ---
