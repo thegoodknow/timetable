@@ -4,37 +4,110 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Timetable Converter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="shortcut icon" href="favicon.ico">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #121212; /* Deep Dark Background */
+        }
+        .container {
+            max-width: 1200px;
+        }
+        textarea {
+            resize: none;
+        }
+        /* Custom file input styling for dark mode */
+        input[type="file"] {
+            border: 1px solid #4B5563; /* Darker border */
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            background-color: #374151; /* Dark background */
+            color: #ffffff; /* Light text */
+            width: 100%;
+            transition: border-color 0.15s ease-in-out;
+        }
+        /* APSpace/Primary Button Color (Blue) */
+        .btn-apspace {
+            background-color: #007aff;
+        }
+        .btn-apspace:hover {
+            background-color: #0264cc;
+        }
+        /* Timetable Button Color (Orange) */
+        .btn-totimetable {
+            background-color: #CC7000;
+        }
+        .btn-totimetable:hover {
+             background-color: #a85d00;
+        }
+        .focus\:ring-apspace:focus {
+            --tw-ring-color: #007aff;
+        }
+        /* Ensure the body remains centered and full-height for the login screen on all sizes */
+        .min-h-screen-center {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* The app-container is hidden by default. */
+        #app-container {
+            display: none;
+        }
+        
+        /* IMPORTANT: Hide both login and mobile warning initially via CSS 
+           to let JavaScript decide what to show based on device size. */
+        #login-container, #mobile-warning {
+            display: none;
+        }
+
+        /* Desktop View: Only login container shown at first */
+        @media (min-width: 640px) {
+            #mobile-warning {
+                display: none !important;
+            }
+            #app-container.show-app {
+                display: block !important;
+            }
+        }
+    </style>
 </head>
 <body class="p-4 sm:p-8 min-h-screen-center">
 
-    <div id="mobile-warning" class="min-w-0 flex-col items-center justify-center text-center p-8 card-bg w-full max-w-sm mx-auto">
+    <div id="mobile-warning" class="flex-col items-center justify-center text-center p-8 bg-gray-900 shadow-xl rounded-2xl w-full max-w-sm mx-auto border border-gray-700">
         <svg class="w-12 h-12 text-yellow-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.394 16c-.77 1.333.192 3 1.732 3z"></path></svg>
         <h3 class="text-xl font-bold text-white mb-2">Device Restriction</h3>
         <p class="text-gray-400">This page only works on PC, please open me on a PC or a tablet for the best experience.</p>
     </div>
 
+
     <div id="login-container" class="w-full max-w-md">
-        <div class="p-6 md:p-10 card-bg">
+        <div class="bg-gray-900 p-6 md:p-10 shadow-xl rounded-2xl border border-gray-700">
             <header class="text-center mb-6">
                 <h2 class="text-2xl font-bold text-white mb-1">Timetable Converter</h2>
                 <p class="text-gray-400 text-sm">Please log in to access this feature</p>
             </header>
-            <div id="login-message" class="message-box hidden mb-4"></div>
+            <div id="login-message" class="p-3 text-sm font-medium rounded-lg text-center hidden"></div>
             
             <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
-                    <label for="username">Username</label>
-                    <input type="text" id="username" required>
+                    <label for="username" class="block text-sm font-medium text-gray-300">Username</label>
+                    <input type="text" id="username" required
+                        class="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm 
+                               bg-gray-700 text-white focus:outline-none focus:ring-1 focus:ring-apspace focus:border-apspace sm:text-sm">
                 </div>
                 <div>
-                    <label for="password">Password</label>
-                    <input type="password" id="password" required>
+                    <label for="password" class="block text-sm font-medium text-gray-300">Password</label>
+                    <input type="password" id="password" required
+                        class="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm 
+                               bg-gray-700 text-white focus:outline-none focus:ring-1 focus:ring-apspace focus:border-apspace sm:text-sm">
                 </div>
                 <div class="pt-2">
-                    <button type="submit" class="btn-apspace">
+                    <button type="submit"
+                        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white btn-apspace hover:btn-apspace focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-apspace transition duration-150">
                         Sign In
                     </button>
                 </div>
@@ -42,20 +115,20 @@
         </div>
     </div>
 
-    <div id="app-container" class="container mx-auto flex-col">
+    <div id="app-container" class="container mx-auto hidden flex-col">
         
-        <nav class="card-bg p-4 mb-8 flex justify-between items-center">
+        <nav class="bg-gray-900 p-4 mb-8 shadow-xl rounded-xl flex justify-between items-center border border-gray-700">
             <div class="flex items-center">
                 <img src="favicon.ico" alt="Timetable Converter Logo" class="w-8 h-8 rounded-md mr-3">
                 <span class="text-xl font-bold text-white">Timetable Converter</span>
             </div>
             
-            <a href="https://thegoodknow.github.io/timetable/gemini.html" target="_blank" class="btn-totimetable">
+            <a href="https://thegoodknow.github.io/timetable/gemini.html" target="_blank"
+                class="text-sm px-4 py-2 rounded-lg text-white btn-totimetable hover:btn-totimetable transition duration-150 shadow-md">
                 View Timetable Page
             </a>
         </nav>
-        
-        <div class="p-6 md:p-10 card-bg">
+        <div class="bg-gray-800 p-6 md:p-10 shadow-xl rounded-2xl border border-gray-700">
             <header class="text-center mb-10">
                 <h1 class="text-3xl font-bold text-white mb-2">HTML to JSON Extractor</h1>
                 <p class="text-gray-400">Upload your HTML file to extract the schedule data.</p>
@@ -64,9 +137,10 @@
             <main class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div class="space-y-4">
                     <label for="fileInput" class="block text-lg font-medium text-gray-300">1. Select Timetable HTML File</label>
-                    <input type="file" id="fileInput" accept=".html,text/html" onchange="storeFile(event)">
+                    <input type="file" id="fileInput" accept=".html,text/html" onchange="storeFile(event)" class="text-sm">
                     
-                    <button onclick="triggerConversion()" id="convertButton" disabled class="btn-apspace mt-6">
+                    <button onclick="triggerConversion()" id="convertButton" disabled
+                        class="w-full mt-6 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white btn-apspace hover:btn-apspace focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-apspace disabled:opacity-50 transition duration-150">
                         Convert to JSON
                     </button>
                 </div>
@@ -74,15 +148,18 @@
                 <div class="space-y-4">
                     <label for="jsonOutput" class="block text-lg font-medium text-gray-300 flex justify-between items-center">
                         <span>2. Extracted JSON Output (New Format)</span>
-                        <button onclick="downloadJson()" id="downloadButton" disabled class="btn-secondary">
+                        <button onclick="downloadJson()" id="downloadButton" disabled
+                                class="text-sm px-3 py-1 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50 transition duration-150">
                             Download JSON
                         </button>
                     </label>
-                    <textarea id="jsonOutput" rows="15" readonly placeholder="JSON output will appear here after conversion."></textarea>
+                    <textarea id="jsonOutput" rows="15" readonly
+                              placeholder="JSON output will appear here after conversion."
+                              class="w-full p-4 border border-gray-600 rounded-lg bg-gray-700 text-white text-sm shadow-inner"></textarea>
                 </div>
             </main>
             
-            <div id="messageBox" class="message-box hidden"></div>
+            <div id="messageBox" class="mt-6 p-4 text-sm font-medium rounded-lg text-center hidden"></div>
         </div>
     </div>
 
@@ -125,13 +202,11 @@
 
         function showLoginMessage(text, type = 'error') {
             loginMessage.textContent = text;
-            // Removed Tailwind classes and used custom message-box classes
-            loginMessage.classList.remove('hidden', 'error', 'success');
-            loginMessage.classList.add('message-box'); // Ensure base class is present
+            loginMessage.classList.remove('hidden', 'bg-red-900', 'text-red-300', 'bg-green-900', 'text-green-300');
             if (type === 'error') {
-                loginMessage.classList.add('error');
+                loginMessage.classList.add('bg-red-900', 'text-red-300');
             } else {
-                loginMessage.classList.add('success');
+                loginMessage.classList.add('bg-green-900', 'text-green-300');
             }
             setTimeout(() => {
                 loginMessage.classList.add('hidden');
@@ -175,7 +250,7 @@
             if (user === CORRECT_USERNAME && pass === CORRECT_PASSWORD) {
                 showApp();
             } else {
-                showLoginMessage('Invalid username or password.', 'error');
+                showLoginMessage('Invalid username or password.');
                 passwordInput.value = '';
             }
         }
@@ -242,13 +317,11 @@
         function showMessage(text, type = 'success') {
             const currentMessageBox = document.getElementById('messageBox');
             currentMessageBox.textContent = text;
-            // Used custom message-box classes
-            currentMessageBox.classList.remove('hidden', 'error', 'success');
-            currentMessageBox.classList.add('message-box'); // Ensure base class is present
+            currentMessageBox.classList.remove('hidden', 'bg-red-900', 'text-red-300', 'bg-green-900', 'text-green-300');
             if (type === 'error') {
-                currentMessageBox.classList.add('error');
+                currentMessageBox.classList.add('bg-red-900', 'text-red-300');
             } else {
-                currentMessageBox.classList.add('success');
+                currentMessageBox.classList.add('bg-green-900', 'text-green-300');
             }
             setTimeout(() => {
                 currentMessageBox.classList.add('hidden');
