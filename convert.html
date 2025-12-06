@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HTML Timetable to JSON Converter</title>
+    <title>Timetable Converter</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="icon" type="image/svg+xml" href="ttfavicon.svg">
+    <link rel="shortcut icon" href="favicon.ico">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -28,16 +28,45 @@
         }
     </style>
 </head>
-<body class="p-4 sm:p-8">
+<body class="p-4 sm:p-8 flex items-center justify-center min-h-screen">
 
-    <div class="container mx-auto bg-white p-6 md:p-10 shadow-xl rounded-2xl">
+    <div id="login-container" class="w-full max-w-md">
+        <div class="bg-white p-6 md:p-10 shadow-xl rounded-2xl">
+            <header class="text-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-900 mb-1">Access Timetable Converter</h2>
+                <p class="text-gray-500 text-sm">Sign in to continue</p>
+            </header>
+            <div id="login-message" class="p-3 text-sm font-medium rounded-lg text-center hidden"></div>
+            
+            <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+                    <input type="text" id="username" value="admin" required
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                </div>
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" id="password" value="admin123" required
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                </div>
+                <div>
+                    <button type="submit"
+                        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150">
+                        Sign In
+                    </button>
+                </div>
+            </form>
+        </div>
+        <p class="text-center text-gray-400 text-xs mt-4">Demo credentials: **admin / admin123**</p>
+    </div>
+
+    <div id="app-container" class="container mx-auto bg-white p-6 md:p-10 shadow-xl rounded-2xl hidden">
         <header class="text-center mb-10">
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">Timetable HTML to JSON Converter</h1>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Timetable Converter for thegoodknow/timetable</h1>
             <p class="text-gray-500">Import your HTML file or paste its content below to extract the schedule data.</p>
         </header>
 
         <main class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- Input Panel -->
             <div class="space-y-4">
                 <label for="fileInput" class="block text-lg font-medium text-gray-700">1a. Import HTML File</label>
                 <input type="file" id="fileInput" accept=".html,text/html" onchange="handleFileSelect(event)" class="text-sm">
@@ -52,14 +81,8 @@
                 <textarea id="htmlInput" rows="10" 
                           placeholder="Paste the entire content of the Timetable.html file here..."
                           class="w-full p-4 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-sm shadow-inner"></textarea>
-                
-                <button onclick="convertHtmlToJson(htmlInput.value)" id="convertButton"
-                        class="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition duration-200 shadow-md">
-                    Convert to JSON
-                </button>
             </div>
 
-            <!-- Output Panel -->
             <div class="space-y-4">
                 <label for="jsonOutput" class="block text-lg font-medium text-gray-700 flex justify-between items-center">
                     <span>2. Extracted JSON Output (New Format)</span>
@@ -81,13 +104,24 @@
         // Global utility functions for the UI
         const htmlInput = document.getElementById('htmlInput');
         const jsonOutput = document.getElementById('jsonOutput');
-        const convertButton = document.getElementById('convertButton');
         const copyButton = document.getElementById('copyButton');
         const messageBox = document.getElementById('messageBox');
         const fileInput = document.getElementById('fileInput');
 
+        // New Login Elements
+        const loginContainer = document.getElementById('login-container');
+        const appContainer = document.getElementById('app-container');
+        const loginMessage = document.getElementById('login-message');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+
+        // --- AUTHENTICATION CONSTANTS ---
+        const CORRECT_USERNAME = 'admin';
+        const CORRECT_PASSWORD = 'admin123';
+        // ---------------------------------
+
+
         // MAPPING: Used to look up module name based on the module code prefix.
-        // NOTE: This list is based on the sample data you provided and should be expanded as needed.
         const MODULE_MAPPING = {
             'AAQS038': 'MATHEMATICS AND STATISTICS FOR COMPUTING',
             'ABUS007': 'ACADEMIC RESEARCH SKILLS',
@@ -97,18 +131,66 @@
             // Add more module codes and names here
         };
 
-        // --- Core Functions ---
+        // --- LOGIN/VIEW MANAGEMENT FUNCTIONS ---
+
+        function showLoginMessage(text, type = 'error') {
+            loginMessage.textContent = text;
+            loginMessage.classList.remove('hidden', 'bg-red-100', 'text-red-800', 'bg-green-100', 'text-green-800');
+            if (type === 'error') {
+                loginMessage.classList.add('bg-red-100', 'text-red-800');
+            } else {
+                loginMessage.classList.add('bg-green-100', 'text-green-800');
+            }
+            // Optionally hide after a delay
+            setTimeout(() => {
+                loginMessage.classList.add('hidden');
+            }, 3000);
+        }
+
+        function showApp() {
+            loginContainer.classList.add('hidden');
+            appContainer.classList.remove('hidden');
+            // Remove the body centering class now that the app is full width
+            document.body.classList.remove('flex', 'items-center', 'justify-center', 'min-h-screen'); 
+            document.body.classList.add('block');
+        }
+
+        function handleLogin(event) {
+            event.preventDefault(); // Stop form submission
+
+            const user = usernameInput.value;
+            const pass = passwordInput.value;
+
+            if (user === CORRECT_USERNAME && pass === CORRECT_PASSWORD) {
+                showApp();
+                // Optionally save a token in sessionStorage/localStorage for persistent login
+                sessionStorage.setItem('loggedIn', 'true'); 
+            } else {
+                showLoginMessage('Invalid username or password.');
+                passwordInput.value = ''; // Clear password on failure
+            }
+        }
+        
+        // Check for session/local storage on load
+        (function checkLoginStatus() {
+            if (sessionStorage.getItem('loggedIn') === 'true') {
+                showApp();
+            }
+        })();
+
+        // --- Core Functions (kept as-is, with minor style change for messageBox) ---
 
         function showMessage(text, type = 'success') {
-            messageBox.textContent = text;
-            messageBox.classList.remove('hidden', 'bg-red-100', 'text-red-800', 'bg-green-100', 'text-green-800');
+            const currentMessageBox = document.getElementById('messageBox');
+            currentMessageBox.textContent = text;
+            currentMessageBox.classList.remove('hidden', 'bg-red-100', 'text-red-800', 'bg-green-100', 'text-green-800');
             if (type === 'error') {
-                messageBox.classList.add('bg-red-100', 'text-red-800');
+                currentMessageBox.classList.add('bg-red-100', 'text-red-800');
             } else {
-                messageBox.classList.add('bg-green-100', 'text-green-800');
+                currentMessageBox.classList.add('bg-green-100', 'text-green-800');
             }
             setTimeout(() => {
-                messageBox.classList.add('hidden');
+                currentMessageBox.classList.add('hidden');
             }, 5000);
         }
 
@@ -161,16 +243,12 @@
 
                 // 1. Extract Header Information
                 
-                // Try to find the h4 element that contains the intake/group information
-                // The expected structure from the previously provided HTML snippet is:
-                // <h4 class="text-center">Week: 2025-12-08 | Intake: UCDF2511ICT(SE) | Group: G1</h4>
                 const headerElement = doc.querySelector('h4.text-center');
                 let intake = 'N/A';
                 let group = 'N/A';
                 
                 if (headerElement) {
                     const text = headerElement.textContent.trim();
-                    // Regex to robustly find Intake and Group values
                     const intakeMatch = text.match(/Intake:\s*([A-Z0-9()]+)/i);
                     const groupMatch = text.match(/Group:\s*([A-Z0-9()]+)/i);
                     
@@ -182,23 +260,18 @@
                     }
                 }
                 
-                // Get the first date from the table to use as the week start date.
                 let weekStartDate = 'N/A';
                 const weekElement = doc.querySelector('h4.text-center');
                 if (weekElement) {
-                    // This regex specifically targets the week date in the header, e.g., "Week: 2025-12-08"
                     const weekMatch = weekElement.textContent.match(/Week:\s*([0-9-]+)/); 
                     if (weekMatch && weekMatch[1]) {
                         weekStartDate = weekMatch[1];
                     }
                 }
                 
-                // Fallback to table cell date if header date is not found or is 'N/A'
-                // This fallback logic relies on the structure of the data rows
                 const firstDayCell = doc.querySelector('table.table tbody tr:not(.thead-dark) td:first-child');
                 if (weekStartDate === 'N/A' && firstDayCell) {
                     const firstDateStr = firstDayCell.textContent.trim();
-                    // If the cell content is a full date string like "Mon, 08-Dec-2025"
                     const formattedDate = formatWeekDate(firstDateStr);
                     if (formattedDate) {
                         weekStartDate = formattedDate;
@@ -206,7 +279,6 @@
                 }
                 
                 // 2. Extract Timetable Rows
-                // Assuming the timetable data is inside a table with class 'table'
                 const rows = doc.querySelectorAll('table.table tbody tr');
                 
                 let days = [];
@@ -216,8 +288,6 @@
                 rows.forEach(row => {
                     const cells = row.querySelectorAll('td');
 
-                    // Standard timetable rows have 6 columns (Day, Time, Location, Campus, Subject, Lecturer)
-                    // Skip merged or incomplete rows
                     if (cells.length < 6) {
                         return; 
                     }
@@ -229,14 +299,13 @@
                     let subject = cells[4].textContent.trim();
                     const lecturer = cells[5].textContent.trim();
 
-                    // Skip the row if the subject is an empty placeholder or just "BREAK"
                     if (!subject || subject.toUpperCase() === 'BREAK') {
                          return;
                     }
 
 
                     // Derived Fields Logic
-                    const moduleCodeMatch = subject.match(/^([A-Z0-9-]+)/); // Get the whole module code string
+                    const moduleCodeMatch = subject.match(/^([A-Z0-9-]+)/);
                     let moduleCode = moduleCodeMatch ? moduleCodeMatch[1] : subject;
 
                     // 1. Module Name
@@ -246,12 +315,10 @@
                     // 2. isOnline
                     const isOnline = subject.toLowerCase().includes('(online)') || location.toLowerCase().startsWith('onl');
                     
-                    // Clean up moduleCode/subject if it contains (Online) for cleaner moduleCode field
                     let finalModuleCode = moduleCode.replace(' (Online)', '').trim();
                     
                     // 3. Class Type
                     let classType = 'Lecture';
-                    // Check for type L or T or LAB in the module code string (e.g., ...-L-...)
                     const typeMatch = finalModuleCode.match(/-([LT]|LAB)-/i);
                     if (typeMatch) {
                         const typeChar = typeMatch[1].toUpperCase();
@@ -259,11 +326,10 @@
                         else if (typeChar === 'T') classType = 'Tutorial';
                         else if (typeChar === 'LAB') classType = 'Lab';
                     } else if (location.toLowerCase().includes('lab')) {
-                        // Fallback: check location for 'lab' if not found in module code
                         classType = 'Lab';
                     }
 
-                    // 4. Replacement Fields (Assumed false as replacement info is typically external)
+                    // 4. Replacement Fields
                     const isReplacement = false;
                     const replacementType = "";
 
@@ -326,7 +392,6 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 const content = e.target.result;
-                // Clear the paste area and process the file content
                 htmlInput.value = content;
                 convertHtmlToJson(content);
             };
