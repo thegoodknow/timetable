@@ -343,7 +343,7 @@
                     currentWeekStart = foundWeekStart; 
                     days = [foundDay];
                 } else {
-                    timetableList.innerHTML = `<div class="day-header">${key==="__TODAY__"?"Today":"Tomorrow"}</div><p style="padding:20px;color:var(--text-subtle);text-align:center">No classes scheduled.</p>`;
+                    timetableList.innerHTML = `<div class="day-header">${key==="__TODAY__"?"Today":"Tomorrow"}</div><p style="padding:20px;color:var(--text-subtle);text-align:center">(●ˇ∀ˇ●) No classes scheduled on this day</p>`;
                     applyCurrentClassHighlighting();
                     return;
                 }
