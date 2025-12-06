@@ -53,41 +53,31 @@
             justify-content: center;
         }
 
-        /* The app-container is hidden by default. 
-        When logged in, we switch the body to block and show the app-container.
-        */
+        /* The app-container is hidden by default. */
         #app-container {
             display: none;
         }
-
-        /* Mobile View: Hide the main app and show the warning instead on screens smaller than sm */
-        @media (max-width: 639px) {
-            #app-container {
-                display: none !important; /* Force hide the application content */
-            }
-            #mobile-warning {
-                display: flex !important; /* Force show the warning */
-            }
-            /* Keep the login container centered */
-            .min-h-screen-center #login-container {
-                display: block;
-            }
-        }
         
-        /* Desktop View: Hide the warning and show the app container if logged in */
+        /* IMPORTANT: Hide both login and mobile warning initially via CSS 
+           to let JavaScript decide what to show based on device size. */
+        #login-container, #mobile-warning {
+            display: none;
+        }
+
+        /* Desktop View: Only login container shown at first */
         @media (min-width: 640px) {
             #mobile-warning {
                 display: none !important;
             }
             #app-container.show-app {
-                display: block !important; /* Controlled by JavaScript on successful login */
+                display: block !important;
             }
         }
     </style>
 </head>
 <body class="p-4 sm:p-8 min-h-screen-center">
 
-    <div id="mobile-warning" class="hidden flex-col items-center justify-center text-center p-8 bg-gray-900 shadow-xl rounded-2xl w-full max-w-sm mx-auto border border-gray-700">
+    <div id="mobile-warning" class="flex-col items-center justify-center text-center p-8 bg-gray-900 shadow-xl rounded-2xl w-full max-w-sm mx-auto border border-gray-700">
         <svg class="w-12 h-12 text-yellow-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.394 16c-.77 1.333.192 3 1.732 3z"></path></svg>
         <h3 class="text-xl font-bold text-white mb-2">Device Restriction</h3>
         <p class="text-gray-400">This page only works on PC, please open me on a PC or a tablet for the best experience.</p>
@@ -129,13 +119,13 @@
         
         <nav class="bg-gray-900 p-4 mb-8 shadow-xl rounded-xl flex justify-between items-center border border-gray-700">
             <div class="flex items-center">
-                <img src="favicon.ico" alt="TLogo" class="w-8 h-8 rounded-md mr-3">
+                <img src="logo.png" alt="Timetable Converter Logo" class="w-8 h-8 rounded-md mr-3">
                 <span class="text-xl font-bold text-white">Timetable Converter</span>
             </div>
             
             <a href="https://thegoodknow.github.io/timetable/gemini.html" target="_blank"
                 class="text-sm px-4 py-2 rounded-lg text-white btn-totimetable hover:btn-totimetable transition duration-150 shadow-md">
-                Timetable
+                View Timetable Page
             </a>
         </nav>
         <div class="bg-gray-800 p-6 md:p-10 shadow-xl rounded-2xl border border-gray-700">
@@ -158,9 +148,9 @@
                 <div class="space-y-4">
                     <label for="jsonOutput" class="block text-lg font-medium text-gray-300 flex justify-between items-center">
                         <span>2. Extracted JSON Output (New Format)</span>
-                        <button onclick="copyJson()" id="copyButton" disabled
+                        <button onclick="downloadJson()" id="downloadButton" disabled
                                 class="text-sm px-3 py-1 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50 transition duration-150">
-                            Copy JSON
+                            Download JSON
                         </button>
                     </label>
                     <textarea id="jsonOutput" rows="15" readonly
@@ -176,7 +166,7 @@
     <script>
         // Global utility functions for the UI
         const jsonOutput = document.getElementById('jsonOutput');
-        const copyButton = document.getElementById('copyButton');
+        const downloadButton = document.getElementById('downloadButton');
         const messageBox = document.getElementById('messageBox');
         const fileInput = document.getElementById('fileInput');
         const convertButton = document.getElementById('convertButton');
@@ -224,23 +214,17 @@
         }
 
         function isMobile() {
-            // Simple check based on screen width (less than Tailwind's 'sm' breakpoint 640px)
+            // Check based on screen width (less than Tailwind's 'sm' breakpoint 640px)
             return window.innerWidth < 640;
         }
 
         function showApp() {
             loginContainer.classList.add('hidden');
             
-            // Check if it's a mobile device (small screen)
-            if (isMobile()) {
-                // On mobile, keep the app hidden and show the warning
-                appContainer.classList.add('hidden');
-                mobileWarning.classList.remove('hidden');
-            } else {
-                // On desktop, show the app
+            // On desktop (non-mobile), show the app
+            if (!isMobile()) {
                 appContainer.classList.remove('hidden');
-                appContainer.classList.add('show-app'); // Custom class for desktop visibility
-                mobileWarning.classList.add('hidden');
+                appContainer.classList.add('show-app');
             }
             
             // Adjust body classes after login, regardless of device type
@@ -262,6 +246,28 @@
             }
         }
         
+        // --- NEW: Initialize view on page load ---
+        function initializeView() {
+            if (isMobile()) {
+                // If mobile, hide login, show warning
+                loginContainer.style.display = 'none';
+                mobileWarning.style.display = 'flex';
+                // Ensure body remains centered for the warning
+                document.body.classList.add('min-h-screen-center');
+            } else {
+                // If desktop, show login, hide warning
+                loginContainer.style.display = 'block';
+                mobileWarning.style.display = 'none';
+                document.body.classList.add('min-h-screen-center');
+            }
+        }
+
+        // Run initialization function when the script loads
+        window.addEventListener('load', initializeView);
+        // Also run if the screen size changes while the page is open
+        window.addEventListener('resize', initializeView);
+
+
         // --- FILE HANDLING AND CONVERSION FUNCTIONS ---
 
         // Step 1: Store the file content when a file is selected
@@ -344,7 +350,7 @@
         function convertHtmlToJson(htmlContent) {
             htmlContent = htmlContent.trim();
             jsonOutput.value = '';
-            copyButton.disabled = true;
+            downloadButton.disabled = true;
             convertButton.disabled = true; // Disable button while processing
 
             if (!htmlContent) {
@@ -357,22 +363,6 @@
                 const doc = parser.parseFromString(htmlContent, 'text/html');
 
                 // 1. Extract Header Information
-                const headerElement = doc.querySelector('h4.text-center');
-                let intake = 'N/A';
-                let group = 'N/A';
-                
-                if (headerElement) {
-                    const text = headerElement.textContent.trim();
-                    const intakeMatch = text.match(/Intake:\s*([A-Z0-9()]+)/i);
-                    const groupMatch = text.match(/Group:\s*([A-Z0-9()]+)/i);
-                    
-                    if (intakeMatch && intakeMatch[1]) {
-                        intake = intakeMatch[1];
-                    }
-                    if (groupMatch && groupMatch[1]) {
-                        group = groupMatch[1];
-                    }
-                }
                 
                 let weekStartDate = 'N/A';
                 const weekElement = doc.querySelector('h4.text-center');
@@ -475,17 +465,15 @@
                 // 4. Construct the Final JSON Object
                 const finalJson = {
                     weekStartDate: weekStartDate,
-                    intake: intake,
-                    group: group,
                     days: days
                 };
 
                 // 5. Display the output
                 const jsonString = JSON.stringify(finalJson, null, 2);
                 jsonOutput.value = jsonString;
-                copyButton.disabled = days.length === 0;
+                downloadButton.disabled = days.length === 0;
                 convertButton.disabled = false; // Re-enable button after processing
-                showMessage("Conversion successful! JSON data is ready to copy.", 'success');
+                showMessage("Conversion successful! JSON data is ready to download.", 'success');
 
             } catch (e) {
                 console.error("Parsing error:", e);
@@ -494,26 +482,46 @@
             }
         }
 
-        // --- Clipboard Function ---
+        // --- DOWNLOAD JSON FUNCTION ---
 
-        function copyJson() {
+        function downloadJson() {
             const jsonString = jsonOutput.value;
-            if (jsonString) {
-                const tempTextArea = document.createElement('textarea');
-                tempTextArea.value = jsonString;
-                document.body.appendChild(tempTextArea);
-                tempTextArea.select();
-                try {
-                    const successful = document.execCommand('copy');
-                    if (successful) {
-                        showMessage("JSON copied to clipboard!", 'success');
-                    } else {
-                        showMessage("Copy failed. Please copy manually.", 'error');
-                    }
-                } catch (err) {
-                    showMessage("Copy failed. Please copy manually.", 'error');
+            if (!jsonString) {
+                showMessage("No JSON output available to download.", 'error');
+                return;
+            }
+
+            try {
+                const jsonObject = JSON.parse(jsonString);
+                const weekDate = jsonObject.weekStartDate;
+                
+                // Determine the filename. Default to a timestamp if the date is unavailable.
+                let filename = "timetable_converted.json";
+                if (weekDate && weekDate !== 'N/A') {
+                    // Create a clean filename using the date: e.g., "timetable_2025-12-08.json"
+                    filename = `timetable_${weekDate}.json`;
                 }
-                document.body.removeChild(tempTextArea);
+
+                // Create a Blob from the JSON string
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                
+                // Create a temporary link element for the download
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                
+                // Programmatically click the link to trigger the download
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url); // Clean up the URL object
+
+                showMessage(`Successfully downloaded as **${filename}**!`, 'success');
+
+            } catch (e) {
+                console.error("Download error:", e);
+                showMessage("Error during JSON download or filename parsing.", 'error');
             }
         }
     </script>
