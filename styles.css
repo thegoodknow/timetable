@@ -253,3 +253,86 @@
                 justify-content: flex-start;
             }
         }
+       
+       
+        /* Button Styling */
+        .btn-apspace {
+            background-color: var(--color-primary);
+            color: var(--text-light);
+            font-weight: 600;
+            padding: 10px 16px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+            width: 100%;
+        }
+        .btn-apspace:hover {
+            background-color: #0066cc; /* Slightly darker blue */
+        }
+        .btn-apspace:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-totimetable {
+            background-color: var(--color-replacement-bg);
+            color: var(--text-light);
+            font-weight: 600;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: none;
+            transition: background-color 0.15s ease;
+        }
+        .btn-totimetable:hover {
+             background-color: #a85d00;
+        }
+        
+        .btn-secondary {
+            background-color: #4b5563; /* Gray background */
+            color: var(--text-light);
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            transition: background-color 0.15s ease;
+        }
+        .btn-secondary:hover {
+            background-color: #374151;
+        }
+        .btn-secondary:disabled {
+             opacity: 0.5;
+        }
+
+        /* Message Boxes */
+        .message-box {
+            padding: 12px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 16px;
+        }
+        .message-box.error {
+            background-color: #450a0a; /* Dark Red BG */
+            color: #fca5a5; /* Light Red Text */
+        }
+        .message-box.success {
+            background-color: #064e3b; /* Dark Green BG */
+            color: #a7f3d0; /* Light Green Text */
+        }
+        
+        /* Mobile/App View Management */
+        #app-container {
+            display: none;
+        }
+        #login-container, #mobile-warning {
+            display: none;
+        }
+        @media (min-width: 640px) {
+            #mobile-warning {
+                display: none !important;
+            }
+            #app-container.show-app {
+                display: flex !important; /* Changed from block to flex for the column layout */
+            }
+        }

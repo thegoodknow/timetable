@@ -1,0 +1,162 @@
+{
+"weekStartDate": "2025-12-15",
+      "days": [
+        {
+          "date": "Mon, 15-Dec-2025",
+          "classes": [
+            {
+              "moduleCode": "",
+              "moduleName": "",
+              "time": "",
+              "location": "",
+              "campus": "APU CAMPUS",
+              "lecturer": "",
+              "isOnline": false,
+              "classType": "",
+              "isReplacement": false,
+              "replacementType": ""
+            },
+            {
+              "moduleCode": "",
+              "moduleName": "",
+              "time": "",
+              "location": "",
+              "campus": "APU CAMPUS",
+              "lecturer": "",
+              "isOnline": false,
+              "classType": "",
+              "isReplacement": false,
+              "replacementType": ""
+            }
+          ]
+        },
+        {
+          "date": "Tue, 16-Dec-2025",
+          "classes": [
+            {
+              "moduleCode": "",
+              "moduleName": "",
+              "time": "",
+              "location": "",
+              "campus": "APU CAMPUS",
+              "lecturer": "",
+              "isOnline": false,
+              "classType": "",
+              "isReplacement": false,
+              "replacementType": ""
+            },
+            {
+              "moduleCode": "",
+              "moduleName": "",
+              "time": "",
+              "location": "",
+              "campus": "APU CAMPUS",
+              "lecturer": "",
+              "isOnline": false,
+              "classType": "",
+              "isReplacement": false,
+              "replacementType": ""
+            }
+          ]
+        },
+        {
+          "date": "Wed, 17-Dec-2025",
+          "classes": [
+            {
+              "moduleCode": "",
+              "moduleName": "",
+              "time": "",
+              "location": "",
+              "campus": "APU CAMPUS",
+              "lecturer": "",
+              "isOnline": false,
+              "classType": "",
+              "isReplacement": false,
+              "replacementType": ""
+            },
+            {
+              "moduleCode": "",
+              "moduleName": "",
+              "time": "",
+              "location": "",
+              "campus": "APU CAMPUS",
+              "lecturer": "",
+              "isOnline": false,
+              "classType": "",
+              "isReplacement": false,
+              "replacementType": ""
+            },
+            {
+              "moduleCode": "MPU2132-BMK1(FS)-L-8",
+              "moduleName": "BAHASA MELAYU KOMUNIKASI 1 (Online)",
+              "time": "18:45 - 20:45",
+              "location": "ONLMCO3-11",
+              "campus": "APU CAMPUS",
+              "lecturer": "NURHANI HAZIRAH BINTI AHMAD HAMIDI",
+              "isOnline": true,
+              "classType": "Lecture",
+              "isReplacement": false,
+              "replacementType": ""
+            }
+          ]
+        },
+        {
+          "date": "Thu, 18-Dec-2025",
+          "classes": [
+            {
+              "moduleCode": "",
+              "moduleName": "",
+              "time": "",
+              "location": "",
+              "campus": "APU CAMPUS",
+              "lecturer": "",
+              "isOnline": false,
+              "classType": "",
+              "isReplacement": false,
+              "replacementType": ""
+            },
+            {
+              "moduleCode": "",
+              "moduleName": "",
+              "time": "",
+              "location": "",
+              "campus": "APU CAMPUS",
+              "lecturer": "",
+              "isOnline": false,
+              "classType": "",
+              "isReplacement": false,
+              "replacementType": ""
+            }
+          ]
+        },
+        {
+          "date": "Fri, 19-Dec-2025",
+          "classes": [
+            {
+              "moduleCode": "",
+              "moduleName": "",
+              "time": "",
+              "location": "",
+              "campus": "APU CAMPUS",
+              "lecturer": "",
+              "isOnline": false,
+              "classType": "",
+              "isReplacement": false,
+              "replacementType": ""
+            },
+            {
+              "moduleCode": "",
+              "moduleName": "",
+              "time": "",
+              "location": "",
+              "campus": "APU CAMPUS",
+              "lecturer": "",
+              "isOnline": false,
+              "classType": "",
+              "isReplacement": false,
+              "replacementType": ""
+            }
+          ]
+        }
+      ]
+}
