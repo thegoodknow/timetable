@@ -358,6 +358,22 @@
 
                 // 1. Extract Header Information
                 const headerElement = doc.querySelector('h4.text-center');
+                let intake = 'N/A';
+                let group = 'N/A';
+                
+                if (headerElement) {
+                    const text = headerElement.textContent.trim();
+                    const intakeMatch = text.match(/Intake:\s*([A-Z0-9()]+)/i);
+                    const groupMatch = text.match(/Group:\s*([A-Z0-9()]+)/i);
+                    
+                    if (intakeMatch && intakeMatch[1]) {
+                        intake = intakeMatch[1];
+                    }
+                    if (groupMatch && groupMatch[1]) {
+                        group = groupMatch[1];
+                    }
+                }
+                
                 let weekStartDate = 'N/A';
                 const weekElement = doc.querySelector('h4.text-center');
                 if (weekElement) {
@@ -458,7 +474,7 @@
 
                 // 4. Construct the Final JSON Object
                 const finalJson = {
-                    weekStartDate: weekStartDate
+                    weekStartDate: weekStartDate,
                 };
 
                 // 5. Display the output
