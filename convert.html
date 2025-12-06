@@ -59,7 +59,7 @@
         }
         
         /* IMPORTANT: Hide both login and mobile warning initially via CSS 
-           to let JavaScript decide what to show based on device size. */
+            to let JavaScript decide what to show based on device size. */
         #login-container, #mobile-warning {
             display: none;
         }
@@ -149,13 +149,13 @@
                     <label for="jsonOutput" class="block text-lg font-medium text-gray-300 flex justify-between items-center">
                         <span>2. Extracted JSON Output (New Format)</span>
                         <button onclick="downloadJson()" id="downloadButton" disabled
-                                class="text-sm px-3 py-1 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50 transition duration-150">
+                                 class="text-sm px-3 py-1 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50 transition duration-150">
                             Download JSON
                         </button>
                     </label>
                     <textarea id="jsonOutput" rows="15" readonly
-                              placeholder="JSON output will appear here after conversion."
-                              class="w-full p-4 border border-gray-600 rounded-lg bg-gray-700 text-white text-sm shadow-inner"></textarea>
+                             placeholder="JSON output will appear here after conversion."
+                             class="w-full p-4 border border-gray-600 rounded-lg bg-gray-700 text-white text-sm shadow-inner"></textarea>
                 </div>
             </main>
             
@@ -285,7 +285,14 @@
             fileContent = null; // Clear previous content
             convertButton.disabled = true;
 
-            if (!file) return;
+            // Clear output and disable download button on new file selection
+            jsonOutput.value = ''; 
+            downloadButton.disabled = true;
+
+            if (!file) {
+                 showMessage("File selection cancelled.", 'error');
+                 return;
+            }
 
             if (file.type !== 'text/html') {
                 showMessage("Please select a valid HTML file.", 'error');
@@ -329,19 +336,45 @@
         }
 
         /**
-         * Converts a date string like "Mon, 08-Dec-2025" to "YYYY-MM-DD" format.
+         * Converts a date string like "Mon, 08-Dec-2025" to a Date object representing the
+         * previous Sunday (the start of the week).
          */
-        function formatWeekDate(dateStr) {
+        function calculateWeekStart(dateStr) {
             const parts = dateStr.split(', ')[1];
             if (!parts) return null;
-            
-            const [day, monthName, year] = parts.split('-');
+
+            const [dayStr, monthName, yearStr] = parts.split('-');
             const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
             const monthIndex = monthNames.indexOf(monthName);
-            
+
             if (monthIndex === -1) return null;
 
-            const month = String(monthIndex + 1).padStart(2, '0');
+            // Create a Date object for the extracted date (e.g., Monday, 08 Dec 2025)
+            // Note: JavaScript month index is 0-based.
+            const day = parseInt(dayStr, 10);
+            const year = parseInt(yearStr, 10);
+            const extractedDate = new Date(year, monthIndex, day);
+            
+            // Ensure the date object is valid
+            if (isNaN(extractedDate.getTime())) return null;
+
+            // Calculate the preceding Sunday: getDay() returns 0 for Sunday, 1 for Monday...
+            const dayOfWeek = extractedDate.getDay(); 
+            const sundayDate = new Date(extractedDate);
+            // If it's Monday (dayOfWeek=1), subtract 1. If it's Sunday (dayOfWeek=0), subtract 0.
+            sundayDate.setDate(extractedDate.getDate() - (dayOfWeek === 0 ? 0 : dayOfWeek - 0)); 
+            
+            return sundayDate;
+        }
+
+        /**
+         * Formats a Date object into "YYYY-MM-DD".
+         */
+        function formatDateToISO(dateObj) {
+            if (!dateObj) return 'N/A';
+            const year = dateObj.getFullYear();
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const day = String(dateObj.getDate()).padStart(2, '0');
             return `${year}-${month}-${day}`;
         }
         
@@ -349,7 +382,8 @@
          * Extracts the module code prefix (e.g., 'AAQS038') from the full subject string.
          */
         function getModuleCodePrefix(subject) {
-            const match = subject.match(/^([A-Z0-9]+)/);
+            // Look for any combination of uppercase letters and numbers at the start
+            const match = subject.match(/^([A-Z0-9]+)/); 
             return match ? match[1] : null;
         }
 
@@ -364,6 +398,7 @@
 
             if (!htmlContent) {
                 showMessage("No HTML content loaded.", 'error');
+                convertButton.disabled = false;
                 return;
             }
 
@@ -372,22 +407,17 @@
                 const doc = parser.parseFromString(htmlContent, 'text/html');
 
                 // 1. Extract Header Information
-                
                 let weekStartDate = 'N/A';
-                const weekElement = doc.querySelector('h4.text-center');
-                if (weekElement) {
-                    const weekMatch = weekElement.textContent.match(/Week:\s*([0-9-]+)/); 
-                    if (weekMatch && weekMatch[1]) {
-                        weekStartDate = weekMatch[1];
-                    }
-                }
                 
+                // Find the cell containing the first day's date (e.g., "Mon, 08-Dec-2025")
                 const firstDayCell = doc.querySelector('table.table tbody tr:not(.thead-dark) td:first-child');
-                if (weekStartDate === 'N/A' && firstDayCell) {
+                if (firstDayCell) {
                     const firstDateStr = firstDayCell.textContent.trim();
-                    const formattedDate = formatWeekDate(firstDateStr);
-                    if (formattedDate) {
-                        weekStartDate = formattedDate;
+                    const sundayDateObj = calculateWeekStart(firstDateStr);
+                    
+                    // Format the calculated Sunday date
+                    if (sundayDateObj) {
+                        weekStartDate = formatDateToISO(sundayDateObj);
                     }
                 }
                 
@@ -401,8 +431,8 @@
                 rows.forEach(row => {
                     const cells = row.querySelectorAll('td');
 
-                    if (cells.length < 6) {
-                        return; 
+                    if (cells.length < 6 || row.classList.contains('thead-dark')) {
+                        return; // Skip invalid or header rows
                     }
                     
                     const dayData = cells[0].textContent.trim(); 
@@ -413,15 +443,15 @@
                     const lecturer = cells[5].textContent.trim();
 
                     if (!subject || subject.toUpperCase() === 'BREAK') {
-                         return;
+                        return;
                     }
 
-
                     // Derived Fields Logic
+                    
+                    // 1. Module Code and Name
                     const moduleCodeMatch = subject.match(/^([A-Z0-9-]+)/);
                     let moduleCode = moduleCodeMatch ? moduleCodeMatch[1] : subject;
-
-                    // 1. Module Name
+                    
                     const moduleCodePrefix = getModuleCodePrefix(moduleCode);
                     const moduleName = MODULE_MAPPING[moduleCodePrefix] || 'UNKNOWN MODULE NAME';
 
@@ -442,7 +472,7 @@
                         classType = 'Lab';
                     }
 
-                    // 4. Replacement Fields
+                    // 4. Replacement Fields (Assuming all are false/empty for standard timetable)
                     const isReplacement = false;
                     const replacementType = "";
 
@@ -504,10 +534,9 @@
                 const jsonObject = JSON.parse(jsonString);
                 const weekDate = jsonObject.weekStartDate;
                 
-                // Determine the filename. Default to a timestamp if the date is unavailable.
+                // Filename uses the Sunday date
                 let filename = "timetable_converted.json";
                 if (weekDate && weekDate !== 'N/A') {
-                    // Create a clean filename using the date: e.g., "timetable_2025-12-08.json"
                     filename = `timetable_${weekDate}.json`;
                 }
 
