@@ -1,0 +1,29 @@
+[
+    {
+        "department": "IT Support",
+        "day": 1, 
+        "startHour": 10,
+        "startMinute": 0,
+        "endHour": 11,
+        "endMinute": 30,
+        "message": "Scheduled System Upgrade: Limited IT service available during this window."
+    },
+    {
+        "department": "IT Support",
+        "day": 4, 
+        "startHour": 14,
+        "startMinute": 30,
+        "endHour": 15,
+        "endMinute": 0,
+        "message": "Network performance testing. Brief intermittent connection loss is possible."
+    },
+    {
+        "department": "IT Support",
+        "day": 0, 
+        "startHour": 8,
+        "startMinute": 0,
+        "endHour": 9,
+        "endMinute": 0,
+        "message": "Weekly security patch deployment."
+    }
+]
