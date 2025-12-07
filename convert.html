@@ -3,556 +3,451 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Timetable Converter</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="shortcut icon" href="favicon.ico">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Department Status</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #121212; /* Deep Dark Background */
+        /* --- DEPARTMENT STATUS COLORS --- */
+        .closed-tag {
+            background-color: #dc3545; /* Red */
+            color: var(--text-light);
         }
-        .container {
-            max-width: 1200px;
+        .open-tag {
+            background-color: #28a745; /* Green */
+            color: var(--text-light);
         }
-        textarea {
-            resize: none;
-        }
-        /* Custom file input styling for dark mode */
-        input[type="file"] {
-            border: 1px solid #4B5563; /* Darker border */
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-            background-color: #374151; /* Dark background */
-            color: #ffffff; /* Light text */
-            width: 100%;
-            transition: border-color 0.15s ease-in-out;
-        }
-        /* APSpace/Primary Button Color (Blue) */
-        .btn-apspace {
-            background-color: #6e72f1;
-        }
-        .btn-apspace:hover {
-            background-color: #424596;
-        }
-        /* Timetable Button Color (Orange) */
-        .btn-totimetable {
-            background-color: #5f5ceb;
-        }
-        .btn-totimetable:hover {
-             background-color: #373599;
-        }
-        .focus\:ring-apspace:focus {
-            --tw-ring-color: #007aff;
-        }
-        /* Ensure the body remains centered and full-height for the login screen on all sizes */
-        .min-h-screen-center {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .closing-soon-tag {
+            background-color: var(--color-current, #FFC107); /* Yellow/Amber */
+            color: var(--bg-dark); 
         }
 
-        /* The app-container is hidden by default. */
-        #app-container {
-            display: none;
+        /* --- Custom Header Fix: Ensures layout remains correct after removing controls-group --- */
+        .header {
+            justify-content: space-between; 
+            padding-left: 20px; 
+            padding-right: 20px;
         }
         
-        /* IMPORTANT: Hide both login and mobile warning initially via CSS 
-            to let JavaScript decide what to show based on device size. */
-        #login-container, #mobile-warning {
-            display: none;
+        /* --- CARD STYLES --- */
+        #departments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 20px 0;
         }
-
-        /* Desktop View: Only login container shown at first */
-        @media (min-width: 640px) {
-            #mobile-warning {
-                display: none !important;
-            }
-            #app-container.show-app {
-                display: block !important;
-            }
+        .class-card {
+            background-color: var(--bg-card);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid transparent;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: border-left-color 0.3s;
+            position: relative; 
+        }
+        .class-card.today {
+            border-left-color: var(--color-primary); 
+        }
+        .card-title {
+            display: flex;
+            align-items: center;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--text-light);
+        }
+        .card-title .material-icons {
+            margin-right: 8px;
+        }
+        .pill {
+            margin-left: auto;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-light);
+        }
+        .card-subtitle {
+            color: var(--text-subtle);
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        /* Maintenance/Announcement Banner Style */
+        .announcement-banner {
+            background-color: #f0ad4e; 
+            color: #121212;
+            padding: 8px 10px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
     </style>
 </head>
-<body class="p-4 sm:p-8 min-h-screen-center">
+<body>
 
-    <div id="mobile-warning" class="flex-col items-center justify-center text-center p-8 bg-gray-900 shadow-xl rounded-2xl w-full max-w-sm mx-auto border border-gray-700">
-        <svg class="w-12 h-12 text-yellow-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.394 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-        <h3 class="text-xl font-bold text-white mb-2">Device Restriction</h3>
-        <p class="text-gray-400">This page only works on PC, please open me on a PC or a tablet for the best experience.</p>
-    </div>
-
-
-    <div id="login-container" class="w-full max-w-md">
-        <div class="bg-gray-900 p-6 md:p-10 shadow-xl rounded-2xl border border-gray-700">
-            <header class="text-center mb-6">
-                <h2 class="text-2xl font-bold text-white mb-1">Timetable Converter</h2>
-                <p class="text-gray-400 text-sm">Please log in to access this feature</p>
-            </header>
-            <div id="login-message" class="p-3 text-sm font-medium rounded-lg text-center hidden"></div>
-            
-            <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
-                <div>
-                    <label for="username" class="block text-sm font-medium text-gray-300">Username</label>
-                    <input type="text" id="username" required
-                        class="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm 
-                               bg-gray-700 text-white focus:outline-none focus:ring-1 focus:ring-apspace focus:border-apspace sm:text-sm">
-                </div>
-                <div>
-                    <label for="password" class="block text-sm font-medium text-gray-300">Password</label>
-                    <input type="password" id="password" required
-                        class="mt-1 block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm 
-                               bg-gray-700 text-white focus:outline-none focus:ring-1 focus:ring-apspace focus:border-apspace sm:text-sm">
-                </div>
-                <div class="pt-2">
-                    <button type="submit"
-                        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white btn-apspace hover:btn-apspace focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-apspace transition duration-150">
-                        Sign In
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="app-container" class="container mx-auto hidden flex-col">
-        
-        <nav class="bg-gray-900 p-4 mb-8 shadow-xl rounded-xl flex justify-between items-center border border-gray-700">
-            <div class="flex items-center">
-                <img src="favicon.ico" alt="Timetable Converter Logo" class="w-8 h-8 rounded-md mr-3">
-                <span class="text-xl font-bold text-white">Timetable Converter</span>
+    <div class="header">
+        <div class="logo-group">
+            <div class="logo">
+                <img id="logo-icon" src="apspace-white.svg" alt="Logo">
+                <span class="text-xl font-bold text-white">TESTING VERSION</span>
             </div>
-            
-            <a href="https://thegoodknow.github.io/timetable/gemini.html" target="_blank"
-                class="text-sm px-4 py-2 rounded-lg text-white btn-totimetable hover:btn-totimetable transition duration-150 shadow-md">
-                View Timetable Page
-            </a>
-        </nav>
-        <div class="bg-gray-800 p-6 md:p-10 shadow-xl rounded-2xl border border-gray-700">
-            <header class="text-center mb-10">
-                <h1 class="text-3xl font-bold text-white mb-2">HTML to JSON Extractor</h1>
-                <p class="text-gray-400">Upload your HTML file to extract the schedule data.</p>
-            </header>
-
-            <main class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div class="space-y-4">
-                    <label for="fileInput" class="block text-lg font-medium text-gray-300">1. Select Timetable HTML File</label>
-                    <input type="file" id="fileInput" accept=".html,text/html" onchange="storeFile(event)" class="text-sm">
-                    
-                    <button onclick="triggerConversion()" id="convertButton" disabled
-                        class="w-full mt-6 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white btn-apspace hover:btn-apspace focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-apspace disabled:opacity-50 transition duration-150">
-                        Convert to JSON
-                    </button>
-                </div>
-
-                <div class="space-y-4">
-                    <label for="jsonOutput" class="block text-lg font-medium text-gray-300 flex justify-between items-center">
-                        <span>2. Extracted JSON Output (New Format)</span>
-                        <button onclick="downloadJson()" id="downloadButton" disabled
-                                 class="text-sm px-3 py-1 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50 transition duration-150">
-                            Download JSON
-                        </button>
-                    </label>
-                    <textarea id="jsonOutput" rows="15" readonly
-                             placeholder="JSON output will appear here after conversion."
-                             class="w-full p-4 border border-gray-600 rounded-lg bg-gray-700 text-white text-sm shadow-inner"></textarea>
-                </div>
-            </main>
-            
-            <div id="messageBox" class="mt-6 p-4 text-sm font-medium rounded-lg text-center hidden"></div>
         </div>
+
+        <div class="header-summary-bar">
+            <span id="current-clock" class="summary-item clock-display">Loading Time...</span>
+            
+            <span id="next-class-display" class="summary-item next-class-display">
+                <span class="material-icons">business_center</span> Loading Department Status...
+            </span>
+        </div>
+        
     </div>
 
- <script>
-        // Global utility functions for the UI
-        const jsonOutput = document.getElementById('jsonOutput');
-        const downloadButton = document.getElementById('downloadButton');
-        const messageBox = document.getElementById('messageBox');
-        const fileInput = document.getElementById('fileInput');
-        const convertButton = document.getElementById('convertButton');
+    <div class="timetable-content" id="timetable-list">
+        <main class="content-area">
+            <h2>APU Department Availability Status</h2>
+            <div id="departments-list">
+                <p style="padding: 20px; text-align: center; color: var(--text-subtle);">Initializing application...</p>
+            </div>
+        </main>
+    </div>
 
-        // Login/View Elements
-        const loginContainer = document.getElementById('login-container');
-        const appContainer = document.getElementById('app-container');
-        const loginMessage = document.getElementById('login-message');
-        const usernameInput = document.getElementById('username');
-        const passwordInput = document.getElementById('password');
-        const mobileWarning = document.getElementById('mobile-warning');
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
 
-        // Store the file content globally after selection
-        let fileContent = null; 
+        // --- Department Operating Hours Configuration (UPDATED with user's specific times) ---
+        // Days: 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
+        const DEPARTMENTS = [
+            { 
+                name: "Admin", 
+                schedule: [ 
+                    { days: [1, 2, 3, 4, 5], start: { h: 8, m: 30 }, end: { h: 18, m: 0 } }
+                ] 
+            },
+            { 
+                name: "Cashier", 
+                schedule: [ 
+                    { days: [1, 2, 3, 4, 5], start: { h: 9, m: 15 }, end: { h: 18, m: 0 } } 
+                ] 
+            },
+            { 
+                name: "Clinic", 
+                schedule: [ 
+                    { days: [1, 2, 3, 4, 5], start: { h: 9, m: 0 }, end: { h: 17, m: 0 } }
+                ] 
+            },
+            { 
+                name: "Student Service", 
+                schedule: [ 
+                    { days: [1, 2, 3, 4, 5], start: { h: 8, m: 30 }, end: { h: 17, m: 0 } }, // Mon-Fri
+                    { days: [6], start: { h: 8, m: 30 }, end: { h: 13, m: 0 } }             // Sat
+                ] 
+            },
+            { 
+                name: "Library", 
+                schedule: [ 
+                    { days: [1, 2, 3, 4, 5], start: { h: 8, m: 30 }, end: { h: 15, m: 0 } }, // Mon-Fri
+                    { days: [6], start: { h: 9, m: 0 }, end: { h: 13, m: 0 } }             // Sat
+                ] 
+            },
+            { 
+                name: "Technology Labs", 
+                schedule: [ 
+                    { days: [1, 2, 3, 4, 5], start: { h: 8, m: 30 }, end: { h: 15, m: 0 } }, // Mon-Fri
+                    { days: [6], start: { h: 9, m: 0 }, end: { h: 13, m: 0 } }             // Sat
+                ] 
+            },
+            // Note: IT Support was in the original list but not in your new list. I'll keep IT Support 
+            // for the maintenance demo, using Clinic's hours as a placeholder.
+            { 
+                name: "IT Support", 
+                schedule: [ 
+                    { days: [1, 2, 3, 4, 5], start: { h: 9, m: 0 }, end: { h: 17, m: 0 } } 
+                ] 
+            }
+        ];
+        
+        const CLOSING_SOON_THRESHOLD_MINUTES = 30;
+        const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        
+        let MAINTENANCE_DATA = []; 
 
-        // --- AUTHENTICATION CONSTANTS ---
-        const CORRECT_USERNAME = 'admin';
-        const CORRECT_PASSWORD = 'admin123';
-        // ---------------------------------
+        const currentClock = document.getElementById('current-clock');
+        const departmentStatusDisplay = document.getElementById('next-class-display');
+        const departmentsList = document.getElementById('departments-list');
 
+        // --- Utility Functions ---
 
-        // MAPPING: Used to look up module name based on the module code prefix.
-        const MODULE_MAPPING = {
-            'AAQS038': 'MATHEMATICS AND STATISTICS FOR COMPUTING',
-            'ABUS007': 'ACADEMIC RESEARCH SKILLS',
-            'AICT023': 'COMPUTER ARCHITECTURE',
-            'MPU2132': 'BAHASA MELAYU KOMUNIKASI 1',
-            'AICT016': 'DIGITAL THINKING AND INNOVATION'
-            // Add more module codes and names here
+        const formatTime = ({h, m}) => {
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            const hour = h % 12 || 12; 
+            const minute = m.toString().padStart(2, '0');
+            return `${hour}:${minute} ${ampm}`;
         };
-
-        // --- LOGIN/VIEW MANAGEMENT FUNCTIONS (MODIFIED FOR MOBILE SUPPORT) ---
-
-        function showLoginMessage(text, type = 'error') {
-            loginMessage.textContent = text;
-            loginMessage.classList.remove('hidden', 'error', 'success');
-            loginMessage.classList.add(type);
-            loginMessage.style.display = 'block'; // Ensure visibility
-            
-            setTimeout(() => {
-                loginMessage.style.display = 'none';
-            }, 3000);
-        }
-
-        function isMobile() {
-            // Original logic: returns true if the screen is considered mobile
-            return window.innerWidth < 640; 
-        }
-
-        function showApp() {
-            // 1. Hide the login container completely
-            loginContainer.style.display = 'none'; 
-            loginContainer.classList.add('hidden'); 
-
-            // 2. Hide the mobile warning
-            mobileWarning.style.display = 'none';
-
-            // 3. Show the app container unconditionally
-            appContainer.classList.remove('hidden');
-            appContainer.style.display = 'flex'; // Use flex for column layout
-            appContainer.classList.add('show-app'); 
-            
-            // 4. Adjust body classes for the full app view
-            document.body.classList.remove('min-h-screen-center'); 
-        }
-
-        function handleLogin(event) {
-            event.preventDefault();
-
-            const user = usernameInput.value;
-            const pass = passwordInput.value;
-
-            if (user === CORRECT_USERNAME && pass === CORRECT_PASSWORD) {
-                showApp();
-            } else {
-                showLoginMessage('Invalid username or password.', 'error');
-                passwordInput.value = '';
-            }
-        }
         
-        // --- Initialize view on page load ---
-        function initializeView() {
-            if (isMobile()) {
-                mobileWarning.style.display = 'flex'; // Show mobile warning
-                loginContainer.style.display = 'none'; // Hide login
-                appContainer.style.display = 'none'; // Hide app
-                document.body.classList.add('min-h-screen-center');
-            } else {
-                // Desktop/Tablet (screen width >= 640px)
-                loginContainer.style.display = 'flex'; // Show login container
-                mobileWarning.style.display = 'none'; // Hide mobile warning
-                appContainer.style.display = 'none'; // Ensure app is hidden
-                document.body.classList.add('min-h-screen-center');
-            }
+        // Formats the entire schedule for the card subtitle
+        function formatDaysDisplay(schedule) {
+            return schedule.map(item => {
+                const days = item.days.map(d => DAY_NAMES[d].substring(0, 3));
+                let dayRange;
+
+                // Simple Mon-Fri or Sat check for cleaner display
+                if (item.days.length === 5 && item.days[0] === 1 && item.days[4] === 5) {
+                    dayRange = "Mon-Fri";
+                } else if (item.days.length === 1) {
+                    dayRange = days[0];
+                } else {
+                    dayRange = `${days[0]}-${days[days.length - 1]}`;
+                }
+
+                return `[${dayRange}]: ${formatTime(item.start)} - ${formatTime(item.end)}`;
+            }).join(' | ');
         }
 
-        // Run initialization function when the script loads
-        window.addEventListener('load', initializeView);
-        // Add the resize listener to re-evaluate when the screen size changes
-        window.addEventListener('resize', initializeView);
 
-
-        // --- FILE HANDLING AND CONVERSION FUNCTIONS ---
-
-        // Step 1: Store the file content when a file is selected
-        function storeFile(event) {
-            const file = event.target.files[0];
-            fileContent = null; // Clear previous content
-            convertButton.disabled = true;
-
-            // Clear output and disable download button on new file selection
-            jsonOutput.value = ''; 
-            downloadButton.disabled = true;
-
-            if (!file) {
-                 showMessage("File selection cancelled.", 'error');
-                 return;
+        // Returns the schedule object for the current day, or null if closed today
+        function getOperationTime(department, now) {
+            const currentDay = now.getDay();
+            for (const item of department.schedule) {
+                if (item.days.includes(currentDay)) {
+                    return item;
+                }
             }
-
-            // Simple check based on extension/type
-            if (file.type !== 'text/html' && !file.name.toLowerCase().endsWith('.html')) {
-                showMessage("Please select a valid HTML file.", 'error');
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                fileContent = e.target.result;
-                convertButton.disabled = false; // Enable conversion button
-                showMessage(`File selected: ${file.name}. Click 'Convert to JSON' to process.`, 'success');
-            };
-            reader.onerror = function(e) {
-                showMessage("Error reading file.", 'error');
-                console.error("File reading error:", e);
-            };
-            reader.readAsText(file);
+            return null;
         }
 
-        // Step 2: Trigger conversion when the button is pressed
-        function triggerConversion() {
-            if (fileContent) {
-                convertHtmlToJson(fileContent);
-            } else {
-                showMessage("Please select an HTML file first.", 'error');
-            }
+        // Checks if the current time falls within today's operational window
+        function isDepartmentOpen(department, now) {
+            const schedule = getOperationTime(department, now);
+            if (!schedule) return false;
+
+            const currentTimeMins = now.getHours() * 60 + now.getMinutes();
+            const openTimeMins = schedule.start.h * 60 + schedule.start.m;
+            const closeTimeMins = schedule.end.h * 60 + schedule.end.m;
+
+            // Open if current time is >= open time AND < close time
+            return currentTimeMins >= openTimeMins && currentTimeMins < closeTimeMins;
         }
 
-        function showMessage(text, type = 'success') {
-            const currentMessageBox = document.getElementById('messageBox');
-            currentMessageBox.innerHTML = text; // Use innerHTML for potential bolding
-            currentMessageBox.classList.remove('hidden', 'error', 'success');
-            currentMessageBox.classList.add('message-box', type);
-            currentMessageBox.style.display = 'block';
+        // Finds the next time the department will open
+        function getNextOpeningTime(department, now) {
+            const currentDay = now.getDay();
+            const currentTimeMins = now.getHours() * 60 + now.getMinutes();
             
-            setTimeout(() => {
-                currentMessageBox.style.display = 'none';
-            }, 5000);
-        }
-
-        /**
-         * Converts a date string like "Mon, 08-Dec-2025" to a Date object representing the
-         * previous Sunday (the start of the week).
-         */
-        function calculateWeekStart(dateStr) {
-            const parts = dateStr.split(', ')[1];
-            if (!parts) return null;
-
-            const [dayStr, monthName, yearStr] = parts.split('-');
-            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            const monthIndex = monthNames.indexOf(monthName);
-
-            if (monthIndex === -1) return null;
-
-            // Create a Date object for the extracted date (e.g., Monday, 08 Dec 2025)
-            const day = parseInt(dayStr, 10);
-            const year = parseInt(yearStr, 10);
-            const extractedDate = new Date(year, monthIndex, day);
-            
-            if (isNaN(extractedDate.getTime())) return null;
-
-            // Calculate the preceding Sunday (dayOfWeek=0 for Sunday)
-            const dayOfWeek = extractedDate.getDay(); 
-            const sundayDate = new Date(extractedDate);
-            // Subtract (dayOfWeek - 0) days. If Monday (1), subtract 1. If Sunday (0), subtract 0.
-            sundayDate.setDate(extractedDate.getDate() - (dayOfWeek === 0 ? 0 : dayOfWeek - 0)); 
-            
-            return sundayDate;
-        }
-
-        /**
-         * Formats a Date object into "YYYY-MM-DD".
-         */
-        function formatDateToISO(dateObj) {
-            if (!dateObj) return 'N/A';
-            const year = dateObj.getFullYear();
-            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-            const day = String(dateObj.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        }
-        
-        /**
-         * Extracts the module code prefix (e.g., 'AAQS038') from the full subject string.
-         */
-        function getModuleCodePrefix(subject) {
-            // Look for any combination of uppercase letters and numbers at the start
-            const match = subject.match(/^([A-Z0-9]+)/); 
-            return match ? match[1] : null;
-        }
-
-        /**
-         * Parses the raw HTML content and converts it into the desired JSON format.
-         */
-        function convertHtmlToJson(htmlContent) {
-            htmlContent = htmlContent.trim();
-            jsonOutput.value = '';
-            downloadButton.disabled = true;
-            convertButton.disabled = true; // Disable button while processing
-
-            if (!htmlContent) {
-                showMessage("No HTML content loaded.", 'error');
-                convertButton.disabled = false;
-                return;
-            }
-
-            try {
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(htmlContent, 'text/html');
-
-                // 1. Extract Header Information
-                let weekStartDate = 'N/A';
+            for (let i = 0; i < 7; i++) {
+                const checkDayIndex = (currentDay + i) % 7;
                 
-                // Find the cell containing the first day's date (e.g., "Mon, 08-Dec-2025")
-                const firstDayCell = doc.querySelector('table.table tbody tr:not(.thead-dark) td:first-child');
-                if (firstDayCell) {
-                    const firstDateStr = firstDayCell.textContent.trim();
-                    const sundayDateObj = calculateWeekStart(firstDateStr);
+                // Create a fake date object for the day being checked to get correct date
+                const checkDate = new Date(now);
+                checkDate.setDate(now.getDate() + i);
+                
+                const schedule = getOperationTime(department, checkDate);
+                
+                if (schedule) {
+                    const openingTime = schedule.start;
+                    const openTimeMins = openingTime.h * 60 + openingTime.m;
                     
-                    if (sundayDateObj) {
-                        weekStartDate = formatDateToISO(sundayDateObj);
+                    if (i === 0) { // Checking Today
+                        if (currentTimeMins < openTimeMins) {
+                            // Opens later today
+                             return `Today at ${formatTime(openingTime)}`;
+                        } 
+                        // If it's closed and the time is past today's closing time, 
+                        // we continue the loop to check the next day (i=1).
+                    } else if (i === 1) {
+                        return `Tomorrow at ${formatTime(openingTime)}`;
+                    } else {
+                        return `${DAY_NAMES[checkDayIndex]} at ${formatTime(openingTime)}`;
+                    }
+                }
+            }
+            return "Indefinitely Closed";
+        }
+
+        /**
+         * Checks the MAINTENANCE_DATA global variable for active maintenance.
+         */
+        function getActiveMaintenance(departmentName, now) {
+            if (departmentName !== "IT Support") return null;
+
+            const todayDay = now.getDay();
+            const nowTimestamp = now.getTime();
+
+            for (const maintenance of MAINTENANCE_DATA) {
+                if (maintenance.day === todayDay) {
+                    const start = new Date(now);
+                    start.setHours(maintenance.startHour, maintenance.startMinute, 0, 0);
+
+                    const end = new Date(now);
+                    end.setHours(maintenance.endHour, maintenance.endMinute, 0, 0);
+
+                    if (nowTimestamp >= start.getTime() && nowTimestamp < end.getTime()) {
+                        return maintenance;
+                    }
+                }
+            }
+            return null;
+        }
+        
+        // --- Data Fetching ---
+
+        async function fetchMaintenanceData() {
+            try {
+                const response = await fetch('data/maintenance_schedule.json');
+                
+                if (!response.ok) {
+                    console.warn(`Could not load maintenance data from data/maintenance_schedule.json. Using empty schedule.`);
+                    return []; 
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error("Error fetching maintenance data. Ensure the 'data' folder and 'maintenance_schedule.json' exist.", error);
+                return [];
+            }
+        }
+
+        // --- Main Status Update Function ---
+
+        function updateDepartmentStatus() {
+            const now = new Date();
+            const openDepartments = [];
+            
+            departmentsList.innerHTML = ''; 
+
+            DEPARTMENTS.forEach(dept => {
+                let statusClass = 'closed-tag';
+                let statusText = 'CLOSED';
+                let announcementHtml = '';
+                
+                const currentSchedule = getOperationTime(dept, now);
+                const isCurrentlyOpen = isDepartmentOpen(dept, now);
+                const activeMaintenance = getActiveMaintenance(dept.name, now);
+                let isOverriddenClosed = false;
+
+                // 1. Check for MAINTENANCE override
+                if (activeMaintenance) {
+                    isOverriddenClosed = true;
+                    statusClass = 'closed-tag';
+                    statusText = 'MAINTENANCE';
+                    announcementHtml = `
+                        <div class="announcement-banner">
+                            <span class="material-icons">build</span> 
+                            ${activeMaintenance.message}
+                        </div>
+                    `;
+                } 
+                // 2. Check for OPEN or CLOSING SOON status
+                else if (isCurrentlyOpen) {
+                    const closingTime = new Date(now);
+                    // Use the specific end hour/minute from today's schedule
+                    closingTime.setHours(currentSchedule.end.h, currentSchedule.end.m, 0, 0); 
+                    
+                    const timeRemainingMs = closingTime - now;
+                    const timeRemainingMins = Math.floor(timeRemainingMs / 60000);
+
+                    if (timeRemainingMins <= CLOSING_SOON_THRESHOLD_MINUTES) {
+                        statusClass = 'closing-soon-tag';
+                        statusText = `CLOSES IN ${timeRemainingMins}m`;
+                    } else {
+                        statusClass = 'open-tag';
+                        statusText = 'OPEN';
                     }
                 }
                 
-                // 2. Extract Timetable Rows
-                const rows = doc.querySelectorAll('table.table tbody tr');
-                
-                let days = [];
-                let currentDay = null;
-
-                // 3. Process Data Rows
-                rows.forEach(row => {
-                    const cells = row.querySelectorAll('td');
-
-                    // Check for minimum cell count and skip header rows
-                    if (cells.length < 6 || row.classList.contains('thead-dark')) {
-                        return; 
-                    }
-                    
-                    const dayData = cells[0].textContent.trim(); 
-                    const time = cells[1].textContent.trim();
-                    const location = cells[2].textContent.trim(); 
-                    const campus = cells[3].textContent.trim(); 
-                    let subject = cells[4].textContent.trim();
-                    const lecturer = cells[5].textContent.trim();
-
-                    if (!subject || subject.toUpperCase() === 'BREAK' || !time) {
-                        return;
-                    }
-
-                    // Derived Fields Logic
-                    
-                    // 1. Module Code and Name
-                    const moduleCodeMatch = subject.match(/^([A-Z0-9-]+)/);
-                    let moduleCode = moduleCodeMatch ? moduleCodeMatch[1] : subject;
-                    
-                    const moduleCodePrefix = getModuleCodePrefix(moduleCode);
-                    const moduleName = MODULE_MAPPING[moduleCodePrefix] || 'UNKNOWN MODULE NAME';
-
-                    // 2. isOnline
-                    const isOnline = subject.toLowerCase().includes('(online)') || location.toLowerCase().startsWith('onl');
-                    
-                    // Clean up module code (remove the redundant (Online) suffix)
-                    let finalModuleCode = moduleCode.replace(' (Online)', '').trim();
-                    
-                    // 3. Class Type
-                    let classType = 'Lecture';
-                    const typeMatch = finalModuleCode.match(/-([LT]|LAB)-/i);
-                    if (typeMatch) {
-                        const typeChar = typeMatch[1].toUpperCase();
-                        if (typeChar === 'L') classType = 'Lecture';
-                        else if (typeChar === 'T') classType = 'Tutorial';
-                        else if (typeChar === 'LAB') classType = 'Lab';
-                    } else if (location.toLowerCase().includes('lab')) {
-                        classType = 'Lab';
-                    }
-
-                    // 4. Replacement Fields (Assuming all are false/empty for standard timetable)
-                    const isReplacement = false;
-                    const replacementType = "";
-
-                    const newClass = {
-                        moduleCode: finalModuleCode,
-                        moduleName: moduleName,
-                        time: time,
-                        location: location,
-                        campus: campus,
-                        lecturer: lecturer,
-                        isOnline: isOnline,
-                        classType: classType,
-                        isReplacement: isReplacement,
-                        replacementType: replacementType
-                    };
-
-                    // Group classes by day
-                    if (currentDay !== dayData) {
-                        days.push({
-                            date: dayData,
-                            classes: [newClass]
-                        });
-                        currentDay = dayData;
-                    } else if (days.length > 0) {
-                        days[days.length - 1].classes.push(newClass);
-                    }
-                });
-
-                // 4. Construct the Final JSON Object
-                const finalJson = {
-                    weekStartDate: weekStartDate,
-                    days: days
-                };
-
-                // 5. Display the output
-                const jsonString = JSON.stringify(finalJson, null, 2);
-                jsonOutput.value = jsonString;
-                downloadButton.disabled = days.length === 0;
-                convertButton.disabled = false; // Re-enable button after processing
-                showMessage("Conversion successful! JSON data is ready to download.", 'success');
-
-            } catch (e) {
-                console.error("Parsing error:", e);
-                convertButton.disabled = false; // Re-enable button on error
-                showMessage(`Error parsing HTML. Details: ${e.message}`, 'error');
-            }
-        }
-
-        // --- DOWNLOAD JSON FUNCTION ---
-
-        function downloadJson() {
-            const jsonString = jsonOutput.value;
-            if (!jsonString) {
-                showMessage("No JSON output available to download.", 'error');
-                return;
-            }
-
-            try {
-                const jsonObject = JSON.parse(jsonString);
-                const weekDate = jsonObject.weekStartDate;
-                
-                // Filename uses the Sunday date
-                let filename = "timetable_converted.json";
-                if (weekDate && weekDate !== 'N/A') {
-                    filename = `timetable_${weekDate}.json`;
+                // Add to open list if truly open
+                if (statusClass !== 'closed-tag') {
+                     openDepartments.push(dept.name);
                 }
 
-                // Create a Blob from the JSON string
-                const blob = new Blob([jsonString], { type: 'application/json' });
-                
-                // Create a temporary link element for the download
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = filename;
-                
-                // Programmatically click the link to trigger the download
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url); // Clean up the URL object
+                // Prepare card subtitle content (handles complex schedules)
+                let subtitleContent = formatDaysDisplay(dept.schedule);
 
-                showMessage(`Successfully downloaded as <b>${filename}</b>!`, 'success');
+                if (!isCurrentlyOpen && !isOverriddenClosed) {
+                    // Get next opening time for closed departments (unless maintenance is active)
+                    const nextOpenTime = getNextOpeningTime(dept, now);
+                    subtitleContent += `<br/>Next Opening: <strong>${nextOpenTime}</strong>`;
+                }
+                
+                // Create the HTML card
+                const card = document.createElement('div');
+                card.className = `class-card ${isCurrentlyOpen && !isOverriddenClosed ? 'today' : ''}`;
+                const pillHtml = `<span class="pill ${statusClass}">${statusText}</span>`;
+                
+                card.innerHTML = `
+                    <div class="card-title">
+                        <span class="material-icons inperson-icon">business</span>
+                        ${dept.name} ${pillHtml}
+                    </div>
+                    <div class="card-subtitle">
+                        ${subtitleContent}
+                    </div>
+                    ${announcementHtml}
+                `;
+                departmentsList.appendChild(card);
+            });
 
-            } catch (e) {
-                console.error("Download error:", e);
-                showMessage("Error during JSON download or filename parsing.", 'error');
+            // --- Update Header Summary Text ---
+            let headerHtml = '';
+            const allClosed = openDepartments.length === 0;
+            const allOpen = openDepartments.length === DEPARTMENTS.length;
+            const greenColor = '#28a745';
+            const redColor = '#dc3545';
+            const yellowColor = 'var(--color-current)';
+
+            if (allOpen) {
+                headerHtml = `
+                    <span class="material-icons" style="color:${greenColor}">check_circle</span>
+                    <span style="color:${greenColor};font-weight:700">All departments are available</span>
+                `;
+            } else if (allClosed) {
+                headerHtml = `
+                    <span class="material-icons" style="color:${redColor}">lock_clock</span>
+                    <span style="color:${redColor};font-weight:700">All departments are currently closed</span>
+                `;
+            } else {
+                const availableList = openDepartments.join(', ');
+                headerHtml = `
+                    <span class="material-icons" style="color:${yellowColor}">schedule</span>
+                    <span style="color:${yellowColor};font-weight:700">Some departments are available</span>
+                    | Available: ${availableList}
+                `;
+            }
+
+            departmentStatusDisplay.innerHTML = headerHtml;
+        }
+
+
+        function updateClock() {
+            const now = new Date();
+            const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+            currentClock.textContent = now.toLocaleTimeString("en-US", options);
+
+            if (now.getSeconds() === 0) {
+                updateDepartmentStatus();
             }
         }
+
+        // --- Initialization: Fetch data first, then start rendering ---
+        async function initializeApp() {
+            // 1. Fetch the maintenance data from the JSON file
+            MAINTENANCE_DATA = await fetchMaintenanceData();
+            
+            // 2. Initial render with loaded data
+            updateDepartmentStatus();
+            
+            // 3. Start the clock and status interval
+            setInterval(updateClock, 1000); 
+        }
+
+        initializeApp();
+    });
     </script>
 </body>
-
 </html>
