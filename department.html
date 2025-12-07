@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>APSpace - Department Status</title>
+    <title>Department Status</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
@@ -95,7 +95,6 @@
         <div class="logo-group">
             <div class="logo">
                 <img id="logo-icon" src="apspace-white.svg" alt="Logo">
-                <span class="text-xl font-bold text-white">TESTING VERSION</span>
             </div>
         </div>
 
@@ -111,8 +110,7 @@
 
     <div class="timetable-content" id="timetable-list">
         <main class="content-area">
-            <h2>Department Availability Status</h2>
-            <p style="color: var(--text-subtle);">Status updated live based on current time. The summarized status is reflected in the header above.</p>
+            <h2>APU Department Availability Status</h2>
             <div id="departments-list">
                 <p style="padding: 20px; text-align: center; color: var(--text-subtle);">Initializing application...</p>
             </div>
@@ -162,14 +160,6 @@
                 schedule: [ 
                     { days: [1, 2, 3, 4, 5], start: { h: 8, m: 30 }, end: { h: 15, m: 0 } }, // Mon-Fri
                     { days: [6], start: { h: 9, m: 0 }, end: { h: 13, m: 0 } }             // Sat
-                ] 
-            },
-            // Note: IT Support was in the original list but not in your new list. I'll keep IT Support 
-            // for the maintenance demo, using Clinic's hours as a placeholder.
-            { 
-                name: "IT Support", 
-                schedule: [ 
-                    { days: [1, 2, 3, 4, 5], start: { h: 9, m: 0 }, end: { h: 17, m: 0 } } 
                 ] 
             }
         ];
