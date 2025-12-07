@@ -212,8 +212,8 @@
         }
 
         function isMobile() {
-            // MODIFIED: Always return false to bypass the device size restriction
-            return false; 
+            // Original logic: returns true if the screen is considered mobile
+            return window.innerWidth < 640; 
         }
 
         function showApp() {
@@ -231,7 +231,6 @@
             
             // 4. Adjust body classes for the full app view
             document.body.classList.remove('min-h-screen-center'); 
-            document.body.style.padding = '0'; // Remove centering padding
         }
 
         function handleLogin(event) {
@@ -250,16 +249,24 @@
         
         // --- Initialize view on page load ---
         function initializeView() {
-            // Since we are no longer restricting by size, just show the login container.
-            loginContainer.style.display = 'flex'; // Use flex for centering
-            mobileWarning.style.display = 'none';
-            document.body.classList.add('min-h-screen-center');
+            if (isMobile()) {
+                mobileWarning.style.display = 'flex'; // Show mobile warning
+                loginContainer.style.display = 'none'; // Hide login
+                appContainer.style.display = 'none'; // Hide app
+                document.body.classList.add('min-h-screen-center');
+            } else {
+                // Desktop/Tablet (screen width >= 640px)
+                loginContainer.style.display = 'flex'; // Show login container
+                mobileWarning.style.display = 'none'; // Hide mobile warning
+                appContainer.style.display = 'none'; // Ensure app is hidden
+                document.body.classList.add('min-h-screen-center');
+            }
         }
 
         // Run initialization function when the script loads
         window.addEventListener('load', initializeView);
-        // Note: The 'resize' listener is effectively irrelevant now, but can be kept
-        // window.addEventListener('resize', initializeView);
+        // Add the resize listener to re-evaluate when the screen size changes
+        window.addEventListener('resize', initializeView);
 
 
         // --- FILE HANDLING AND CONVERSION FUNCTIONS ---
