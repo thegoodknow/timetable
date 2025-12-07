@@ -259,7 +259,7 @@
             // Generate paths for (-1, 0, +1, +2) weeks
             [-1, 0, 1, 2].forEach(off=>{
                 const m = getMondayOf(new Date(now.getFullYear(), now.getMonth(), now.getDate() + off*7));
-                paths.push(`timetable/${formatYYYYMMDD(m)}.json`);
+                paths.push(`data/timetable/${formatYYYYMMDD(m)}.json`);
             });
 
             const results = await Promise.all(paths.map(p =>
