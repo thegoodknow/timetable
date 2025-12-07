@@ -2,10 +2,10 @@
     {
         "department": "Technology Labs",
         "day": 1, 
-        "startHour": 2,
-        "startMinute": 0,
+        "startHour": 1,
+        "startMinute": 55,
         "endHour": 2,
-        "endMinute": 10,
+        "endMinute": 0,
         "message": "Scheduled System Upgrade: Limited IT service available during this window."
     },
     {
