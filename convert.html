@@ -163,7 +163,7 @@
         </div>
     </div>
 
-    <script>
+ <script>
         // Global utility functions for the UI
         const jsonOutput = document.getElementById('jsonOutput');
         const downloadButton = document.getElementById('downloadButton');
@@ -198,47 +198,40 @@
             // Add more module codes and names here
         };
 
-        // --- LOGIN/VIEW MANAGEMENT FUNCTIONS ---
+        // --- LOGIN/VIEW MANAGEMENT FUNCTIONS (MODIFIED FOR MOBILE SUPPORT) ---
 
         function showLoginMessage(text, type = 'error') {
             loginMessage.textContent = text;
-            loginMessage.classList.remove('hidden', 'bg-red-900', 'text-red-300', 'bg-green-900', 'text-green-300');
-            if (type === 'error') {
-                loginMessage.classList.add('bg-red-900', 'text-red-300');
-            } else {
-                loginMessage.classList.add('bg-green-900', 'text-green-300');
-            }
+            loginMessage.classList.remove('hidden', 'error', 'success');
+            loginMessage.classList.add(type);
+            loginMessage.style.display = 'block'; // Ensure visibility
+            
             setTimeout(() => {
-                loginMessage.classList.add('hidden');
+                loginMessage.style.display = 'none';
             }, 3000);
         }
 
         function isMobile() {
-            // Check based on screen width (less than Tailwind's 'sm' breakpoint 640px)
-            return window.innerWidth < 640;
+            // MODIFIED: Always return false to bypass the device size restriction
+            return false; 
         }
 
         function showApp() {
-            // 1. Hide the login container completely (Crucial for fixing the overlap)
+            // 1. Hide the login container completely
+            loginContainer.style.display = 'none'; 
             loginContainer.classList.add('hidden'); 
-            loginContainer.style.display = 'none';
 
-            // Check if it's a mobile device (small screen)
-            if (isMobile()) {
-                // On mobile, keep the app hidden and show the warning
-                appContainer.classList.add('hidden');
-                mobileWarning.style.display = 'flex';
-                document.body.classList.add('min-h-screen-center');
-            } else {
-                // On desktop, show the app
-                appContainer.classList.remove('hidden');
-                appContainer.classList.add('show-app'); // Custom class for desktop visibility
-                mobileWarning.style.display = 'none';
-                
-                // Adjust body classes after login, for desktop
-                document.body.classList.remove('min-h-screen-center'); 
-                document.body.classList.add('block');
-            }
+            // 2. Hide the mobile warning
+            mobileWarning.style.display = 'none';
+
+            // 3. Show the app container unconditionally
+            appContainer.classList.remove('hidden');
+            appContainer.style.display = 'flex'; // Use flex for column layout
+            appContainer.classList.add('show-app'); 
+            
+            // 4. Adjust body classes for the full app view
+            document.body.classList.remove('min-h-screen-center'); 
+            document.body.style.padding = '0'; // Remove centering padding
         }
 
         function handleLogin(event) {
@@ -250,31 +243,23 @@
             if (user === CORRECT_USERNAME && pass === CORRECT_PASSWORD) {
                 showApp();
             } else {
-                showLoginMessage('Invalid username or password.');
+                showLoginMessage('Invalid username or password.', 'error');
                 passwordInput.value = '';
             }
         }
         
         // --- Initialize view on page load ---
         function initializeView() {
-            if (isMobile()) {
-                // If mobile, hide login, show warning
-                loginContainer.style.display = 'none';
-                mobileWarning.style.display = 'flex';
-                // Ensure body remains centered for the warning
-                document.body.classList.add('min-h-screen-center');
-            } else {
-                // If desktop, show login, hide warning
-                loginContainer.style.display = 'block';
-                mobileWarning.style.display = 'none';
-                document.body.classList.add('min-h-screen-center');
-            }
+            // Since we are no longer restricting by size, just show the login container.
+            loginContainer.style.display = 'flex'; // Use flex for centering
+            mobileWarning.style.display = 'none';
+            document.body.classList.add('min-h-screen-center');
         }
 
         // Run initialization function when the script loads
         window.addEventListener('load', initializeView);
-        // Also run if the screen size changes while the page is open
-        window.addEventListener('resize', initializeView);
+        // Note: The 'resize' listener is effectively irrelevant now, but can be kept
+        // window.addEventListener('resize', initializeView);
 
 
         // --- FILE HANDLING AND CONVERSION FUNCTIONS ---
@@ -294,7 +279,8 @@
                  return;
             }
 
-            if (file.type !== 'text/html') {
+            // Simple check based on extension/type
+            if (file.type !== 'text/html' && !file.name.toLowerCase().endsWith('.html')) {
                 showMessage("Please select a valid HTML file.", 'error');
                 return;
             }
@@ -323,15 +309,13 @@
 
         function showMessage(text, type = 'success') {
             const currentMessageBox = document.getElementById('messageBox');
-            currentMessageBox.textContent = text;
-            currentMessageBox.classList.remove('hidden', 'bg-red-900', 'text-red-300', 'bg-green-900', 'text-green-300');
-            if (type === 'error') {
-                currentMessageBox.classList.add('bg-red-900', 'text-red-300');
-            } else {
-                currentMessageBox.classList.add('bg-green-900', 'text-green-300');
-            }
+            currentMessageBox.innerHTML = text; // Use innerHTML for potential bolding
+            currentMessageBox.classList.remove('hidden', 'error', 'success');
+            currentMessageBox.classList.add('message-box', type);
+            currentMessageBox.style.display = 'block';
+            
             setTimeout(() => {
-                currentMessageBox.classList.add('hidden');
+                currentMessageBox.style.display = 'none';
             }, 5000);
         }
 
@@ -350,18 +334,16 @@
             if (monthIndex === -1) return null;
 
             // Create a Date object for the extracted date (e.g., Monday, 08 Dec 2025)
-            // Note: JavaScript month index is 0-based.
             const day = parseInt(dayStr, 10);
             const year = parseInt(yearStr, 10);
             const extractedDate = new Date(year, monthIndex, day);
             
-            // Ensure the date object is valid
             if (isNaN(extractedDate.getTime())) return null;
 
-            // Calculate the preceding Sunday: getDay() returns 0 for Sunday, 1 for Monday...
+            // Calculate the preceding Sunday (dayOfWeek=0 for Sunday)
             const dayOfWeek = extractedDate.getDay(); 
             const sundayDate = new Date(extractedDate);
-            // If it's Monday (dayOfWeek=1), subtract 1. If it's Sunday (dayOfWeek=0), subtract 0.
+            // Subtract (dayOfWeek - 0) days. If Monday (1), subtract 1. If Sunday (0), subtract 0.
             sundayDate.setDate(extractedDate.getDate() - (dayOfWeek === 0 ? 0 : dayOfWeek - 0)); 
             
             return sundayDate;
@@ -415,7 +397,6 @@
                     const firstDateStr = firstDayCell.textContent.trim();
                     const sundayDateObj = calculateWeekStart(firstDateStr);
                     
-                    // Format the calculated Sunday date
                     if (sundayDateObj) {
                         weekStartDate = formatDateToISO(sundayDateObj);
                     }
@@ -431,8 +412,9 @@
                 rows.forEach(row => {
                     const cells = row.querySelectorAll('td');
 
+                    // Check for minimum cell count and skip header rows
                     if (cells.length < 6 || row.classList.contains('thead-dark')) {
-                        return; // Skip invalid or header rows
+                        return; 
                     }
                     
                     const dayData = cells[0].textContent.trim(); 
@@ -442,7 +424,7 @@
                     let subject = cells[4].textContent.trim();
                     const lecturer = cells[5].textContent.trim();
 
-                    if (!subject || subject.toUpperCase() === 'BREAK') {
+                    if (!subject || subject.toUpperCase() === 'BREAK' || !time) {
                         return;
                     }
 
@@ -458,6 +440,7 @@
                     // 2. isOnline
                     const isOnline = subject.toLowerCase().includes('(online)') || location.toLowerCase().startsWith('onl');
                     
+                    // Clean up module code (remove the redundant (Online) suffix)
                     let finalModuleCode = moduleCode.replace(' (Online)', '').trim();
                     
                     // 3. Class Type
@@ -555,7 +538,7 @@
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url); // Clean up the URL object
 
-                showMessage(`Successfully downloaded as **${filename}**!`, 'success');
+                showMessage(`Successfully downloaded as <b>${filename}</b>!`, 'success');
 
             } catch (e) {
                 console.error("Download error:", e);
@@ -563,7 +546,6 @@
             }
         }
     </script>
-
 </body>
 
 </html>

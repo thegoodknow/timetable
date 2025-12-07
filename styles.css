@@ -336,3 +336,30 @@
                 display: flex !important; /* Changed from block to flex for the column layout */
             }
         }
+
+        /* --- Mobile Responsiveness Adjustments (Max 600px) --- */
+@media (max-width: 600px) {
+    /* Adjustments for the Header Summary Bar */
+    .header-summary-bar {
+        /* Allow items to stack or occupy less horizontal space */
+        flex-wrap: wrap; 
+        padding: 0 10px;
+        /* Ensure the summary items flow below the clock if necessary */
+    }
+
+    /* Target the element that displays the "Next Class" or "Oops!" message */
+    .header-summary-bar .next-class-display {
+        /* * By setting a small max-width, we force the long text to wrap onto 
+         * a second line within the constrained space of a phone screen.
+         */
+        max-width: 250px; 
+        white-space: normal; 
+        font-size: 0.85rem; /* Slightly smaller font for mobile */
+    }
+
+    /* Target the clock display to ensure better spacing */
+    .header-summary-bar .clock-display {
+        margin-right: 10px;
+        font-size: 0.9rem;
+    }
+}
