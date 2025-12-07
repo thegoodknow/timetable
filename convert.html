@@ -294,25 +294,6 @@
             }
             return null;
         }
-        
-        // --- Data Fetching ---
-
-        async function fetchMaintenanceData() {
-            try {
-                const response = await fetch('data/maintenance_schedule.json');
-                
-                if (!response.ok) {
-                    console.warn(`Could not load maintenance data from data/maintenance_schedule.json. Using empty schedule.`);
-                    return []; 
-                }
-                
-                return await response.json();
-            } catch (error) {
-                console.error("Error fetching maintenance data. Ensure the 'data' folder and 'maintenance_schedule.json' exist.", error);
-                return [];
-            }
-        }
-
         // --- Main Status Update Function ---
 
         function updateDepartmentStatus() {
@@ -436,9 +417,6 @@
 
         // --- Initialization: Fetch data first, then start rendering ---
         async function initializeApp() {
-            // 1. Fetch the maintenance data from the JSON file
-            MAINTENANCE_DATA = await fetchMaintenanceData();
-            
             // 2. Initial render with loaded data
             updateDepartmentStatus();
             
