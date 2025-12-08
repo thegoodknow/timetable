@@ -192,17 +192,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const pillHtml = `<span class="pill ${statusClass}">${statusText}</span>`;
 
-            card.innerHTML = `
-                <div class="card-title">
-                    <span class="material-icons inperson-icon">business</span>
-                    ${dept.name} 
-                    ${dept.shop ? `<span class="pill shop-tag">SHOP</span>` : ""}
-                    ${pillHtml}
-                </div>
-                <div class="card-subtitle">
-                    ${subtitleContent}
-                </div>
-            `;
+        card.innerHTML = `
+        <div class="card-title">
+            <span class="material-icons inperson-icon">business</span>
+            <span class="dept-name">${dept.name}</span>
+
+            ${dept.shop ? `<span class="pill shop-tag">SHOP</span>` : ""}
+
+            <span class="status-wrapper" style="margin-left:auto;">
+                ${pillHtml}
+            </span>
+        </div>
+
+        <div class="card-subtitle">
+            ${subtitleContent}
+        </div>
+        `;
+
 
 
             departmentsList.appendChild(card);
