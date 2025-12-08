@@ -203,11 +203,11 @@
 
                 const timeStr = h > 0 ? `${h}h ${m}m ${s}s` : `${m}m ${s}s`;
                 const datePart = nextClass.fullDate.toLocaleDateString('en-US', { weekday: 'short' });
-                const codeLoc = `${nextClass.moduleCode || 'CODE'} - ${nextClass.location || 'LOC'}`;
+                const codeLoc = `${nextClass.moduleCode || 'CODE'} (at) -→ ${nextClass.location || 'LOC'}`;
 
                 html += `
                     <span style="color:var(--color-primary)">${timeStr}</span>
-                    | ${codeLoc} (${datePart})
+                     | ${codeLoc} (${datePart})
                 `;
             }
             else {
