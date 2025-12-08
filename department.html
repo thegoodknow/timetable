@@ -75,18 +75,13 @@
             margin-bottom: 5px;
         }
         /* Maintenance/Announcement Banner Style */
-        .announcement-banner {
-            background-color: #f0ad4e; 
-            color: #121212;
-            padding: 8px 10px;
-            border-radius: 4px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            margin-top: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        .shop-tag {
+            background-color: #007bff;  /* Blue */
+            color: white;
+        margin-left: 10px;
+        font-weight: 700;
         }
+
     </style>
 </head>
 <body>
@@ -124,24 +119,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const DEPARTMENTS = [
         { 
             name: "Admin", 
+            shop: false,
             schedule: [ 
                 { days: [1, 2, 3, 4, 5], start: { h: 8, m: 30 }, end: { h: 18, m: 0 } },
             ] 
         },
         { 
             name: "Cashier", 
+            shop: false,
             schedule: [ 
                 { days: [1, 2, 3, 4, 5], start: { h: 9, m: 15 }, end: { h: 18, m: 0 } } 
             ] 
         },
         { 
             name: "Clinic", 
+            shop: false,
             schedule: [ 
                 { days: [1, 2, 3, 4, 5], start: { h: 9, m: 0 }, end: { h: 17, m: 0 } }
             ] 
         },
         { 
             name: "Student Service", 
+            shop: false,
             schedule: [ 
                 { days: [1, 2, 3, 4, 5], start: { h: 8, m: 30 }, end: { h: 19, m: 0 } },
                 { days: [6], start: { h: 8, m: 30 }, end: { h: 13, m: 0 } }
@@ -149,6 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         { 
             name: "Library", 
+            shop: false,
             schedule: [ 
                 { days: [1, 2, 3, 4, 5], start: { h: 8, m: 30 }, end: { h: 19, m: 0 } },
                 { days: [6], start: { h: 9, m: 0 }, end: { h: 13, m: 0 } }
@@ -156,6 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         { 
             name: "Technology Labs", 
+            shop: false,
             schedule: [
                 { days: [1, 2, 3, 4, 5], start: { h: 8, m: 30 }, end: { h: 19, m: 0 } },
                 { days: [6], start: { h: 9, m: 0 }, end: { h: 13, m: 0 } }
@@ -163,12 +164,14 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         { 
             name: "Bila-Bila Mart", 
+            shop: true,
             schedule: [
                 { days: [1,2,3,4,5,6,0], start: { h: 7, m: 0 }, end: { h: 23, m: 59 } }
             ] 
         },
         { 
-            name: "TS Convenience Store", 
+            name: "TS Convenience Store",
+            shop: true, 
             schedule: [ 
                 { days: [1,2,3,4,5,6,0], start: { h: 7, m: 30 }, end: { h: 20, m: 30 } }
             ]
@@ -307,12 +310,15 @@ document.addEventListener('DOMContentLoaded', () => {
             card.innerHTML = `
                 <div class="card-title">
                     <span class="material-icons inperson-icon">business</span>
-                    ${dept.name} ${pillHtml}
+                    ${dept.name} 
+                    ${dept.shop ? `<span class="pill shop-tag">SHOP</span>` : ""}
+                    ${pillHtml}
                 </div>
                 <div class="card-subtitle">
                     ${subtitleContent}
                 </div>
             `;
+
 
             departmentsList.appendChild(card);
         });
