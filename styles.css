@@ -36,19 +36,18 @@ body {
    All icons = blue EXCEPT special ones
 -------------------------------------------------------------- */
 .material-icons {
-    color: var(--color-primary);
+    color: var(--color-primary); /* Sets all icons to blue by default */
 }
 
 /* Special icon colors (KEEP these) */
 .online-icon {
-    color: var(--color-current) !important;
+    color: var(--color-current) !important; /* Forces Yellow/Amber */
 }
 .replacement-icon {
-    color: var(--color-replacement) !important;
+    color: var(--color-replacement) !important; /* Forces Darker Orange */
 }
-.inperson-icon {
-    color: var(--color-primary) !important;
-}
+/* .inperson-icon rule removed - it is blue by default due to .material-icons */
+
 
 /* --------------------------------------------------------------
    HEADER
