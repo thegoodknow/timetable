@@ -1,0 +1,269 @@
+document.addEventListener('DOMContentLoaded', () => {
+
+    // --- Department Operating Hours Configuration ---
+    const DEPARTMENTS = [
+        { 
+            name: "Admin", 
+            shop: false,
+            schedule: [ 
+                { days: [1, 2, 3, 4, 5], start: { h: 8, m: 30 }, end: { h: 18, m: 0 } },
+            ] 
+        },
+        { 
+            name: "Cashier", 
+            shop: false,
+            schedule: [ 
+                { days: [1, 2, 3, 4, 5], start: { h: 9, m: 15 }, end: { h: 18, m: 0 } } 
+            ] 
+        },
+        { 
+            name: "Clinic", 
+            shop: false,
+            schedule: [ 
+                { days: [1, 2, 3, 4, 5], start: { h: 9, m: 0 }, end: { h: 17, m: 0 } }
+            ] 
+        },
+        { 
+            name: "Student Service", 
+            shop: false,
+            schedule: [ 
+                { days: [1, 2, 3, 4, 5], start: { h: 8, m: 30 }, end: { h: 19, m: 0 } },
+                { days: [6], start: { h: 8, m: 30 }, end: { h: 13, m: 0 } }
+            ]
+        },
+        { 
+            name: "Library", 
+            shop: false,
+            schedule: [ 
+                { days: [1, 2, 3, 4, 5], start: { h: 8, m: 30 }, end: { h: 19, m: 0 } },
+                { days: [6], start: { h: 9, m: 0 }, end: { h: 13, m: 0 } }
+            ] 
+        },
+        { 
+            name: "Technology Labs", 
+            shop: false,
+            schedule: [
+                { days: [1, 2, 3, 4, 5], start: { h: 8, m: 30 }, end: { h: 19, m: 0 } },
+                { days: [6], start: { h: 9, m: 0 }, end: { h: 13, m: 0 } }
+            ]
+        },
+        { 
+            name: "Bila-Bila Mart", 
+            shop: true,
+            schedule: [
+                { days: [1,2,3,4,5,6,0], start: { h: 7, m: 0 }, end: { h: 23, m: 59 } }
+            ] 
+        },
+        { 
+            name: "TS Convenience Store",
+            shop: true, 
+            schedule: [ 
+                { days: [1,2,3,4,5,6,0], start: { h: 7, m: 30 }, end: { h: 20, m: 30 } }
+            ]
+        }
+    ];
+    
+    const CLOSING_SOON_THRESHOLD_MINUTES = 30;
+    const DAY_NAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+
+    const currentClock = document.getElementById('current-clock');
+    const departmentStatusDisplay = document.getElementById('next-class-display');
+    const departmentsList = document.getElementById('departments-list');
+
+    // Utility formatting functions
+    const formatTime = ({h, m}) => {
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        const hour = h % 12 || 12;
+        const min = m.toString().padStart(2, '0');
+        return `${hour}:${min} ${ampm}`;
+    };
+
+    function formatDaysDisplay(schedule) {
+        return schedule.map(item => {
+            const days = item.days.map(d => DAY_NAMES[d].substring(0,3));
+            let dayRange;
+
+            if (item.days.length === 5 && item.days[0] === 1 && item.days[4] === 5) {
+                dayRange = "Mon-Fri";
+            } else if (item.days.length === 1) {
+                dayRange = days[0];
+            } else {
+                dayRange = `${days[0]}-${days[days.length - 1]}`;
+            }
+
+            return `[${dayRange}]: ${formatTime(item.start)} - ${formatTime(item.end)}`;
+        }).join(' | ');
+    }
+
+
+    function getOperationTime(dept, now) {
+        const day = now.getDay();
+        return dept.schedule.find(s => s.days.includes(day)) || null;
+    }
+
+    function isDepartmentOpen(dept, now) {
+        const sched = getOperationTime(dept, now);
+        if (!sched) return false;
+
+        const mins = now.getHours() * 60 + now.getMinutes();
+        const openM = sched.start.h * 60 + sched.start.m;
+        const closeM = sched.end.h * 60 + sched.end.m;
+
+        return mins >= openM && mins < closeM;
+    }
+
+    function getNextOpeningTime(dept, now) {
+    const currentDay = now.getDay();
+    const currentMins = now.getHours() * 60 + now.getMinutes();
+
+    for (let i = 0; i < 7; i++) {
+        const checkDay = (currentDay + i) % 7;
+
+        const sched = dept.schedule.find(s => s.days.includes(checkDay));
+        if (!sched) continue;
+
+        const openM = sched.start.h * 60 + sched.start.m;
+
+        // Today but not yet opened
+        if (i === 0 && currentMins < openM) {
+            return `Today at ${formatTime(sched.start)}`;
+        }
+
+        // Tomorrow
+        if (i === 1) {
+            return `Tomorrow at ${formatTime(sched.start)}`;
+        }
+
+        // Other days
+        if (i > 1) {
+            return `${DAY_NAMES[checkDay]} at ${formatTime(sched.start)}`;
+        }
+    }
+
+    return "Indefinitely Closed";
+}
+
+
+
+    function updateDepartmentStatus() {
+        const now = new Date();
+        const openDepartments = [];
+        const closingSoonDepartments = [];
+        const fullyOpenDepartments = [];
+
+        departmentsList.innerHTML = ''; 
+
+        DEPARTMENTS.forEach(dept => {
+            let statusClass = 'closed-tag';
+            let statusText = 'CLOSED';
+
+            const currentSchedule = getOperationTime(dept, now);
+            const isCurrentlyOpen = isDepartmentOpen(dept, now);
+
+            if (isCurrentlyOpen) {
+                const closingTime = new Date(now);
+                closingTime.setHours(currentSchedule.end.h, currentSchedule.end.m, 0, 0);
+
+                const timeRemainingMs = closingTime - now;
+                const timeRemainingMins = Math.floor(timeRemainingMs / 60000);
+
+                if (timeRemainingMins <= CLOSING_SOON_THRESHOLD_MINUTES) {
+                    statusClass = 'closing-soon-tag';
+                    statusText = `CLOSES IN ${timeRemainingMins}m`;
+                    closingSoonDepartments.push(dept.name);
+                } else {
+                    statusClass = 'open-tag';
+                    statusText = 'OPEN';
+                    fullyOpenDepartments.push(dept.name);
+                }
+
+                openDepartments.push(dept.name);
+            }
+
+            let subtitleContent = formatDaysDisplay(dept.schedule);
+
+            if (!isCurrentlyOpen) {
+                const nextOpenTime = getNextOpeningTime(dept, now);
+                subtitleContent += `<br/>Next Opening: <strong>${nextOpenTime}</strong>`;
+            }
+
+            const card = document.createElement('div');
+            card.className = `class-card ${isCurrentlyOpen ? 'today' : ''}`;
+
+            const pillHtml = `<span class="pill ${statusClass}">${statusText}</span>`;
+
+            card.innerHTML = `
+                <div class="card-title">
+                    <span class="material-icons inperson-icon">business</span>
+                    ${dept.name} 
+                    ${dept.shop ? `<span class="pill shop-tag">SHOP</span>` : ""}
+                    ${pillHtml}
+                </div>
+                <div class="card-subtitle">
+                    ${subtitleContent}
+                </div>
+            `;
+
+
+            departmentsList.appendChild(card);
+        });
+
+        // ---------- HEADER SUMMARY ----------
+        let headerHtml = '';
+        const green = '#28a745';
+        const red = '#dc3545';
+        const yellow = 'var(--color-current)';
+
+        const allOpen = openDepartments.length === DEPARTMENTS.length;
+        const allClosed = openDepartments.length === 0;
+
+        if (allOpen) {
+            headerHtml = `
+                <span class="material-icons" style="color:${green}">check_circle</span>
+                <span style="color:${green};font-weight:700">All departments are available</span>
+            `;
+        } else if (allClosed) {
+            headerHtml = `
+                <span class="material-icons" style="color:${red}">lock_clock</span>
+                <span style="color:${red};font-weight:700">All departments are currently closed</span>
+            `;
+        } else {
+            const closingSoonList = closingSoonDepartments.length > 0
+                ? `<br><strong> Closing Soon:</strong> ${closingSoonDepartments.join(', ')}`
+                : '';
+
+            const stillOpenList = fullyOpenDepartments.length > 0
+                ? `<br><strong> Department(s) Available:</strong> ${fullyOpenDepartments.join(', ')}`
+                : '';
+
+            headerHtml = `
+                <span class="material-icons" style="color:${yellow}">schedule</span>
+                <span style="color:${yellow};font-weight:700">Some department are closing soon... | </span>
+                 ${closingSoonList} & 
+                 ${stillOpenList}
+            `;
+        }
+
+        departmentStatusDisplay.innerHTML = headerHtml;
+    }
+
+
+    function updateClock() {
+        const now = new Date();
+        currentClock.textContent = now.toLocaleTimeString("en-US", {
+            hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true
+        });
+    }
+
+    // ---------------- FIXED TIMERS ----------------
+
+    // Update clock every second
+    setInterval(updateClock, 1000);
+
+    // Update department status every 30 seconds (NO MORE FREEZING)
+    setInterval(updateDepartmentStatus, 30000);
+
+    // Initial load
+    updateClock();
+    updateDepartmentStatus();
+});

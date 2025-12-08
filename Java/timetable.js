@@ -1,44 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Course Timetable</title>
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <div class="header">
-        <div class="logo-group">
-            <div class="logo">
-                <img id="logo-icon" src="apspace-white.svg" alt="Logo">
-            </div>
-        </div>
-
-        <div class="header-summary-bar">
-            <span id="current-clock" class="summary-item clock-display">Loading Time...</span>
-            <span id="next-class-display" class="summary-item next-class-display">
-                <span class="material-icons">alarm</span>(*^____^*) Finding Next Class...
-            </span>
-        </div>
-
-        <div class="controls-group">
-            <span style="color: var(--text-subtle); font-size: 0.9rem;">Select View:</span>
-            <select class="select-control" id="week-select">
-                <option>Loading Views...</option>
-            </select>
-        </div>
-    </div>
-
-    <div class="timetable-content" id="timetable-list">
-        <div style="text-align: center; padding: 50px;">
-            <p style="color: var(--text-subtle);">(*^____^*) Loading timetable...</p>
-        </div>
-    </div>
-
-    <script>
-    document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
 
         // --- Helper Functions ---
         function makeUniqueId(weekStart, dayDate, time, moduleCode) {
@@ -467,6 +427,3 @@
         initializeApp();
         setInterval(updateClock, 1000); 
     });
-    </script>
-</body>
-</html>

@@ -338,14 +338,14 @@
         }
 
         /* --- Mobile Responsiveness Adjustments (Max 600px) --- */
-@media (max-width: 600px) {
+    @media (max-width: 600px) {
     /* Adjustments for the Header Summary Bar */
     .header-summary-bar {
         /* Allow items to stack or occupy less horizontal space */
         flex-wrap: wrap; 
         padding: 0 10px;
         /* Ensure the summary items flow below the clock if necessary */
-    }
+            }
 
     /* Target the element that displays the "Next Class" or "Oops!" message */
     .header-summary-bar .next-class-display {
@@ -355,11 +355,71 @@
         max-width: 250px; 
         white-space: normal; 
         font-size: 0.85rem; /* Slightly smaller font for mobile */
-    }
+            }
 
     /* Target the clock display to ensure better spacing */
     .header-summary-bar .clock-display {
         margin-right: 10px;
         font-size: 0.9rem;
-    }
-}
+            }
+        }
+         /* --- DEPARTMENT STATUS COLORS --- */
+        .closed-tag {
+            background-color: #dc3545; /* Red */
+            color: var(--text-light);
+        }
+        .open-tag {
+            background-color: #28a745; /* Green */
+            color: var(--text-light);
+        }
+        .closing-soon-tag {
+            background-color: var(--color-current, #FFC107); /* Yellow/Amber */
+            color: var(--bg-dark); 
+        }
+
+        /* --- Custom Header Fix: Ensures layout remains correct after removing controls-group --- */
+        .header {
+            justify-content: space-between; 
+            padding-left: 20px; 
+            padding-right: 20px;
+        }
+        
+        /* --- CARD STYLES --- */
+        #departments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 20px 0;
+        }
+        .card-title {
+            display: flex;
+            align-items: center;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--text-light);
+        }
+        .card-title .material-icons {
+            margin-right: 8px;
+        }
+        .pill {
+            margin-left: auto;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-light);
+        }
+        .card-subtitle {
+            color: var(--text-subtle);
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        /* Maintenance/Announcement Banner Style */
+        .shop-tag {
+            background-color: #FFC107;  /* Orange */
+            color: white;
+        margin-left: 10px;
+        font-weight: 700;
+        }
