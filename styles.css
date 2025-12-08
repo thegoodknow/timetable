@@ -7,12 +7,12 @@
     --text-light: #FFFFFF;
     --text-subtle: #B0B0B0;
 
-    --color-primary: #007BFF;
+    --color-primary: #007BFF;        /* Main Blue */
     --color-blue-bg: #004D99;
     --color-pill-blue: #0056B3;
 
-    --color-current: #FFC107;  
-    --color-replacement: #FF8C00;
+    --color-current: #FFC107;        /* Online / closing soon */
+    --color-replacement: #FF8C00;    /* Replacement class banner */
     --color-replacement-bg: #CC7000;
 
     --border-color: #333333;
@@ -29,6 +29,25 @@ body {
     margin: 0;
     padding: 0;
     min-height: 100vh;
+}
+
+/* --------------------------------------------------------------
+   GLOBAL ICON COLOR
+   All icons = blue EXCEPT special ones
+-------------------------------------------------------------- */
+.material-icons {
+    color: var(--color-primary);
+}
+
+/* Special icon colors (KEEP these) */
+.online-icon {
+    color: var(--color-current) !important;
+}
+.replacement-icon {
+    color: var(--color-replacement) !important;
+}
+.inperson-icon {
+    color: var(--color-primary) !important;
 }
 
 /* --------------------------------------------------------------
@@ -91,9 +110,7 @@ body {
 }
 
 .next-class-display .material-icons {
-    font-size: 1.1rem;
     margin-right: 5px;
-    color: var(--text-subtle);
 }
 
 /* --------------------------------------------------------------
@@ -121,7 +138,6 @@ body {
     gap: 10px;
 }
 
-/* Day Header */
 .day-header {
     background-color: var(--color-blue-bg);
     color: var(--text-light);
@@ -133,7 +149,7 @@ body {
 }
 
 /* --------------------------------------------------------------
-   CLASS CARD (Timetable)
+   CLASS CARD
 -------------------------------------------------------------- */
 .class-card {
     background-color: var(--bg-card);
@@ -183,17 +199,15 @@ body {
 .card-details {
     display: flex;
     justify-content: space-between;
-    font-size: 0.85rem;
-    color: var(--text-subtle);
     flex-wrap: wrap;
     gap: 8px 15px;
+    font-size: 0.85rem;
+    color: var(--text-subtle);
 }
 
 /* --------------------------------------------------------------
-   TAGS & LABELS
+   GENERIC TAGS / PILLS
 -------------------------------------------------------------- */
-
-/* Generic Pill */
 .pill {
     padding: 4px 8px;
     border-radius: 4px;
@@ -202,35 +216,42 @@ body {
     text-transform: uppercase;
 }
 
-/* Lesson Type Pills */
+/* Lesson type pills */
 .online-tag {
     background-color: var(--color-current);
     color: var(--bg-card);
-    font-weight: 700;
 }
-
 .replacement-tag {
     background-color: var(--color-replacement-bg);
     color: var(--text-light);
 }
 
 /* --------------------------------------------------------------
-   DEPARTMENT STATUS CARDS
+   DEPARTMENT STATUS
 -------------------------------------------------------------- */
 
-/* Status pills */
-.closed-tag { background: #dc3545; color: white; }
-.open-tag { background: #28a745; color: white; }
-.closing-soon-tag { background: var(--color-current); color: black; }
+/* Status tags */
+.closed-tag {
+    background: #dc3545;
+    color: white;
+}
+.open-tag {
+    background: #28a745;
+    color: white;
+}
+.closing-soon-tag {
+    background: var(--color-current);
+    color: black;
+}
 
-/* Shop marker */
+/* SHOP tag */
 .shop-tag {
     background-color: #FFC107;
     color: black;
     margin-left: 10px;
 }
 
-/* Content wrapper */
+/* Department List Container */
 #departments-list {
     display: flex;
     flex-direction: column;
@@ -238,7 +259,7 @@ body {
     padding: 20px 0;
 }
 
-/* Status wrapper always floats right */
+/* Pill on the right side */
 .status-wrapper {
     margin-left: auto;
 }
@@ -252,10 +273,10 @@ body {
     font-weight: 600;
     padding: 10px 16px;
     border-radius: 6px;
-    cursor: pointer;
     border: none;
+    cursor: pointer;
     width: 100%;
-    transition: background 0.15s;
+    transition: background 0.15s ease;
 }
 
 .btn-apspace:hover {
@@ -267,14 +288,13 @@ body {
     color: white;
     padding: 8px 12px;
     border-radius: 6px;
-    transition: background 0.15s;
+    transition: background 0.15s ease;
 }
 
 .btn-totimetable:hover {
     background-color: #a85d00;
 }
 
-/* Secondary Button */
 .btn-secondary {
     background-color: #4b5563;
     color: white;
@@ -282,8 +302,9 @@ body {
     border-radius: 6px;
     font-size: 0.8rem;
 }
-
-.btn-secondary:hover { background-color: #374151; }
+.btn-secondary:hover {
+    background-color: #374151;
+}
 
 /* --------------------------------------------------------------
    MESSAGE BOXES
@@ -295,12 +316,10 @@ body {
     margin-top: 16px;
     font-weight: 500;
 }
-
 .message-box.error {
     background-color: #450a0a;
     color: #fca5a5;
 }
-
 .message-box.success {
     background-color: #064e3b;
     color: #a7f3d0;
