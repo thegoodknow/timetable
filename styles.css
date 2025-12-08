@@ -1,425 +1,325 @@
+/* --------------------------------------------------------------
+   THEME VARIABLES
+-------------------------------------------------------------- */
+:root {
+    --bg-dark: #121212;
+    --bg-card: #1E1E1E;
+    --text-light: #FFFFFF;
+    --text-subtle: #B0B0B0;
 
-        /* --- Theme Variables --- */
-        :root {
-            --bg-dark: #121212;
-            --bg-card: #1E1E1E;
-            --text-light: #FFFFFF;
-            --text-subtle: #B0B0B0;
-            --color-primary: #007BFF;
-            --color-blue-bg: #004D99; 
-            --color-pill-blue: #0056B3;
-            --border-color: #333333;
-            --header-height: 56px; 
-            --color-current: #FFC107; /* Amber/Yellow for LIVE */
-            --color-replacement: #FF8C00; /* Darker Orange for Replacement */
-            --color-replacement-bg: #CC7000; /* Deep Orange Background */
-        }
+    --color-primary: #007BFF;
+    --color-blue-bg: #004D99;
+    --color-pill-blue: #0056B3;
 
-        /* --- Base Styles --- */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-light);
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-        }
+    --color-current: #FFC107;  
+    --color-replacement: #FF8C00;
+    --color-replacement-bg: #CC7000;
 
-        /* --- Header/Control Bar --- */
-        .header {
-            display: flex;
-            flex-wrap: wrap; 
-            justify-content: space-between;
-            align-items: center; 
-            padding: 10px 16px; 
-            min-height: var(--header-height);
-            background-color: var(--bg-card);
-            border-bottom: 1px solid var(--border-color);
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            gap: 10px 20px; 
-        }
+    --border-color: #333333;
+    --header-height: 56px;
+}
 
-        .logo-group {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
+/* --------------------------------------------------------------
+   BASE STYLES
+-------------------------------------------------------------- */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text-light);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+}
 
-        #logo-icon {
-            height: 30px; 
-            width: auto;
-            display: block; 
-        }
+/* --------------------------------------------------------------
+   HEADER
+-------------------------------------------------------------- */
+.header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    min-height: var(--header-height);
+    background-color: var(--bg-card);
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
 
-        .controls-group {
-            display: flex;
-            gap: 12px;
-            align-items: center; 
-            order: 3; 
-        }
+.logo-group {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
 
-        /* --- Header Summary Bar --- */
-        .header-summary-bar {
-            display: flex;
-            align-items: center;
-            flex-grow: 1; 
-            gap: 20px;
-            padding: 5px 0;
-            min-width: 300px;
-            order: 2; 
-        }
-        .summary-item {
-             display: flex;
-             align-items: center;
-             font-size: 0.95rem;
-        }
+#logo-icon {
+    height: 30px;
+    width: auto;
+}
 
-        .clock-display {
-            font-weight: 700;
-            color: var(--color-primary);
-        }
+/* --------------------------------------------------------------
+   HEADER SUMMARY BAR
+-------------------------------------------------------------- */
+.header-summary-bar {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    gap: 20px;
+    padding: 5px 0;
+    min-width: 300px;
+}
 
-        .next-class-display {
-            color: var(--text-light);
-            font-size: 0.9rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+.summary-item {
+    display: flex;
+    align-items: center;
+    font-size: 0.95rem;
+}
 
-        .next-class-display .material-icons {
-            font-size: 1.1rem;
-            margin-right: 5px;
-            color: var(--text-subtle);
-        }
+.clock-display {
+    font-weight: 700;
+    color: var(--color-primary);
+}
 
-        .select-control {
-            background-color: var(--bg-card);
-            color: var(--text-light);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 8px 12px; 
-            font-size: 0.9rem;
-            cursor: pointer;
-            appearance: none;
-            outline: none;
-            height: 36px; 
-            box-sizing: border-box;
-            white-space: nowrap;
-        }
+.next-class-display {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 
-        /* --- Custom Timetable Card Styles --- */
-        .timetable-content {
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
+.next-class-display .material-icons {
+    font-size: 1.1rem;
+    margin-right: 5px;
+    color: var(--text-subtle);
+}
 
-        .day-header {
-            background-color: var(--color-blue-bg);
-            color: var(--text-light);
-            font-weight: bold;
-            padding: 10px 16px;
-            border-radius: 8px;
-            margin-top: 10px;
-            font-size: 1.1rem;
-        }
+/* --------------------------------------------------------------
+   SELECT CONTROL
+-------------------------------------------------------------- */
+.select-control {
+    background-color: var(--bg-card);
+    color: var(--text-light);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    appearance: none;
+    height: 36px;
+}
 
-        .class-card {
-            background-color: var(--bg-card);
-            border-radius: 8px;
-            padding: 12px 16px;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            transition: border-left 0.3s ease;
-        }
+/* --------------------------------------------------------------
+   TIMETABLE CONTENT
+-------------------------------------------------------------- */
+.timetable-content {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
 
-        .class-card.today {
-            border-left: 5px solid var(--color-primary);
-        }
+/* Day Header */
+.day-header {
+    background-color: var(--color-blue-bg);
+    color: var(--text-light);
+    font-weight: bold;
+    padding: 10px 16px;
+    border-radius: 8px;
+    margin-top: 10px;
+    font-size: 1.1rem;
+}
 
-        .class-card.current-class {
-            background-color: #2b2b2b;
-            border-left: 5px solid var(--color-current); 
-            box-shadow: 0 4px 10px rgba(255, 193, 7, 0.2); 
-            animation: pulse-current 1.5s infinite alternate;
-        }
+/* --------------------------------------------------------------
+   CLASS CARD (Timetable)
+-------------------------------------------------------------- */
+.class-card {
+    background-color: var(--bg-card);
+    border-radius: 8px;
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: border-left 0.3s ease;
+}
 
-        @keyframes pulse-current {
-            from {
-                opacity: 1;
-            }
-            to {
-                opacity: 0.95;
-            }
-        }
+.class-card.today {
+    border-left: 5px solid var(--color-primary);
+}
 
-        .card-title {
-            font-weight: bold;
-            font-size: 1rem;
-            margin-bottom: 4px;
-            display: flex; 
-            align-items: center;
-        }
-        
-        .card-title .material-icons {
-            margin-right: 6px;
-            font-size: 1.2rem;
-        }
-        
-        /* Icon Colors */
-        .card-title .online-icon {
-            color: var(--color-current); 
-        }
-        .card-title .inperson-icon {
-            color: var(--color-primary); 
-        }
-        .card-title .replacement-icon {
-            color: var(--color-replacement); 
-        }
+.class-card.current-class {
+    background-color: #2b2b2b;
+    border-left: 5px solid var(--color-current);
+    box-shadow: 0 4px 10px rgba(255,193,7,0.2);
+    animation: pulse-current 1.5s infinite alternate;
+}
 
-        .card-subtitle {
-            font-size: 0.85rem;
-            color: var(--text-subtle);
-            margin-bottom: 8px;
-        }
-        
-        .card-details {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.85rem;
-            color: var(--text-subtle);
-            flex-wrap: wrap; 
-            gap: 8px 15px; 
-        }
+@keyframes pulse-current {
+    from { opacity: 1; }
+    to { opacity: 0.95; }
+}
 
-        .card-detail-item {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
+.card-title {
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    font-size: 1rem;
+    margin-bottom: 4px;
+}
 
-        .card-detail-item .material-icons {
-            font-size: 16px;
-            color: var(--color-primary);
-        }
+.card-title .material-icons {
+    margin-right: 6px;
+    font-size: 1.2rem;
+}
 
-        .class-card.current-class .card-detail-item .material-icons {
-            color: var(--color-current);
-        }
+.card-subtitle {
+    font-size: 0.85rem;
+    color: var(--text-subtle);
+    margin-bottom: 8px;
+}
 
+.card-details {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: var(--text-subtle);
+    flex-wrap: wrap;
+    gap: 8px 15px;
+}
 
-        .pill {
-            background-color: var(--color-pill-blue);
-            color: var(--text-light);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            margin-left: 8px;
-            font-weight: 500;
-        }
+/* --------------------------------------------------------------
+   TAGS & LABELS
+-------------------------------------------------------------- */
 
-        .online-tag {
-            background-color: var(--color-current); 
-            color: var(--bg-card); 
-            font-weight: 700;
-        }
+/* Generic Pill */
+.pill {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
 
-        .replacement-tag {
-            background-color: var(--color-replacement-bg);
-            color: var(--text-light);
-            font-weight: 700;
-        }
-        
-        
-        /* Responsive adjustments */
-        @media (max-width: 600px) {
-            .header-summary-bar {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 5px;
-                min-width: 100%;
-            }
-            .header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .controls-group {
-                width: 100%;
-                justify-content: flex-start;
-            }
-        }
-       
-       
-        /* Button Styling */
-        .btn-apspace {
-            background-color: var(--color-primary);
-            color: var(--text-light);
-            font-weight: 600;
-            padding: 10px 16px;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.15s ease;
-            width: 100%;
-        }
-        .btn-apspace:hover {
-            background-color: #0066cc; /* Slightly darker blue */
-        }
-        .btn-apspace:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        .btn-totimetable {
-            background-color: var(--color-replacement-bg);
-            color: var(--text-light);
-            font-weight: 600;
-            padding: 8px 12px;
-            border-radius: 6px;
-            border: none;
-            transition: background-color 0.15s ease;
-        }
-        .btn-totimetable:hover {
-             background-color: #a85d00;
-        }
-        
-        .btn-secondary {
-            background-color: #4b5563; /* Gray background */
-            color: var(--text-light);
-            padding: 4px 12px;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            transition: background-color 0.15s ease;
-        }
-        .btn-secondary:hover {
-            background-color: #374151;
-        }
-        .btn-secondary:disabled {
-             opacity: 0.5;
-        }
+/* Lesson Type Pills */
+.online-tag {
+    background-color: var(--color-current);
+    color: var(--bg-card);
+    font-weight: 700;
+}
 
-        /* Message Boxes */
-        .message-box {
-            padding: 12px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            border-radius: 8px;
-            text-align: center;
-            margin-top: 16px;
-        }
-        .message-box.error {
-            background-color: #450a0a; /* Dark Red BG */
-            color: #fca5a5; /* Light Red Text */
-        }
-        .message-box.success {
-            background-color: #064e3b; /* Dark Green BG */
-            color: #a7f3d0; /* Light Green Text */
-        }
-        
-        /* Mobile/App View Management */
-        #app-container {
-            display: none;
-        }
-        #login-container, #mobile-warning {
-            display: none;
-        }
-        @media (min-width: 640px) {
-            #mobile-warning {
-                display: none !important;
-            }
-            #app-container.show-app {
-                display: flex !important; /* Changed from block to flex for the column layout */
-            }
-        }
+.replacement-tag {
+    background-color: var(--color-replacement-bg);
+    color: var(--text-light);
+}
 
-        /* --- Mobile Responsiveness Adjustments (Max 600px) --- */
-    @media (max-width: 600px) {
-    /* Adjustments for the Header Summary Bar */
+/* --------------------------------------------------------------
+   DEPARTMENT STATUS CARDS
+-------------------------------------------------------------- */
+
+/* Status pills */
+.closed-tag { background: #dc3545; color: white; }
+.open-tag { background: #28a745; color: white; }
+.closing-soon-tag { background: var(--color-current); color: black; }
+
+/* Shop marker */
+.shop-tag {
+    background-color: #FFC107;
+    color: black;
+    margin-left: 10px;
+}
+
+/* Content wrapper */
+#departments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 20px 0;
+}
+
+/* Status wrapper always floats right */
+.status-wrapper {
+    margin-left: auto;
+}
+
+/* --------------------------------------------------------------
+   BUTTONS
+-------------------------------------------------------------- */
+.btn-apspace {
+    background-color: var(--color-primary);
+    color: white;
+    font-weight: 600;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: none;
+    width: 100%;
+    transition: background 0.15s;
+}
+
+.btn-apspace:hover {
+    background-color: #0066cc;
+}
+
+.btn-totimetable {
+    background-color: var(--color-replacement-bg);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: background 0.15s;
+}
+
+.btn-totimetable:hover {
+    background-color: #a85d00;
+}
+
+/* Secondary Button */
+.btn-secondary {
+    background-color: #4b5563;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+}
+
+.btn-secondary:hover { background-color: #374151; }
+
+/* --------------------------------------------------------------
+   MESSAGE BOXES
+-------------------------------------------------------------- */
+.message-box {
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+    margin-top: 16px;
+    font-weight: 500;
+}
+
+.message-box.error {
+    background-color: #450a0a;
+    color: #fca5a5;
+}
+
+.message-box.success {
+    background-color: #064e3b;
+    color: #a7f3d0;
+}
+
+/* --------------------------------------------------------------
+   MOBILE RESPONSIVENESS
+-------------------------------------------------------------- */
+@media (max-width: 600px) {
     .header-summary-bar {
-        /* Allow items to stack or occupy less horizontal space */
-        flex-wrap: wrap; 
-        padding: 0 10px;
-        /* Ensure the summary items flow below the clock if necessary */
-            }
-
-    /* Target the element that displays the "Next Class" or "Oops!" message */
-    .header-summary-bar .next-class-display {
-        /* * By setting a small max-width, we force the long text to wrap onto 
-         * a second line within the constrained space of a phone screen.
-         */
-        max-width: 250px; 
-        white-space: normal; 
-        font-size: 0.85rem; /* Slightly smaller font for mobile */
-            }
-
-    /* Target the clock display to ensure better spacing */
-    .header-summary-bar .clock-display {
-        margin-right: 10px;
+        flex-wrap: wrap;
+    }
+    .next-class-display {
+        max-width: 250px;
+        white-space: normal;
+        font-size: 0.85rem;
+    }
+    .clock-display {
         font-size: 0.9rem;
-            }
-        }
-         /* --- DEPARTMENT STATUS COLORS --- */
-        .closed-tag {
-            background-color: #dc3545; /* Red */
-            color: var(--text-light);
-        }
-        .open-tag {
-            background-color: #28a745; /* Green */
-            color: var(--text-light);
-        }
-        .closing-soon-tag {
-            background-color: var(--color-current, #FFC107); /* Yellow/Amber */
-            color: var(--bg-dark); 
-        }
-
-        /* --- Custom Header Fix: Ensures layout remains correct after removing controls-group --- */
-        .header {
-            justify-content: space-between; 
-            padding-left: 20px; 
-            padding-right: 20px;
-        }
-        
-        /* --- CARD STYLES --- */
-        #departments-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            padding: 20px 0;
-        }
-        .card-title {
-            display: flex;
-            align-items: center;
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 5px;
-            color: var(--text-light);
-        }
-        .card-title .material-icons {
-            margin-right: 8px;
-        }
-        .pill {
-            margin-left: auto;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: var(--text-light);
-        }
-        .card-subtitle {
-            color: var(--text-subtle);
-            font-size: 0.9rem;
-            margin-bottom: 5px;
-        }
-        /* Maintenance/Announcement Banner Style */
-        .shop-tag {
-            background-color: #FFC107;  /* Orange */
-            color: white;
-        margin-left: 10px;
-        font-weight: 700;
-        }
+        margin-right: 10px;
+    }
+}
