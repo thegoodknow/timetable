@@ -161,6 +161,18 @@
                     { days: [1, 2, 3, 4, 5], start: { h: 8, m: 30 }, end: { h: 19, m: 0 } }, // Mon-Fri
                     { days: [6], start: { h: 9, m: 0 }, end: { h: 13, m: 0 } }             // Sat
                 ] 
+            },
+            { 
+                name: "Bila-Bila Mart", 
+                schedule: [ 
+                    { days: [1, 2, 3, 4, 5,6], start: { h: 7, m: 0 }, end: { h: 0, m: 0 } }
+                ] 
+            },
+            { 
+                name: "TS Convenience Store", 
+                schedule: [ 
+                    { days: [1, 2, 3, 4, 5], start: { h: 7, m: 30 }, end: { h: 20, m: 30 } }          // Sat
+                ] 
             }
         ];
         
@@ -407,7 +419,7 @@
                 headerHtml = `
                     <span class="material-icons" style="color:${yellowColor}">schedule</span>
                     <span style="color:${yellowColor};font-weight:700">Some departments are available</span>
-                    | Available: ${availableList}
+                    | Departments Available: ${availableList}
                 `;
             }
 
