@@ -246,7 +246,7 @@ body {
 /* SHOP tag */
 .shop-tag {
     background-color: #FFC107;
-    color: black;
+    color: white;
     margin-left: 10px;
 }
 
@@ -340,4 +340,5 @@ body {
         font-size: 0.9rem;
         margin-right: 10px;
     }
+
 }
