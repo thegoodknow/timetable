@@ -1,429 +1,343 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-        // --- Helper Functions ---
-        function makeUniqueId(weekStart, dayDate, time, moduleCode) {
-            return `${weekStart}___${dayDate}___${time}___${moduleCode}`;
+    // --- Department Operating Hours Configuration (The existing array DEPARTMENTS is here) ---
+    const DEPARTMENTS = [
+        // ... (Your existing DEPARTMENTS array content)
+        { 
+            name: "Admin", 
+            shop: false,
+            schedule: [ 
+                { days: [1, 2, 3, 4, 5], start: { h: 8, m: 30 }, end: { h: 18, m: 0 } },
+            ] 
+        },
+        { 
+            name: "Cashier", 
+            shop: false,
+            schedule: [ 
+                { days: [1, 2, 3, 4, 5], start: { h: 9, m: 15 }, end: { h: 18, m: 0 } } 
+            ] 
+        },
+        { 
+            name: "Clinic", 
+            shop: false,
+            schedule: [ 
+                { days: [1, 2, 3, 4, 5], start: { h: 9, m: 0 }, end: { h: 17, m: 0 } }
+            ] 
+        },
+        { 
+            name: "Student Service", 
+            shop: false,
+            schedule: [ 
+                { days: [1, 2, 3, 4, 5], start: { h: 8, m: 30 }, end: { h: 19, m: 0 } },
+                { days: [6], start: { h: 8, m: 30 }, end: { h: 13, m: 0 } }
+            ]
+        },
+        { 
+            name: "Library", 
+            shop: false,
+            schedule: [ 
+                { days: [1, 2, 3, 4, 5], start: { h: 8, m: 30 }, end: { h: 19, m: 0 } },
+                { days: [6], start: { h: 9, m: 0 }, end: { h: 13, m: 0 } }
+            ] 
+        },
+        { 
+            name: "Technology Labs", 
+            shop: false,
+            schedule: [
+                { days: [1, 2, 3, 4, 5], start: { h: 8, m: 30 }, end: { h: 19, m: 0 } },
+                { days: [6], start: { h: 9, m: 0 }, end: { h: 13, m: 0 } }
+            ]
+        },
+        { 
+            name: "Bila-Bila Mart", 
+            shop: true,
+            schedule: [
+                { days: [1,2,3,4,5,6,0], start: { h: 7, m: 0 }, end: { h: 23, m: 59 } }
+            ] 
+        },
+        { 
+            name: "TS Convenience Store",
+            shop: true, 
+            schedule: [ 
+                { days: [1,2,3,4,5,6,0], start: { h: 7, m: 30 }, end: { h: 20, m: 30 } }
+            ]
+        }
+    ];
+    
+    const CLOSING_SOON_THRESHOLD_MINUTES = 30;
+    const DAY_NAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+
+    const currentClock = document.getElementById('current-clock');
+    const departmentStatusDisplay = document.getElementById('next-class-display');
+    const departmentsList = document.getElementById('departments-list');
+
+    // =========================================================================
+    // NEW FEATURE: Notification Logic
+    // =========================================================================
+
+    // Keep track of departments that have already been notified to prevent spam.
+    const NOTIFIED_DEPARTMENTS = new Set(); 
+
+    /**
+     * Request browser notification permission if not granted.
+     */
+    function requestNotificationPermission() {
+        if (!("Notification" in window)) {
+            console.log("This browser does not support desktop notification");
+            return;
         }
 
-        // FIX #1: Added check for invalid date parsing to prevent using an 'Invalid Date' object later.
-        function parseJsonDate(dateStr) {
-            // Converts "Day, DD-Month-YYYY" to a Date object
-            if (typeof dateStr !== 'string') return new Date(0);
-            
-            const datePart = dateStr.includes(',') ? dateStr.split(', ')[1] : dateStr;
-            const parts = datePart.split('-');
-            
-            if (parts.length !== 3) return new Date(0); // Ensure format is correct
-            
-            const [dayNum, monthStr, yearStr] = parts;
-            
-            // Reconstruct as 'Month DD, YYYY' for better cross-browser compatibility
-            const d = new Date(`${monthStr} ${dayNum}, ${yearStr}`); 
-
-            // Return a default date if parsing fails (e.g., unrecognized month name)
-            if (isNaN(d.getTime())) return new Date(0); 
-
-            return d; 
+        if (Notification.permission !== "granted") {
+            Notification.requestPermission();
         }
+    }
+    
+    /**
+     * Sends a browser notification for a department closing soon.
+     * @param {string} title - The title of the notification.
+     * @param {string} body - The body text of the notification.
+     */
+    function sendNotification(title, body) {
+        if (Notification.permission === "granted") {
+            new Notification(title, { body: body, icon: 'path/to/your/icon.png' }); // Change 'path/to/your/icon.png' if you have one
+        }
+    }
 
-        // FIX #2: Enhanced robustness in parseTime to handle null/undefined inputs and missing separators.
-        function parseTime(time, isStart) {
-            // Must be a string AND contain the range separator "-"
-            if (typeof time !== 'string' || !time.includes("-")) { 
-                return { hour: 0, minute: 0 };
+
+    // =========================================================================
+    // End NEW FEATURE
+    // =========================================================================
+
+
+    // Utility formatting functions
+    const formatTime = ({h, m}) => {
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        const hour = h % 12 || 12;
+        const min = m.toString().padStart(2, '0');
+        return `${hour}:${min} ${ampm}`;
+    };
+
+    function formatDaysDisplay(schedule) {
+        return schedule.map(item => {
+            const days = item.days.map(d => DAY_NAMES[d].substring(0,3));
+            let dayRange;
+
+            if (item.days.length === 5 && item.days[0] === 1 && item.days[4] === 5) {
+                dayRange = "Mon-Fri";
+            } else if (item.days.length === 1) {
+                dayRange = days[0];
+            } else {
+                dayRange = `${days[0]}-${days[days.length - 1]}`;
             }
-            
-            const parts = time.split(" - ");
-            // Use logical OR to ensure 'str' is at least an empty string if split failed
-            const str = isStart ? (parts[0] || '') : (parts[1] || '');
-            
-            // Ensure the time part contains the hour:minute separator ":"
-            if (!str.includes(":")) {
-                 return { hour: 0, minute: 0 };
-            }
-            
-            const [h, m] = str.split(":");
-            return { hour: +h, minute: +m };
+
+            return `[${dayRange}]: ${formatTime(item.start)} - ${formatTime(item.end)}`;
+        }).join(' | ');
+    }
+
+
+    function getOperationTime(dept, now) {
+        const day = now.getDay();
+        return dept.schedule.find(s => s.days.includes(day)) || null;
+    }
+
+    function isDepartmentOpen(dept, now) {
+        const sched = getOperationTime(dept, now);
+        if (!sched) return false;
+
+        const mins = now.getHours() * 60 + now.getMinutes();
+        const openM = sched.start.h * 60 + sched.start.m;
+        const closeM = sched.end.h * 60 + sched.end.m;
+
+        return mins >= openM && mins < closeM;
+    }
+
+    function getNextOpeningTime(dept, now) {
+    const currentDay = now.getDay();
+    const currentMins = now.getHours() * 60 + now.getMinutes();
+
+    for (let i = 0; i < 7; i++) {
+        const checkDay = (currentDay + i) % 7;
+
+        const sched = dept.schedule.find(s => s.days.includes(checkDay));
+        if (!sched) continue;
+
+        const openM = sched.start.h * 60 + sched.start.m;
+
+        // Today but not yet opened
+        if (i === 0 && currentMins < openM) {
+            return `Today at ${formatTime(sched.start)}`;
         }
-        
-        const formatYYYYMMDD = d => d.toISOString().slice(0,10);
-        function getMondayOf(date) {
-            const c = new Date(date);
-            const d = c.getDay(); // 0 = Sunday, 1 = Monday
-            // If Sunday (0), go back 6 days (-6). Otherwise, go back d-1 days.
-            const diff = d === 0 ? -6 : 1 - d; 
-            c.setDate(c.getDate() + diff);
-            c.setHours(0,0,0,0);
-            return c;
+
+        // Tomorrow
+        if (i === 1) {
+            return `Tomorrow at ${formatTime(sched.start)}`;
         }
 
-        // --- DOM Elements & Global State ---
-        const timetableList = document.getElementById('timetable-list');
-        const weekSelect = document.getElementById('week-select');
-        const currentClock = document.getElementById('current-clock');
-        const nextClassDisplay = document.getElementById('next-class-display');
+        // Other days
+        if (i > 1) {
+            return `${DAY_NAMES[checkDay]} at ${formatTime(sched.start)}`;
+        }
+    }
 
-        let allWeeks = [];
-        let currentWeekStart = ''; 
-        let allWeekData = {};
-        let currentClassUniqueId = null;
-        let lastLoadDate = new Date(); 
+    return "Indefinitely Closed";
+}
 
-        // --- Real-time Logic (Finds current and next class from loaded data) ---
 
-        function findCurrentAndNextClass(data) {
-            const now = new Date();
-            const nowMidnight = new Date(now);
-            nowMidnight.setHours(0,0,0,0);
 
-            let nextClass = null;
-            let currentClass = null;
-            let bestDiff = Infinity;
+    function updateDepartmentStatus() {
+        const now = new Date();
+        const openDepartments = [];
+        const closingSoonDepartments = [];
+        const fullyOpenDepartments = [];
 
-            for (const weekStart in data) {
-                if (!data.hasOwnProperty(weekStart)) continue;
+        departmentsList.innerHTML = ''; 
 
-                for (const dayObj of data[weekStart]) {
-                    const classDate = parseJsonDate(dayObj.date);
-                    const classDateMidnight = new Date(classDate);
-                    classDateMidnight.setHours(0,0,0,0);
+        // Reset the notified set to allow new notifications after the closing window has passed
+        const currentlyClosingSoon = new Set();
+
+        DEPARTMENTS.forEach(dept => {
+            let statusClass = 'closed-tag';
+            let statusText = 'CLOSED';
+
+            const currentSchedule = getOperationTime(dept, now);
+            const isCurrentlyOpen = isDepartmentOpen(dept, now);
+
+            if (isCurrentlyOpen) {
+                const closingTime = new Date(now);
+                closingTime.setHours(currentSchedule.end.h, currentSchedule.end.m, 0, 0);
+
+                const timeRemainingMs = closingTime - now;
+                const timeRemainingMins = Math.floor(timeRemainingMs / 60000);
+
+                if (timeRemainingMins <= CLOSING_SOON_THRESHOLD_MINUTES) {
+                    statusClass = 'closing-soon-tag';
+                    statusText = `CLOSES IN ${timeRemainingMins}m`;
+                    closingSoonDepartments.push(dept.name);
                     
-                    if (classDateMidnight < nowMidnight) continue; 
-
-                    for (const cls of dayObj.classes) {
-                        
-                        cls.uniqueId = makeUniqueId(weekStart, dayObj.date, cls.time, cls.moduleCode);
-
-                        // FIX #3: The crucial fix for the Uncaught TypeError.
-                        // Ensure cls.time is a string and contains the required time separator before parsing.
-                        if (typeof cls.time !== 'string' || !cls.time.includes(" - ")) continue;
-
-                        const st = parseTime(cls.time, true);
-                        const et = parseTime(cls.time, false);
-
-                        const start = new Date(classDate);
-                        start.setHours(st.hour, st.minute, 0, 0);
-
-                        const end = new Date(classDate);
-                        end.setHours(et.hour, et.minute, 0, 0);
-
-                        // 1. Current Class Check (must be today)
-                        if (classDateMidnight.getTime() === nowMidnight.getTime()) {
-                            if (now >= start && now < end) {
-                                currentClass = { ...cls, fullDate: start, endTime: end };
-                            }
-                        }
-
-                        // 2. Next Class Check (must be in the future, within 24 hours)
-                        if (start > now) {
-                            const diff = start - now;
-                            
-                            if (diff < 24 * 60 * 60 * 1000) { 
-                                if (diff < bestDiff) {
-                                    bestDiff = diff;
-                                    nextClass = { ...cls, fullDate: start };
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            return { currentClass, nextClass };
-        }
-
-        function updateClock() {
-            const now = new Date();
-            currentClock.textContent = now.toLocaleTimeString("en-US");
-
-            // Timetable content is now always visible since login is removed
-            const { currentClass, nextClass } = findCurrentAndNextClass(allWeekData);
-
-            let html = `<span class="material-icons">alarm</span>`;
-
-            if (currentClass) {
-                currentClassUniqueId = currentClass.uniqueId;
-                const remaining = currentClass.endTime - now;
-                const m = Math.floor(remaining/60000);
-                const s = Math.floor((remaining%60000)/1000);
-
-                html = `
-                    <span class="material-icons" style="color:var(--color-current)">play_arrow</span>
-                    <span style="color:var(--color-current);font-weight:700">TIME UNTIL CURRENT CLASS END: (${m}m ${s}s)</span>
-                    | ${currentClass.moduleCode || 'CODE'} - ${currentClass.location || 'LOC'}
-                `;
-            }
-            else if (nextClass) {
-                currentClassUniqueId = null;
-
-                const diff = nextClass.fullDate - now;
-                const h = Math.floor(diff/3600000);
-                const m = Math.floor((diff%3600000)/60000);
-                const s = Math.floor((diff%60000)/1000);
-
-                const timeStr = h > 0 ? `${h}h ${m}m ${s}s` : `${m}m ${s}s`;
-                const datePart = nextClass.fullDate.toLocaleDateString('en-US', { weekday: 'short' });
-                const codeLoc = `${nextClass.moduleCode || 'CODE'} (at) -→ ${nextClass.location || 'LOC'}`;
-
-                html += `
-                    <span style="color:var(--color-primary)">${timeStr}</span>
-                     | Next Class: ${codeLoc} (${datePart})
-                `;
-            }
-            else {
-                currentClassUniqueId = null;
-                html += `（⊙ｏ⊙）Oops! Looks like there is no upcoming classes within 24h from now.`;
-            }
-
-            nextClassDisplay.innerHTML = html;
-            applyCurrentClassHighlighting();
-            checkAndReloadDaily();
-        }
-
-
-        function applyCurrentClassHighlighting() {
-            document.querySelectorAll('.class-card.current-class').forEach(e=>e.classList.remove('current-class'));
-
-            if (currentClassUniqueId) {
-                const el = document.querySelector(`[data-unique-id="${currentClassUniqueId}"]`);
-                if (el) {
-                    el.classList.add('current-class');
-                    if (weekSelect.value === '__TODAY__') {
-                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                }
-            }
-        }
-        
-        function checkAndReloadDaily() {
-            const now = new Date();
-            const lastLoadMidnight = new Date(lastLoadDate);
-            lastLoadMidnight.setHours(0, 0, 0, 0);
-            const nowMidnight = new Date(now);
-            nowMidnight.setHours(0, 0, 0, 0);
-
-            if (nowMidnight.getTime() > lastLoadMidnight.getTime()) {
-                console.log("New day detected. Reloading timetable data.");
-                fetchAllWeeks();
-            }
-        }
-
-        // --- Data Fetching and Rendering ---
-
-        async function fetchAllWeeks() {
-            timetableList.innerHTML = `<p style="padding:30px;text-align:center;color:var(--text-subtle)">Loading week data...</p>`;
-            
-            const now = new Date();
-            const paths = [];
-            
-            // Generate paths for (-1, 0, +1, +2) weeks
-            [-1, 0, 1, 2].forEach(off=>{
-                const m = getMondayOf(new Date(now.getFullYear(), now.getMonth(), now.getDate() + off*7));
-                paths.push(`timetable/${formatYYYYMMDD(m)}.json`);
-            });
-
-            const results = await Promise.all(paths.map(p =>
-                fetch(p).then(r => r.ok ? r.json() : null).catch(()=>null)
-            ));
-
-            allWeekData = {};
-            allWeeks = [];
-
-            results.forEach(j=>{
-                if (j && j.weekStartDate) {
-                    allWeekData[j.weekStartDate] = j.days;
-                    allWeeks.push(j.weekStartDate);
-                }
-            });
-
-            lastLoadDate = new Date();
-            
-            allWeeks.sort((a,b)=>new Date(a)-new Date(b));
-            updateWeekSelect();
-
-            const initialSelection = weekSelect.value || "__TODAY__";
-            weekSelect.value = initialSelection;
-            renderTimetable(initialSelection);
-        }
-
-        function updateWeekSelect() {
-            const currentSelection = weekSelect.value;
-            weekSelect.innerHTML = `
-                <option value="__TODAY__">Today</option>
-                <option value="__TOMORROW__">Tomorrow</option>
-            `;
-
-            allWeeks.forEach(w=>{
-                const d = new Date(w);
-                const e = new Date(d); e.setDate(e.getDate()+6);
-                const startStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                const endStr = e.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                
-                const option = document.createElement('option');
-                option.value = w;
-                option.textContent = `Week: ${startStr} - ${endStr}`;
-                if (w === currentSelection) option.selected = true;
-                
-                weekSelect.appendChild(option);
-            });
-            
-            if (currentSelection === '__TODAY__' || currentSelection === '__TOMORROW__') {
-                 weekSelect.value = currentSelection;
-            } else if (!weekSelect.value && allWeeks.length > 0) {
-                 weekSelect.value = '__TODAY__';
-            }
-        }
-
-        function renderTimetable(key) {
-            let days = [];
-
-            const today = new Date(); today.setHours(0,0,0,0);
-            const tomorrow = new Date(today); tomorrow.setDate(today.getDate()+1);
-
-            if (key==="__TODAY__" || key==="__TOMORROW__") {
-                const target = key==="__TODAY__"?today:tomorrow;
-                let foundDay = null;
-                let foundWeekStart = null;
-                
-                for (const w in allWeekData) {
-                    if (!allWeekData.hasOwnProperty(w)) continue;
+                    // =========================================================
+                    // NEW FEATURE: Notification Trigger
+                    // =========================================================
                     
-                    foundDay = allWeekData[w].find(d=>{
-                        const dd = parseJsonDate(d.date);
-                        dd.setHours(0,0,0,0);
-                        return dd.getTime() === target.getTime();
-                    });
-                    if (foundDay) {
-                        foundWeekStart = w;
-                        break; // Stop searching once the day is found (Efficiency fix)
+                    currentlyClosingSoon.add(dept.name);
+                    
+                    // Trigger notification only if it hasn't been sent yet for this specific closing window
+                    if (!NOTIFIED_DEPARTMENTS.has(dept.name)) {
+                        sendNotification(
+                            `${dept.name} Closing Soon!`, 
+                            `It will close in ${timeRemainingMins} minutes. Be quick!`
+                        );
+                        // Mark as notified
+                        NOTIFIED_DEPARTMENTS.add(dept.name);
                     }
-                }
+                    // =========================================================
 
-                if (foundDay) {
-                    currentWeekStart = foundWeekStart; 
-                    days = [foundDay];
                 } else {
-                    timetableList.innerHTML = `<div class="day-header">${key==="__TODAY__"?"Today":"Tomorrow"}</div><p style="padding:20px;color:var(--text-subtle);text-align:center">(●ˇ∀ˇ●) No classes scheduled on today</p>`;
-                    applyCurrentClassHighlighting();
-                    return;
+                    statusClass = 'open-tag';
+                    statusText = 'OPEN';
+                    fullyOpenDepartments.push(dept.name);
                 }
+
+                openDepartments.push(dept.name);
             }
-            else {
-                days = allWeekData[key] || [];
-                currentWeekStart = key;
+            
+            // Clean up: If a department was closing soon but is now closed or fully open, remove it from the notified set.
+            if (!currentlyClosingSoon.has(dept.name) && NOTIFIED_DEPARTMENTS.has(dept.name)) {
+                NOTIFIED_DEPARTMENTS.delete(dept.name);
             }
 
-            let html = "";
+            let subtitleContent = formatDaysDisplay(dept.schedule);
 
-            days.forEach(day=>{
-                const dd = parseJsonDate(day.date);
-                const isToday = dd.toDateString() === new Date().toDateString();
+            if (!isCurrentlyOpen) {
+                const nextOpenTime = getNextOpeningTime(dept, now);
+                subtitleContent += `<br/>Next Opening: <strong>${nextOpenTime}</strong>`;
+            }
 
-                html += `<div class="day-header">${day.date}${isToday?" (TODAY)":""}</div>`;
+            const card = document.createElement('div');
+            card.className = `class-card ${isCurrentlyOpen ? 'today' : ''}`;
 
-                if (day.classes.length === 0) {
-                    html += `<div class="class-card" style="padding: 10px; color: var(--text-subtle); font-style: italic;">(●ˇ∀ˇ●) No classes scheduled on this day.</div>`;
-                    return;
-                }
-                
-                day.classes.forEach(cls=>{
-                    const uid = makeUniqueId(currentWeekStart, day.date, cls.time, cls.moduleCode);
-                    const isReplacement = cls.isReplacement || false;
-                    const isOnline = cls.isOnline || false;
-                    
-                    const moduleCode = cls.moduleCode || 'CODE';
-                    const moduleName = cls.moduleName || 'MODULE NAME MISSING';
-                    const time = cls.time || 'TBD';
-                    const location = cls.location || 'TBC';
-                    const lecturerName = cls.lecturer || 'Staff TBC'; 
-                    const classType = cls.classType || 'Class'; 
-                    
-                    // --- DURATION CALCULATION ---
-                    let durationString = 'Duration TBD';
-                    if (typeof cls.time === 'string' && cls.time.includes(" - ")) {
-                        const st = parseTime(cls.time, true);
-                        const et = parseTime(cls.time, false);
-                        
-                        // Convert to total minutes
-                        const startMinutes = st.hour * 60 + st.minute;
-                        const endMinutes = et.hour * 60 + et.minute;
-                        let durationMinutes = endMinutes - startMinutes;
+            const pillHtml = `<span class="pill ${statusClass}">${statusText}</span>`;
 
-                        // Handle negative duration (e.g., class starts at 23:00 and ends at 01:00 the next day)
-                        if (durationMinutes < 0) {
-                            durationMinutes += 24 * 60; 
-                        }
+        card.innerHTML = `
+        <div class="card-title">
+            <span class="material-icons inperson-icon">business</span>
+            <span class="dept-name">${dept.name}</span>
 
-                        const durationHours = Math.floor(durationMinutes / 60);
-                        const durationMins = durationMinutes % 60;
-                        
-                        durationString = '';
-                        if (durationHours > 0) {
-                            durationString += `${durationHours}hr`;
-                        }
-                        if (durationMins > 0) {
-                            if (durationHours > 0) durationString += ' ';
-                            durationString += `${durationMins}min`;
-                        }
-                        if (durationString === '') {
-                             durationString = '0 min';
-                        }
-                    }
-                    // --- END DURATION CALCULATION ---
+            ${dept.shop ? `<span class="pill shop-tag">SHOP</span>` : ""}
 
-                    let modalityIcon;
-                    let modalityPill = '';
-                    
-                    if (isReplacement) {
-                        modalityIcon = `<span class="material-icons replacement-icon">event_note</span>`;
-                        const type = cls.replacementType ? cls.replacementType.toUpperCase() : 'CLASS';
-                        modalityPill = `<span class="pill replacement-tag">REPLACEMENT ${type} CLASS</span>`;
-                    }
-                    else if (isOnline) {
-                        modalityIcon = `<span class="material-icons online-icon">laptop_chromebook</span>`;
-                        modalityPill = `<span class="pill online-tag">Online</span>`;
-                    } else {
-                        modalityIcon = `<span class="material-icons inperson-icon">room</span>`;
-                        modalityPill = ``; 
-                    }
+            <span class="status-wrapper" style="margin-left:auto;">
+                ${pillHtml}
+            </span>
+        </div>
 
-                    html += `
-                        <div class="class-card ${isToday?"today":""}" data-unique-id="${uid}">
-                            <div class="card-title">
-                                ${modalityIcon}
-                                ${moduleCode} - ${moduleName} ${modalityPill}
-                            </div>
-                            <div class="card-subtitle">${lecturerName} (${classType})</div>
-                            <div class="card-details">
-                                <span class="card-detail-item">
-                                    <span class="material-icons">schedule</span>
-                                    ${time}
-                                </span>
-                                <span class="card-detail-item">
-                                    <span class="material-icons">timer</span>
-                                    ${durationString}
-                                </span>
-                                <span class="card-detail-item">
-                                    <span class="material-icons">location_on</span>
-                                    ${location}
-                                </span>
-                            </div>
-                        </div>
-                    `;
-                });
-            });
+        <div class="card-subtitle">
+            ${subtitleContent}
+        </div>
+        `;
 
-            timetableList.innerHTML = html;
-            applyCurrentClassHighlighting();
+
+
+            departmentsList.appendChild(card);
+        });
+
+        // ---------- HEADER SUMMARY ----------
+        let headerHtml = '';
+        const green = '#28a745';
+        const red = '#dc3545';
+        const yellow = 'var(--color-current)';
+
+        const allOpen = openDepartments.length === DEPARTMENTS.length;
+        const allClosed = openDepartments.length === 0;
+
+        if (allOpen) {
+            headerHtml = `
+                <span class="material-icons" style="color:${green}">check_circle</span>
+                <span style="color:${green};font-weight:700">All departments are available</span>
+            `;
+        } else if (allClosed) {
+            headerHtml = `
+                <span class="material-icons" style="color:${red}">lock_clock</span>
+                <span style="color:${red};font-weight:700">All departments are currently closed</span>
+            `;
+        } else {
+            const closingSoonList = closingSoonDepartments.length > 0
+                ? `<br><strong> Closing Department(s) Soon:</strong> ${closingSoonDepartments.join(', ')}`
+                : '';
+
+            const stillOpenList = fullyOpenDepartments.length > 0
+                ? `<br><strong> Department(s) Available:</strong> ${fullyOpenDepartments.join(', ')}`
+                : '';
+
+            headerHtml = `
+                <span class="material-icons" style="color:${yellow}">schedule</span>
+                <span style="color:${yellow};font-weight:700">Some department are opening / closing soon... | </span>
+                 ${closingSoonList} & 
+                 ${stillOpenList}
+            `;
         }
 
-        // --- Initialization ---
+        departmentStatusDisplay.innerHTML = headerHtml;
+    }
 
-        function initializeApp() {
-            weekSelect.addEventListener("change", e => renderTimetable(e.target.value));
-            fetchAllWeeks();
-        }
-        
-        // Start the application immediately since login is removed
-        initializeApp();
-        setInterval(updateClock, 1000); 
-    });
+
+    function updateClock() {
+        const now = new Date();
+        currentClock.textContent = now.toLocaleTimeString("en-US", {
+            hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true
+        });
+    }
+
+    // ---------------- FIXED TIMERS ----------------
+
+    // Update clock every second
+    setInterval(updateClock, 1000);
+
+    // Update department status every 30 seconds (NO MORE FREEZING)
+    setInterval(updateDepartmentStatus, 30000);
+
+    // Initial load
+    updateClock();
+    updateDepartmentStatus();
+    
+    // Request permission when the page loads
+    requestNotificationPermission(); 
+});
