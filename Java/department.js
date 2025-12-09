@@ -1,7 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- Department Operating Hours Configuration ---
+    // --- Department Operating Hours Configuration (The existing array DEPARTMENTS is here) ---
     const DEPARTMENTS = [
+        // ... (Your existing DEPARTMENTS array content)
         { 
             name: "Admin", 
             shop: false,
@@ -69,6 +70,44 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentClock = document.getElementById('current-clock');
     const departmentStatusDisplay = document.getElementById('next-class-display');
     const departmentsList = document.getElementById('departments-list');
+
+    // =========================================================================
+    // NEW FEATURE: Notification Logic
+    // =========================================================================
+
+    // Keep track of departments that have already been notified to prevent spam.
+    const NOTIFIED_DEPARTMENTS = new Set(); 
+
+    /**
+     * Request browser notification permission if not granted.
+     */
+    function requestNotificationPermission() {
+        if (!("Notification" in window)) {
+            console.log("This browser does not support desktop notification");
+            return;
+        }
+
+        if (Notification.permission !== "granted") {
+            Notification.requestPermission();
+        }
+    }
+    
+    /**
+     * Sends a browser notification for a department closing soon.
+     * @param {string} title - The title of the notification.
+     * @param {string} body - The body text of the notification.
+     */
+    function sendNotification(title, body) {
+        if (Notification.permission === "granted") {
+            new Notification(title, { body: body, icon: 'path/to/your/icon.png' }); // Change 'path/to/your/icon.png' if you have one
+        }
+    }
+
+
+    // =========================================================================
+    // End NEW FEATURE
+    // =========================================================================
+
 
     // Utility formatting functions
     const formatTime = ({h, m}) => {
@@ -153,6 +192,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         departmentsList.innerHTML = ''; 
 
+        // Reset the notified set to allow new notifications after the closing window has passed
+        const currentlyClosingSoon = new Set();
+
         DEPARTMENTS.forEach(dept => {
             let statusClass = 'closed-tag';
             let statusText = 'CLOSED';
@@ -171,6 +213,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     statusClass = 'closing-soon-tag';
                     statusText = `CLOSES IN ${timeRemainingMins}m`;
                     closingSoonDepartments.push(dept.name);
+                    
+                    // =========================================================
+                    // NEW FEATURE: Notification Trigger
+                    // =========================================================
+                    
+                    currentlyClosingSoon.add(dept.name);
+                    
+                    // Trigger notification only if it hasn't been sent yet for this specific closing window
+                    if (!NOTIFIED_DEPARTMENTS.has(dept.name)) {
+                        sendNotification(
+                            `${dept.name} Closing Soon!`, 
+                            `It will close in ${timeRemainingMins} minutes. Be quick!`
+                        );
+                        // Mark as notified
+                        NOTIFIED_DEPARTMENTS.add(dept.name);
+                    }
+                    // =========================================================
+
                 } else {
                     statusClass = 'open-tag';
                     statusText = 'OPEN';
@@ -178,6 +238,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 openDepartments.push(dept.name);
+            }
+            
+            // Clean up: If a department was closing soon but is now closed or fully open, remove it from the notified set.
+            if (!currentlyClosingSoon.has(dept.name) && NOTIFIED_DEPARTMENTS.has(dept.name)) {
+                NOTIFIED_DEPARTMENTS.delete(dept.name);
             }
 
             let subtitleContent = formatDaysDisplay(dept.schedule);
@@ -272,4 +337,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial load
     updateClock();
     updateDepartmentStatus();
+    
+    // Request permission when the page loads
+    requestNotificationPermission(); 
 });
