@@ -235,7 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
         } else {
             const closingSoonList = closingSoonDepartments.length > 0
-                ? `<br><strong> Closing Soon:</strong> ${closingSoonDepartments.join(', ')}`
+                ? `<br><strong> Closing Department(s) Soon:</strong> ${closingSoonDepartments.join(', ')}`
                 : '';
 
             const stillOpenList = fullyOpenDepartments.length > 0
@@ -244,7 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             headerHtml = `
                 <span class="material-icons" style="color:${yellow}">schedule</span>
-                <span style="color:${yellow};font-weight:700">Some department are closing soon... | </span>
+                <span style="color:${yellow};font-weight:700">Some department are opening / closing soon... | </span>
                  ${closingSoonList} & 
                  ${stillOpenList}
             `;
