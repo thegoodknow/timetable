@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 html = `
                     <span class="material-icons" style="color:var(--color-current)">play_arrow</span>
-                    <span style="color:var(--color-current);font-weight:700">LIVE! (${m}m ${s}s)</span>
+                    <span style="color:var(--color-current);font-weight:700">TIME UNTIL CURRENT CLASS END: (${m}m ${s}s)</span>
                     | ${currentClass.moduleCode || 'CODE'} - ${currentClass.location || 'LOC'}
                 `;
             }
