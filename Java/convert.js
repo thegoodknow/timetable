@@ -28,7 +28,8 @@
             'ABUS007': 'ACADEMIC RESEARCH SKILLS',
             'AICT023': 'COMPUTER ARCHITECTURE',
             'MPU2132': 'BAHASA MELAYU KOMUNIKASI 1',
-            'AICT016': 'DIGITAL THINKING AND INNOVATION'
+            'AICT016': 'DIGITAL THINKING AND INNOVATION',
+            'MPU2112':'APPRECIATION OF ETHICS AND CIVILIZATIONS'
             // Add more module codes and names here
         };
 
