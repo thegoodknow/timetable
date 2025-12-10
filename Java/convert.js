@@ -29,7 +29,7 @@
             'AICT023': 'COMPUTER ARCHITECTURE',
             'MPU2132': 'BAHASA MELAYU KOMUNIKASI 1',
             'AICT016': 'DIGITAL THINKING AND INNOVATION',
-            'MPU2112':'APPRECIATION OF ETHICS AND CIVILIZATIONS'
+            'MPU2112': 'APPRECIATION OF ETHICS AND CIVILIZATIONS'
             // Add more module codes and names here
         };
 
@@ -71,11 +71,14 @@
 
         function handleLogin(event) {
             event.preventDefault();
+    
+            // ADD THIS LINE: Clear any previous message when the user attempts a new login
+            loginMessage.style.display = 'none'; 
+    
+        const user = usernameInput.value;
+        const pass = passwordInput.value;
 
-            const user = usernameInput.value;
-            const pass = passwordInput.value;
-
-            if (user === CORRECT_USERNAME && pass === CORRECT_PASSWORD) {
+        if (user === CORRECT_USERNAME && pass === CORRECT_PASSWORD) {
                 showApp();
             } else {
                 showLoginMessage('Invalid username or password.', 'error');

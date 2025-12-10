@@ -56,7 +56,7 @@
           "location": "B-06-04",
           "campus": "APU CAMPUS",
           "lecturer": "SURESH S.SAMINATHAN",
-          "isOnline": true,
+          "isOnline": false,
           "classType": "Lecture",
           "isReplacement": false,
           "replacementType": ""

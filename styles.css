@@ -342,3 +342,24 @@ body {
     }
 
 }
+/* --------------------------------------------------------------
+   LAYOUT / CENTERING (ADD THIS SECTION)
+-------------------------------------------------------------- */
+
+.min-h-screen-center {
+    display: flex;             /* Enable Flexbox on the body */
+    align-items: center;       /* Center child elements vertically */
+    justify-content: center;   /* Center child elements horizontally */
+}
+
+/* --------------------------------------------------------------
+   LOGIN CONTAINER ADJUSTMENT (Verify)
+-------------------------------------------------------------- */
+#login-container {
+    /* Since JS sets display: flex on it, adding a max-width and margin
+       can ensure it looks good when centered by the body. */
+    max-width: 400px;
+    width: 90%; /* Responsive width */
+    padding: 20px;
+    margin: auto; /* Fallback for older browsers, good practice */
+}
