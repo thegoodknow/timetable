@@ -302,7 +302,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     currentWeekStart = foundWeekStart; 
                     days = [foundDay];
                 } else {
-                    timetableList.innerHTML = `<div class="day-header">${key==="__TODAY__"?"Today":"Tomorrow"}</div><p style="padding:20px;color:var(--text-subtle);text-align:center">(●ˇ∀ˇ●) No classes scheduled on today</p>`;
+                    timetableList.innerHTML = `<div class="day-header">${key==="__TODAY__"?"Today":"Tomorrow"}</div><p style="padding:20px;color:var(--text-subtle);text-align:center">(●ˇ∀ˇ●) Ooo! Looks like there is no classes scheduled for today</p>`;
                     applyCurrentClassHighlighting();
                     return;
                 }
@@ -321,7 +321,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 html += `<div class="day-header">${day.date}${isToday?" (TODAY)":""}</div>`;
 
                 if (day.classes.length === 0) {
-                    html += `<div class="class-card" style="padding: 10px; color: var(--text-subtle); font-style: italic;">(●ˇ∀ˇ●) No classes scheduled on this day.</div>`;
+                    html += `<div class="class-card" style="padding: 10px; color: var(--text-subtle); font-style: italic;">(●ˇ∀ˇ●) Yay! There is no classes scheduled on this day.</div>`;
                     return;
                 }
                 
