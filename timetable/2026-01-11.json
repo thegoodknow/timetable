@@ -66,10 +66,10 @@
           "moduleCode": "MPU2112-PEP",
           "moduleName": "APPRECIATION OF ETHICS AND CIVILIZATIONS",
           "time": "13:30 - 15:30",
-          "location": "ONLMCO3-13",
+          "location": "E-07-03",
           "campus": "APU CAMPUS",
           "lecturer": "SURESH S.SAMINATHAN",
-          "isOnline": true,
+          "isOnline": false,
           "classType": "Lecture",
           "isReplacement": false,
           "replacementType": ""
