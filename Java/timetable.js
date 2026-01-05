@@ -165,7 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const codeLoc = `${nextClass.moduleCode || 'CODE'} at ${nextClass.location || 'LOC'}`;
 
                 html += `
-                    <span style="color:var(--color-primary)">Time until next class: ${timeStr}</span>
+                    <span style="color:var(--color-primary)">Time until next class: ${timeStr} </span>
                      | Next Class: ${codeLoc} (${datePart})
                 `;
             }
