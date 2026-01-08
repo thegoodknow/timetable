@@ -15,18 +15,6 @@
           "classType": "Tutorial",
           "isReplacement": false,
           "replacementType": ""
-        },
-        {
-          "moduleCode": "AAQS038-4-1-MSC-T-23",
-          "moduleName": "MATHEMATICS AND STATISTICS FOR COMPUTING",
-          "time": "14:30 - 15:30",
-          "location": "E-09-04",
-          "campus": "APU CAMPUS",
-          "lecturer": "HAZLINA BINTI DARMAN",
-          "isOnline": false,
-          "classType": "Tutorial",
-          "isReplacement": false,
-          "replacementType": ""
         }
       ]
     },
@@ -47,15 +35,15 @@
         },
         {
           "moduleCode": "AAQS038-4-1-MSC-L-9",
-          "moduleName": "MATHEMATICS AND STATISTICS FOR COMPUTING",
-          "time": "16:30 - 18:00",
-          "location": "D-07-07",
+          "moduleName": "MATHEMATICS AND STATISTICS FOR COMPUTING [REPLACEMENT]",
+          "time": "15:45 - 17:15",
+          "location": "D-07-08",
           "campus": "APU CAMPUS",
           "lecturer": "HAZLINA BINTI DARMAN",
           "isOnline": false,
           "classType": "Lecture",
-          "isReplacement": false,
-          "replacementType": ""
+          "isReplacement": true,
+          "replacementType": "Lecture"
         }
       ]
     },
@@ -105,15 +93,27 @@
       "classes": [
         {
           "moduleCode": "AAQS038-4-1-MSC-L-8",
-          "moduleName": "MATHEMATICS AND STATISTICS FOR COMPUTING",
+          "moduleName": "MATHEMATICS AND STATISTICS FOR COMPUTING [CLASS TEST]",
           "time": "13:30 - 15:00",
           "location": "E-08-01",
           "campus": "APU CAMPUS",
           "lecturer": "HAZLINA BINTI DARMAN",
           "isOnline": false,
-          "classType": "Lecture",
-          "isReplacement": false,
-          "replacementType": ""
+          "classType": "Class Test",
+          "isReplacement": true,
+          "replacementType": "Class Test"
+        },
+        {
+          "moduleCode": "AAQS038-4-1-MSC-T-23",
+          "moduleName": "MATHEMATICS AND STATISTICS FOR COMPUTING [REPLACEMENT]",
+          "time": "11:00 - 12:00",
+          "location": "E-08-01",
+          "campus": "APU CAMPUS",
+          "lecturer": "HAZLINA BINTI DARMAN",
+          "isOnline": false,
+          "classType": "Tutorial",
+          "isReplacement": true,
+          "replacementType": "Tutorial"
         },
         {
           "moduleCode": "ABUS007-4-1-ARS-L-9",
