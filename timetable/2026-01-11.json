@@ -99,9 +99,9 @@
           "campus": "APU CAMPUS",
           "lecturer": "HAZLINA BINTI DARMAN",
           "isOnline": false,
-          "classType": "Class Test",
+          "classType": "Lecture",
           "isReplacement": true,
-          "replacementType": "Class Test"
+          "replacementType": "Lecture"
         },
         {
           "moduleCode": "AAQS038-4-1-MSC-T-23",

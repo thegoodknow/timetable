@@ -1,32 +1,28 @@
 {
-  "weekStartDate": "2025-12-14",
+  "weekStartDate": "2026-01-19",
   "days": [
     {
-      "date": "Mon, 15-Dec-2025",
-      "classes": []
-    },
-    {
-      "date": "Tue, 16-Dec-2025",
+      "date": "Mon, 19-Jan-2026",
       "classes": [
         {
-          "moduleCode": "ABUS007-4-1-ARS-L-9",
-          "moduleName": "ACADEMIC RESEARCH SKILLS",
-          "time": "08:30 - 10:30",
-          "location": "S-08-01",
+          "moduleCode": "AICT016-4-1-DTIN-T-31",
+          "moduleName": "DIGITAL THINKING AND INNOVATION",
+          "time": "09:00 - 11:00",
+          "location": "E-07-07",
           "campus": "APU CAMPUS",
-          "lecturer": "IMAN DANISH SHA BINTI MOHD SUHAIMI AKBAR",
+          "lecturer": "DR. SAFA'IE BIN MANGIR",
           "isOnline": false,
-          "classType": "Lecture",
+          "classType": "Tutorial",
           "isReplacement": false,
           "replacementType": ""
         },
         {
-          "moduleCode": "ABUS007-4-1-ARS-T-33",
-          "moduleName": "ACADEMIC RESEARCH SKILLS",
-          "time": "14:30 - 16:30",
-          "location": "D-08-14",
+          "moduleCode": "AAQS038-4-1-MSC-T-23",
+          "moduleName": "MATHEMATICS AND STATISTICS FOR COMPUTING",
+          "time": "14:30 - 15:30",
+          "location": "E-09-04",
           "campus": "APU CAMPUS",
-          "lecturer": "IMAN DANISH SHA BINTI MOHD SUHAIMI AKBAR",
+          "lecturer": "HAZLINA BINTI DARMAN",
           "isOnline": false,
           "classType": "Tutorial",
           "isReplacement": false,
@@ -35,32 +31,37 @@
       ]
     },
     {
-      "date": "Wed, 17-Dec-2025",
+      "date": "Tue, 20-Jan-2026",
       "classes": [
-                {
-          "moduleCode": "AAQS038-4-1-MSC-L-9",
-          "moduleName": "MATHEMATICS AND STATISTICS FOR COMPUTING",
-          "time": "09:30 - 11:00",
-          "location": "D-06-03",
+        {
+          "moduleCode": "ABUS007-4-1-ARS-T-33",
+          "moduleName": "ACADEMIC RESEARCH SKILLS",
+          "time": "13:30 - 15:30",
+          "location": "D-08-14",
           "campus": "APU CAMPUS",
-          "lecturer": "KHOR LIAN PENG",
-          "isOnline": true,
-          "classType": "Lecture",
-          "isReplacement": true,
-          "replacementType": "Lecture "
+          "lecturer": "IMAN DANISH SHA BINTI MOHD SUHAIMI AKBAR",
+          "isOnline": false,
+          "classType": "Tutorial",
+          "isReplacement": false,
+          "replacementType": ""
         },
         {
-          "moduleCode": "MPU2112-PEP(LS)-L-19",
-          "moduleName": "APPRECIATION OF ETHICS AND CIVILIZATIONS",
-          "time": "13:30 - 15:30",
-          "location": "B-06-04",
+          "moduleCode": "AAQS038-4-1-MSC-L-9",
+          "moduleName": "MATHEMATICS AND STATISTICS FOR COMPUTING",
+          "time": "16:30 - 18:00",
+          "location": "D-07-07",
           "campus": "APU CAMPUS",
-          "lecturer": "SURESH S.SAMINATHAN",
+          "lecturer": "HAZLINA BINTI DARMAN",
           "isOnline": false,
           "classType": "Lecture",
           "isReplacement": false,
           "replacementType": ""
-        },
+        }
+      ]
+    },
+    {
+      "date": "Wed, 21-Jan-2026",
+      "classes": [
         {
           "moduleCode": "AICT023-4-1-CA-T-21",
           "moduleName": "COMPUTER ARCHITECTURE",
@@ -88,36 +89,36 @@
       ]
     },
     {
-      "date": "Thu, 18-Dec-2025",
+      "date": "Thu, 22-Jan-2026",
       "classes": [
         {
           "moduleCode": "AAQS038-4-1-MSC-L-8",
           "moduleName": "MATHEMATICS AND STATISTICS FOR COMPUTING",
-          "time": "11:45 - 13:15",
-          "location": "B-05-04",
+          "time": "13:30 - 15:00",
+          "location": "E-08-01",
           "campus": "APU CAMPUS",
-          "lecturer": "KHOR LIAN PENG",
+          "lecturer": "HAZLINA BINTI DARMAN",
           "isOnline": false,
           "classType": "Lecture",
           "isReplacement": false,
           "replacementType": ""
         },
         {
-          "moduleCode": "AICT016-4-1-DTIN-T-31",
-          "moduleName": "DIGITAL THINKING AND INNOVATION",
-          "time": "13:30 - 15:30",
-          "location": "D-08-02",
+          "moduleCode": "ABUS007-4-1-ARS-L-9",
+          "moduleName": "ACADEMIC RESEARCH SKILLS",
+          "time": "15:45 - 17:45",
+          "location": "D-09-07",
           "campus": "APU CAMPUS",
-          "lecturer": "DR. SAFA'IE BIN MANGIR",
+          "lecturer": "IMAN DANISH SHA BINTI MOHD SUHAIMI AKBAR",
           "isOnline": false,
-          "classType": "Tutorial",
+          "classType": "Lecture",
           "isReplacement": false,
           "replacementType": ""
         }
       ]
     },
     {
-      "date": "Fri, 19-Dec-2025",
+      "date": "Fri, 23-Jan-2026",
       "classes": [
         {
           "moduleCode": "AICT023-4-1-CA-L-7",
@@ -130,18 +131,6 @@
           "classType": "Lecture",
           "isReplacement": false,
           "replacementType": ""
-        },
-               {
-          "moduleCode": "AAQS038-4-1-MSC-T-23",
-          "moduleName": "MATHEMATICS AND STATISTICS FOR COMPUTING",
-          "time": "10:45 - 11:45",
-          "location": "D-07-17",
-          "campus": "APU CAMPUS",
-          "lecturer": "KHOR LIAN PENG",
-          "isOnline": false,
-          "classType": "Tutorial",
-          "isReplacement": true,
-          "replacementType": "Tutorial"
         },
         {
           "moduleCode": "AICT016-4-1-DTIN-L-9",
