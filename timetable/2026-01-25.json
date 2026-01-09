@@ -1,8 +1,8 @@
 {
-  "weekStartDate": "2026-01-11",
+  "weekStartDate": "2026-01-26",
   "days": [
     {
-      "date": "Mon, 12-Jan-2026",
+      "date": "Mon, 26-Jan-2026",
       "classes": [
         {
           "moduleCode": "AICT016-4-1-DTIN-T-31",
@@ -15,11 +15,23 @@
           "classType": "Tutorial",
           "isReplacement": false,
           "replacementType": ""
+        },
+        {
+          "moduleCode": "AAQS038-4-1-MSC-T-23",
+          "moduleName": "MATHEMATICS AND STATISTICS FOR COMPUTING",
+          "time": "14:30 - 15:30",
+          "location": "E-09-04",
+          "campus": "APU CAMPUS",
+          "lecturer": "HAZLINA BINTI DARMAN",
+          "isOnline": false,
+          "classType": "Tutorial",
+          "isReplacement": false,
+          "replacementType": ""
         }
       ]
     },
     {
-      "date": "Tue, 13-Jan-2026",
+      "date": "Tue, 27-Jan-2026",
       "classes": [
         {
           "moduleCode": "ABUS007-4-1-ARS-T-33",
@@ -35,33 +47,21 @@
         },
         {
           "moduleCode": "AAQS038-4-1-MSC-L-9",
-          "moduleName": "MATHEMATICS AND STATISTICS FOR COMPUTING [REPLACEMENT]",
-          "time": "15:45 - 17:15",
-          "location": "D-07-08",
+          "moduleName": "MATHEMATICS AND STATISTICS FOR COMPUTING",
+          "time": "16:30 - 18:00",
+          "location": "D-07-07",
           "campus": "APU CAMPUS",
           "lecturer": "HAZLINA BINTI DARMAN",
           "isOnline": false,
           "classType": "Lecture",
-          "isReplacement": true,
-          "replacementType": "Lecture"
+          "isReplacement": false,
+          "replacementType": ""
         }
       ]
     },
     {
-      "date": "Wed, 14-Jan-2026",
+      "date": "Wed, 28-Jan-2026",
       "classes": [
-        {
-          "moduleCode": "MPU2112-PEP",
-          "moduleName": "APPRECIATION OF ETHICS AND CIVILIZATIONS",
-          "time": "13:30 - 15:30",
-          "location": "E-07-03",
-          "campus": "APU CAMPUS",
-          "lecturer": "SURESH S.SAMINATHAN",
-          "isOnline": false,
-          "classType": "Lecture",
-          "isReplacement": false,
-          "replacementType": ""
-        },
         {
           "moduleCode": "AICT023-4-1-CA-T-21",
           "moduleName": "COMPUTER ARCHITECTURE",
@@ -89,31 +89,19 @@
       ]
     },
     {
-      "date": "Thu, 15-Jan-2026",
+      "date": "Thu, 29-Jan-2026",
       "classes": [
         {
           "moduleCode": "AAQS038-4-1-MSC-L-8",
-          "moduleName": "MATHEMATICS AND STATISTICS FOR COMPUTING [CLASS TEST]",
-          "time": "09:00 - 10:30",
+          "moduleName": "MATHEMATICS AND STATISTICS FOR COMPUTING",
+          "time": "13:30 - 15:00",
           "location": "E-08-01",
           "campus": "APU CAMPUS",
           "lecturer": "HAZLINA BINTI DARMAN",
           "isOnline": false,
           "classType": "Lecture",
-          "isReplacement": true,
-          "replacementType": "Lecture"
-        },
-        {
-          "moduleCode": "AAQS038-4-1-MSC-T-23",
-          "moduleName": "MATHEMATICS AND STATISTICS FOR COMPUTING [REPLACEMENT]",
-          "time": "11:00 - 12:00",
-          "location": "E-08-01",
-          "campus": "APU CAMPUS",
-          "lecturer": "HAZLINA BINTI DARMAN",
-          "isOnline": false,
-          "classType": "Tutorial",
-          "isReplacement": true,
-          "replacementType": "Tutorial"
+          "isReplacement": false,
+          "replacementType": ""
         },
         {
           "moduleCode": "ABUS007-4-1-ARS-L-9",
@@ -130,7 +118,7 @@
       ]
     },
     {
-      "date": "Fri, 16-Jan-2026",
+      "date": "Fri, 30-Jan-2026",
       "classes": [
         {
           "moduleCode": "AICT023-4-1-CA-L-7",
