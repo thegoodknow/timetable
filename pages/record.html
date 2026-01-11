@@ -3,101 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AP Card Record</title>
     <link rel="icon" type="image/svg+xml" href="../img/favicon.svg">
-    <title>AP Card Record System</title>
     <link rel="stylesheet" href="styles.css">
     <style>
-        /* Header Styling */
-        header {
-            display: flex;
-            align-items: center;
-            padding: 15px;
-            background: #ffffff;
-            border-bottom: 2px solid #eee;
-            margin-bottom: 20px;
-        }
-        header img {
-            height: 40px;
-            margin-right: 15px;
-        }
-        header h1 {
-            font-size: 1.2rem;
-            margin: 0;
-            color: #333;
-        }
-
-        /* Preview Modal Styling */
-        #preview-modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-        .modal-content {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 350px;
-            text-align: center;
-        }
-        .preview-box {
-            background: #f9f9f9;
-            padding: 10px;
-            margin: 15px 0;
-            border: 1px dashed #ccc;
-            font-weight: bold;
-        }
-        .modal-btns {
-            display: flex;
-            gap: 10px;
-        }
-        .cancel-btn { background-color: #ccc !important; }
+        header { display: flex; align-items: center; padding: 15px; border-bottom: 2px solid #eee; margin-bottom: 20px; }
+        header img { height: 40px; margin-right: 15px; }
+        header h1 { font-size: 1.2rem; margin: 0; }
+        
+        #preview-modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; }
+        .modal-content { background: white; padding: 20px; border-radius: 10px; width: 300px; text-align: center; }
+        
+        .error-msg { color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; border-radius: 5px; display: none; margin-top: 10px; }
+        .success-msg { display: none; text-align: center; }
     </style>
 </head>
 <body>
 
     <header>
         <img src="../img/logo.svg" alt="Logo">
-        <h1>AP Card Management</h1>
+        <h1>Record Entry System</h1>
     </header>
 
     <div class="container">
         <div id="form-container">
-            <h2>New Record</h2>
-            <label for="item">Choose Item:</label>
+            <label>Select Item:</label>
             <select id="item">
                 <option value="Roti Telur">Roti Telur</option>
                 <option value="Maggi Goreng">Maggi Goreng</option>
                 <option value="Dry Pan Mee">Dry Pan Mee</option>
-                <option value="TOP-UP 100">APCard Reload (100)</option>
             </select>
-            <button onclick="showPreview()">Submit Entry</button>
+            <button onclick="showPreview()">Submit</button>
+            <div id="error-display" class="error-msg"></div>
         </div>
 
         <div id="preview-modal">
             <div class="modal-content">
-                <h3>Confirm Record</h3>
-                <p>Are you sure you want to record:</p>
-                <div id="preview-value" class="preview-box"></div>
-                <div class="modal-btns">
-                    <button class="cancel-btn" onclick="hidePreview()">Cancel</button>
-                    <button id="confirmBtn" onclick="sendData()">Confirm & Send</button>
-                </div>
+                <h3>Confirm Selection?</h3>
+                <p id="preview-text" style="font-weight:bold;"></p>
+                <button id="confirmBtn" onclick="sendData()">Confirm</button>
+                <button style="background:#ccc" onclick="hidePreview()">Back</button>
             </div>
         </div>
 
-        <div id="status-message" style="display:none; text-align:center;">
-            <div style="font-size: 3rem;">✅</div>
-            <h3>Sent Successfully!</h3>
-            <p id="msg-text"></p>
-            <button onclick="location.reload()">Add Another</button>
+        <div id="success-display" class="success-msg">
+            <h2 style="color: green;">✔ Success!</h2>
+            <p>Data has been recorded to your sheet.</p>
+            <button onclick="location.reload()">Add New Record</button>
         </div>
     </div>
 
-    <script src="../Java/record.js"></script>
+    <script> </script>
 </body>
 </html>
