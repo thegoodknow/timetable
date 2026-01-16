@@ -382,7 +382,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         modalityIcon = `<span class="material-icons online-icon">laptop_chromebook</span>`;
                         modalityPill = `<span class="pill online-tag">Online</span>`;
                     } else {
-                        modalityIcon = `<span class="material-icons inperson-icon">room</span>`;
+                        modalityIcon = `<span class="material-icons inperson-icon">school</span>`;
                         modalityPill = ``; 
                     }
 
