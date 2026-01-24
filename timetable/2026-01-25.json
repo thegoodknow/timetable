@@ -5,26 +5,26 @@
       "date": "Mon, 26-Jan-2026",
       "classes": [
         {
-          "moduleCode": "AICT016-4-1-DTIN-T-31",
-          "moduleName": "DIGITAL THINKING AND INNOVATION",
-          "time": "09:00 - 11:00",
-          "location": "E-07-07",
+          "moduleCode": "AAQS038-4-1-MSC-T-23",
+          "moduleName": "MATHEMATICS AND STATISTICS FOR COMPUTING",
+          "time": "14:30 - 15:30",
+          "location": "A-05-05",
           "campus": "APU CAMPUS",
-          "lecturer": "DR. SAFA'IE BIN MANGIR",
+          "lecturer": "KHOR LIAN PENG",
           "isOnline": false,
           "classType": "Tutorial",
           "isReplacement": false,
           "replacementType": ""
         },
         {
-          "moduleCode": "AAQS038-4-1-MSC-T-23",
-          "moduleName": "MATHEMATICS AND STATISTICS FOR COMPUTING",
-          "time": "14:30 - 15:30",
-          "location": "E-09-04",
+          "moduleCode": "AICT023-4-1-CA-L-7",
+          "moduleName": "COMPUTER ARCHITECTURE",
+          "time": "15:45 - 17:45",
+          "location": "B-04-04",
           "campus": "APU CAMPUS",
-          "lecturer": "HAZLINA BINTI DARMAN",
+          "lecturer": "TS. MUHAMMAD AMIN BIN SAHARI",
           "isOnline": false,
-          "classType": "Tutorial",
+          "classType": "Lecture",
           "isReplacement": false,
           "replacementType": ""
         }
@@ -34,26 +34,14 @@
       "date": "Tue, 27-Jan-2026",
       "classes": [
         {
-          "moduleCode": "ABUS007-4-1-ARS-T-33",
-          "moduleName": "ACADEMIC RESEARCH SKILLS",
+          "moduleCode": "AICT023-4-1-CA-T-21",
+          "moduleName": "COMPUTER ARCHITECTURE",
           "time": "13:30 - 15:30",
-          "location": "D-08-14",
+          "location": "B-08-05",
           "campus": "APU CAMPUS",
-          "lecturer": "IMAN DANISH SHA BINTI MOHD SUHAIMI AKBAR",
+          "lecturer": "TS. MUHAMMAD AMIN BIN SAHARI",
           "isOnline": false,
           "classType": "Tutorial",
-          "isReplacement": false,
-          "replacementType": ""
-        },
-        {
-          "moduleCode": "AAQS038-4-1-MSC-L-9",
-          "moduleName": "MATHEMATICS AND STATISTICS FOR COMPUTING",
-          "time": "16:30 - 18:00",
-          "location": "D-07-07",
-          "campus": "APU CAMPUS",
-          "lecturer": "HAZLINA BINTI DARMAN",
-          "isOnline": false,
-          "classType": "Lecture",
           "isReplacement": false,
           "replacementType": ""
         }
@@ -62,18 +50,6 @@
     {
       "date": "Wed, 28-Jan-2026",
       "classes": [
-        {
-          "moduleCode": "AICT023-4-1-CA-T-21",
-          "moduleName": "COMPUTER ARCHITECTURE",
-          "time": "15:45 - 17:45",
-          "location": "D-08-14",
-          "campus": "APU CAMPUS",
-          "lecturer": "TS. MUHAMMAD AMIN BIN SAHARI",
-          "isOnline": false,
-          "classType": "Tutorial",
-          "isReplacement": false,
-          "replacementType": ""
-        },
         {
           "moduleCode": "MPU2132-BMK1",
           "moduleName": "BAHASA MELAYU KOMUNIKASI 1",
@@ -92,24 +68,36 @@
       "date": "Thu, 29-Jan-2026",
       "classes": [
         {
-          "moduleCode": "AAQS038-4-1-MSC-L-8",
+          "moduleCode": "AAQS038-4-1-MSC-L-9",
           "moduleName": "MATHEMATICS AND STATISTICS FOR COMPUTING",
-          "time": "13:30 - 15:00",
-          "location": "E-08-01",
+          "time": "09:00 - 10:30",
+          "location": "B-04-03",
           "campus": "APU CAMPUS",
-          "lecturer": "HAZLINA BINTI DARMAN",
+          "lecturer": "KHOR LIAN PENG",
           "isOnline": false,
           "classType": "Lecture",
           "isReplacement": false,
           "replacementType": ""
         },
         {
-          "moduleCode": "ABUS007-4-1-ARS-L-9",
-          "moduleName": "ACADEMIC RESEARCH SKILLS",
-          "time": "15:45 - 17:45",
-          "location": "D-09-07",
+          "moduleCode": "AICT016-4-1-DTIN-L-9",
+          "moduleName": "DIGITAL THINKING AND INNOVATION",
+          "time": "13:30 - 15:30",
+          "location": "B-08-01",
           "campus": "APU CAMPUS",
-          "lecturer": "IMAN DANISH SHA BINTI MOHD SUHAIMI AKBAR",
+          "lecturer": "DR. SAFA'IE BIN MANGIR",
+          "isOnline": false,
+          "classType": "Lecture",
+          "isReplacement": false,
+          "replacementType": ""
+        },
+        {
+          "moduleCode": "AAQS038-4-1-MSC-L-8",
+          "moduleName": "MATHEMATICS AND STATISTICS FOR COMPUTING",
+          "time": "15:45 - 17:15",
+          "location": "D-07-08",
+          "campus": "APU CAMPUS",
+          "lecturer": "KHOR LIAN PENG",
           "isOnline": false,
           "classType": "Lecture",
           "isReplacement": false,
@@ -121,26 +109,14 @@
       "date": "Fri, 30-Jan-2026",
       "classes": [
         {
-          "moduleCode": "AICT023-4-1-CA-L-7",
-          "moduleName": "COMPUTER ARCHITECTURE",
-          "time": "08:30 - 10:30",
-          "location": "S-05-02",
-          "campus": "APU CAMPUS",
-          "lecturer": "TS. MUHAMMAD AMIN BIN SAHARI",
-          "isOnline": false,
-          "classType": "Lecture",
-          "isReplacement": false,
-          "replacementType": ""
-        },
-        {
-          "moduleCode": "AICT016-4-1-DTIN-L-9",
+          "moduleCode": "AICT016-4-1-DTIN-T-31",
           "moduleName": "DIGITAL THINKING AND INNOVATION",
           "time": "14:30 - 16:30",
-          "location": "E-09-03",
+          "location": "E-08-10",
           "campus": "APU CAMPUS",
           "lecturer": "DR. SAFA'IE BIN MANGIR",
           "isOnline": false,
-          "classType": "Lecture",
+          "classType": "Tutorial",
           "isReplacement": false,
           "replacementType": ""
         }
