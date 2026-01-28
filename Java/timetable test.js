@@ -328,6 +328,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 day.classes.forEach(cls=>{
                     const uid = makeUniqueId(currentWeekStart, day.date, cls.time, cls.moduleCode);
                     const isReplacement = cls.isReplacement || false;
+                    const isTest = cls.isTest || false;
                     const isOnline = cls.isOnline || false;
                     
                     const moduleCode = cls.moduleCode || 'CODE';
@@ -381,6 +382,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     else if (isOnline) {
                         modalityIcon = `<span class="material-icons online-icon">laptop_chromebook</span>`;
                         modalityPill = `<span class="pill online-tag">Online</span>`;
+                    } else if (isTest) {
+                       modalityIcon = `<span class="material-icons Assignment-late-icon">event_note</span>`;
+                        const type = cls.testType ? cls.testType.toUpperCase() : 'TEST';
+                        modalityPill = `<span class="pill test-tag">${type} TEST</span>`;
                     } else {
                         modalityIcon = `<span class="material-icons inperson-icon">school</span>`;
                         modalityPill = ``; 
