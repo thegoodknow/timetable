@@ -15,7 +15,7 @@
     --color-replacement: #FF8C00;    /* Replacement class banner */
     --color-replacement-bg: #CC7000;
     --color-test: #ff5252;     
-    --color-test-bg: #6d1d1d;
+    --color-test-bg: #ff5252;
 
     --border-color: #333333;
     --header-height: 56px;
@@ -224,7 +224,7 @@ body {
 /* Lesson type pills */
 .online-tag {
     background-color: var(--color-current);
-    color: var(--bg-card);
+    color: var(--text-light);
 }
 .replacement-tag {
     background-color: var(--color-replacement-bg);
