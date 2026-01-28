@@ -15,8 +15,8 @@
           "classType": "Tutorial",
           "isReplacement": false,
           "replacementType": "",
-          "isTest": true,
-          "testType": "Lab"
+          "isTest": false,
+          "testType": ""
         },
         {
           "moduleCode": "AICT023-4-1-CA-L-7",
@@ -29,8 +29,8 @@
           "classType": "Lecture",
           "isReplacement": false,
           "replacementType": "",
-          "isTest": true,
-          "testType": "Lab"
+          "isTest": false,
+          "testType": ""
         }
       ]
     },
@@ -48,8 +48,8 @@
           "classType": "Tutorial",
           "isReplacement": false,
           "replacementType": "",
-          "isTest": true,
-          "testType": "Lab"
+          "isTest": false,
+          "testType": ""
         }
       ]
     },
@@ -68,7 +68,7 @@
           "isReplacement": false,
           "replacementType": "",
           "isTest": true,
-          "testType": "Lab"
+          "testType": ""
         }
       ]
     },
@@ -86,8 +86,8 @@
           "classType": "Lecture",
           "isReplacement": false,
           "replacementType": "",
-          "isTest": true,
-          "testType": "Lab"
+          "isTest": false,
+          "testType": ""
         },
         {
           "moduleCode": "AICT016-4-1-DTIN-L-9",
@@ -100,8 +100,8 @@
           "classType": "Lecture",
           "isReplacement": false,
           "replacementType": "",
-          "isTest": true,
-          "testType": "Lab"
+          "isTest": false,
+          "testType": ""
         },
         {
           "moduleCode": "AAQS038-4-1-MSC-L-8",
@@ -115,7 +115,7 @@
           "isReplacement": false,
           "replacementType": "",
           "isTest": true,
-          "testType": "Lab"
+          "testType": "Mock"
         }
       ]
     },
@@ -133,8 +133,8 @@
           "classType": "Tutorial",
           "isReplacement": false,
           "replacementType": "",
-          "isTest": true,
-          "testType": "Lab"
+          "isTest": false,
+          "testType": ""
         }
       ]
     }

@@ -296,6 +296,8 @@
                     // 4. Replacement Fields (Assuming all are false/empty for standard timetable)
                     const isReplacement = false;
                     const replacementType = "";
+                    const isTest = false;
+                    const testType = "";
 
                     const newClass = {
                         moduleCode: finalModuleCode,
@@ -307,7 +309,9 @@
                         isOnline: isOnline,
                         classType: classType,
                         isReplacement: isReplacement,
-                        replacementType: replacementType
+                        replacementType: replacementType,
+                        isTest: isTest,
+                        testType: testType
                     };
 
                     // Group classes by day
