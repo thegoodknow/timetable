@@ -14,6 +14,8 @@
     --color-current: #FFC107;        /* Online / closing soon */
     --color-replacement: #FF8C00;    /* Replacement class banner */
     --color-replacement-bg: #CC7000;
+    --color-test: #ff5252;     
+    --color-test-bg: #6d1d1d;
 
     --border-color: #333333;
     --header-height: 56px;
@@ -45,6 +47,9 @@ body {
 }
 .replacement-icon {
     color: var(--color-replacement) !important; /* Forces Darker Orange */
+}
+.test-icon {
+    color: var(--color-test) !important; /* Forces Darker Orange */
 }
 /* .inperson-icon rule removed - it is blue by default due to .material-icons */
 
@@ -222,6 +227,10 @@ body {
 }
 .replacement-tag {
     background-color: var(--color-replacement-bg);
+    color: var(--text-light);
+}
+.test-tag {
+    background-color: var(--color-test-bg);
     color: var(--text-light);
 }
 

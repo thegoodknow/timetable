@@ -383,7 +383,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         modalityIcon = `<span class="material-icons online-icon">laptop_chromebook</span>`;
                         modalityPill = `<span class="pill online-tag">Online</span>`;
                     } else if (isTest) {
-                       modalityIcon = `<span class="material-icons Assignment-late-icon">event_note</span>`;
+                       modalityIcon = `<span class="material-icons assignment-late-icon">event_note</span>`;
                         const type = cls.testType ? cls.testType.toUpperCase() : 'TEST';
                         modalityPill = `<span class="pill test-tag">${type} TEST</span>`;
                     } else {
