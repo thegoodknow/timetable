@@ -115,7 +115,7 @@
           "isReplacement": false,
           "replacementType": "",
           "isTest": true,
-          "testType": "Mock"
+          "testType": "Mock Lab"
         }
       ]
     },
