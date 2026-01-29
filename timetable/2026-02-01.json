@@ -56,8 +56,8 @@
           "classType": "Lecture",
           "isReplacement": false,
           "replacementType": "",
-          "isTest": false,
-          "testType": ""
+          "isTest": true,
+          "testType": "Lab"
         },
         {
           "moduleCode": "AICT016-4-1-DTIN-L-9",
