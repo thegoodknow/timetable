@@ -294,7 +294,7 @@ body {
 }
 
 .btn-totimetable {
-    background-color: var(--color-replacement-bg);
+    background-color: var(--color-primary);
     color: white;
     padding: 8px 12px;
     border-radius: 6px;
