@@ -177,6 +177,20 @@
           "replacementType": "",
           "isTest": false,
           "testType": ""
+        },
+        {
+          "moduleCode": "AAQS038-4-1-MSC-T-23",
+          "moduleName": "MATHEMATICS AND STATISTICS FOR COMPUTING",
+          "time": "04:45 - 05:45",
+          "location": "B-05-07",
+          "campus": "APU CAMPUS",
+          "lecturer": "KHOR LIAN PENG",
+          "isOnline": false,
+          "classType": "Tutorial",
+          "isReplacement": true,
+          "replacementType": "Tutorial",
+          "isTest": false,
+          "testType": ""
         }
       ]
     }
